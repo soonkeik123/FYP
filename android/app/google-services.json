@@ -1,0 +1,40 @@
+{
+  "project_info": {
+    "project_number": "651925053245",
+    "firebase_url": "https://ohmypet-47930-default-rtdb.asia-southeast1.firebasedatabase.app",
+    "project_id": "ohmypet-47930",
+    "storage_bucket": "ohmypet-47930.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:651925053245:android:8b62b8dbc48665e43daf54",
+        "android_client_info": {
+          "package_name": "com.example.ohmypet"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "651925053245-n2vl5raurs3q4s6ttuh8j613s9n6kism.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyB70WLE_D28-apEMdRZkWZ6SPfhBmqQqb0"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "651925053245-n2vl5raurs3q4s6ttuh8j613s9n6kism.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
