@@ -99,36 +99,12 @@ class _OrderConfirmationPageState extends State<OrderConfirmationPage> {
   }
 
   double calculatePrice() {
-    double totalPrice = 0;
+    double totalPrice = 0 + widget.price;
     if (freeService) {
       totalPrice = 0;
     } else {
       if (packageSelected.isEmpty) {
-        if (serviceSelected == "Cat Basic Grooming" ||
-            serviceSelected == "Dog Basic Grooming") {
-          if (getPetSize() == "Small") {
-            totalPrice += 60;
-          } else if (getPetSize() == "Medium") {
-            totalPrice += 65;
-          } else if (getPetSize() == "Large") {
-            totalPrice += 70;
-          } else if (getPetSize() == "Giant") {
-            totalPrice += 80;
-          } else {
-            print("WTF?");
-          }
-        } else if (serviceSelected == "Cat Full Grooming" ||
-            serviceSelected == "Dog Full Grooming") {
-          if (getPetSize() == "Small") {
-            totalPrice += 80;
-          } else if (getPetSize() == "Medium") {
-            totalPrice += 85;
-          } else if (getPetSize() == "Large") {
-            totalPrice += 90;
-          } else if (getPetSize() == "Giant") {
-            totalPrice += 100;
-          }
-        } else if (serviceSelected == "Cat Boarding" ||
+        if (serviceSelected == "Cat Boarding" ||
             serviceSelected == "Dog Boarding") {
           if (getPetSize() == "Small" || getPetSize() == "Medium") {
             if (roomSelected == "D1" || roomSelected == "C1") {
@@ -148,8 +124,6 @@ class _OrderConfirmationPageState extends State<OrderConfirmationPage> {
             }
           }
         }
-      } else {
-        totalPrice = totalPrice + widget.price;
       }
     }
     if (taxiChecked) {

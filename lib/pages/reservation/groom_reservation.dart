@@ -37,12 +37,11 @@ class _GroomReservationPageState extends State<GroomReservationPage> {
   GoogleMapController? _mapController;
   Marker? _marker;
 
-  // final Completer<GoogleMapController> _controller =
-  //     Completer<GoogleMapController>();
   late bool isDog; // Define if it's dog or cat
   late bool isFull; // Define if it is Full Grooming
 
   late String serviceName;
+  double price = 0;
   String selectedName = "";
   String dropdownValue1 = '';
   String dropdownValue2 = '';
@@ -50,6 +49,7 @@ class _GroomReservationPageState extends State<GroomReservationPage> {
   // Pet Selection
   List<String> petNames = [];
   List<Map> petList = [];
+  String petSize = '';
   // Time Selection
   List<String> timeList = <String>['10:00AM', '12:00PM', '2:00PM', '4:00PM'];
   // Date Picker
@@ -86,19 +86,6 @@ class _GroomReservationPageState extends State<GroomReservationPage> {
           .child('Pet');
     }
     getAllPet();
-
-    // if (Get.find<LocationController>().addressList.isNotEmpty) {
-    //   _cameraPosition = CameraPosition(
-    //       target: LatLng(
-    //           double.parse(
-    //               Get.find<LocationController>().getAddress["latitude"]),
-    //           double.parse(
-    //               Get.find<LocationController>().getAddress["longtitude"])));
-    //   _initialPosition = LatLng(
-    //       double.parse(Get.find<LocationController>().getAddress["latitude"]),
-    //       double.parse(
-    //           Get.find<LocationController>().getAddress["longtitude"]));
-    // }
     super.initState();
   }
 
@@ -109,14 +96,14 @@ class _GroomReservationPageState extends State<GroomReservationPage> {
     super.dispose();
   }
 
-  Future<void> _moveToLocation(String address) async {
-    List<Location> locations = await locationFromAddress(address);
-    if (locations.isNotEmpty) {
-      Location location = locations.first;
-      LatLng latLng = LatLng(location.latitude!, location.longitude!);
-      _mapController?.animateCamera(CameraUpdate.newLatLng(latLng));
-    }
-  }
+  // Future<void> _moveToLocation(String address) async {
+  //   List<Location> locations = await locationFromAddress(address);
+  //   if (locations.isNotEmpty) {
+  //     Location location = locations.first;
+  //     LatLng latLng = LatLng(location.latitude!, location.longitude!);
+  //     _mapController?.animateCamera(CameraUpdate.newLatLng(latLng));
+  //   }
+  // }
 
   void getAllPet() {
     dbPetRef.onValue.listen((event) {
@@ -165,7 +152,6 @@ class _GroomReservationPageState extends State<GroomReservationPage> {
   Widget build(BuildContext context) {
     if (petNames.isNotEmpty) {
       dropdownValue1 = petNames.first;
-      selectedName = dropdownValue1;
     }
 
     return Scaffold(
@@ -221,6 +207,7 @@ class _GroomReservationPageState extends State<GroomReservationPage> {
                         dropdownValue1 = newValue!;
                         selectedName = newValue;
                       });
+                      calculatePrice(selectedName);
                     },
                     items:
                         petNames.map<DropdownMenuItem<String>>((String value) {
@@ -235,7 +222,7 @@ class _GroomReservationPageState extends State<GroomReservationPage> {
                     }).toList(),
                   ),
                   const SizedBox(
-                    height: 15,
+                    height: 5,
                   ),
 
                   // Selected Service
@@ -265,7 +252,7 @@ class _GroomReservationPageState extends State<GroomReservationPage> {
                     ),
                   ),
                   const SizedBox(
-                    height: 10,
+                    height: 5,
                   ),
 
                   // Choose Date
@@ -283,7 +270,7 @@ class _GroomReservationPageState extends State<GroomReservationPage> {
                     ),
                     child: TextField(
                       controller: dateInput,
-                      //editing controller of this TextField
+                      // editing controller of this TextField
                       decoration: const InputDecoration(
                           iconColor: AppColors.mainColor,
                           icon: Icon(Icons.calendar_today), //icon of text field
@@ -315,7 +302,7 @@ class _GroomReservationPageState extends State<GroomReservationPage> {
                     ),
                   ),
                   const SizedBox(
-                    height: 10,
+                    height: 5,
                   ),
 
                   // Select Pet
@@ -361,7 +348,7 @@ class _GroomReservationPageState extends State<GroomReservationPage> {
                     }).toList(),
                   ),
                   const SizedBox(
-                    height: 10,
+                    height: 3,
                   ),
 
                   // Pet Taxi
@@ -378,7 +365,10 @@ class _GroomReservationPageState extends State<GroomReservationPage> {
                       Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          TitleText(text: "Pet Taxi Required"),
+                          TitleText(
+                            text: "Pet Taxi Required",
+                            size: 18,
+                          ),
                           SmallText(
                             text: "(Exclusive fee will be charged)",
                             size: Dimensions.font10 + 2,
@@ -389,27 +379,12 @@ class _GroomReservationPageState extends State<GroomReservationPage> {
                     ],
                   ),
                   const SizedBox(
-                    height: 10,
+                    height: 3,
                   ),
 
                   isChecked
                       ? Column(
                           children: [
-                            // GoogleMap(
-                            //   initialCameraPosition: CameraPosition(
-                            //       target: _initialPosition, zoom: 17),
-                            //   zoomControlsEnabled: false,
-                            //   compassEnabled: false,
-                            //   indoorViewEnabled: true,
-                            //   mapToolbarEnabled: false,
-                            //   onCameraIdle: () {},
-                            //   onCameraMove: ((position) =>
-                            //       _cameraPosition = position),
-                            //   onMapCreated:
-                            //       (GoogleMapController controller) {
-                            //         _mapController = controller;
-                            //       },
-                            // ),
                             Container(
                               height: 150,
                               width: double.maxFinite,
@@ -435,7 +410,7 @@ class _GroomReservationPageState extends State<GroomReservationPage> {
                               ),
                             ),
                             const SizedBox(
-                              height: 15,
+                              height: 10,
                             ),
                             TextField(
                               controller: _addressController,
@@ -444,7 +419,7 @@ class _GroomReservationPageState extends State<GroomReservationPage> {
                                 border: OutlineInputBorder(
                                   borderRadius: BorderRadius.circular(15),
                                   borderSide: BorderSide(
-                                      color: Colors.blue, width: 1.0),
+                                      color: AppColors.mainColor, width: 1.0),
                                 ),
                                 suffixIcon: IconButton(
                                   icon: Icon(Icons.search),
@@ -465,6 +440,11 @@ class _GroomReservationPageState extends State<GroomReservationPage> {
                   // Next Button
                   InkWell(
                     onTap: () {
+                      // In case that user havent choose any pet, set default to avoid blank
+                      if (selectedName == "") {
+                        selectedName = dropdownValue1;
+                        calculatePrice(dropdownValue1);
+                      }
                       Navigator.push(
                           context,
                           MaterialPageRoute(
@@ -475,14 +455,14 @@ class _GroomReservationPageState extends State<GroomReservationPage> {
                                     time: dropdownValue2,
                                     room: '',
                                     taxi: isChecked,
-                                    price: 0,
+                                    price: price,
                                     address: _addressController.text,
                                     package: '',
                                     pointRedeem: false,
                                   )));
                     },
                     child: Container(
-                      margin: const EdgeInsets.symmetric(horizontal: 70),
+                      margin: const EdgeInsets.symmetric(horizontal: 60),
                       alignment: Alignment.center,
                       decoration: BoxDecoration(
                         borderRadius:
@@ -490,7 +470,7 @@ class _GroomReservationPageState extends State<GroomReservationPage> {
                         color: AppColors.mainColor,
                       ),
                       height: 40,
-                      width: 140,
+                      width: 180,
                       child: BigText(
                         text: "Next",
                         color: Colors.white,
@@ -502,13 +482,6 @@ class _GroomReservationPageState extends State<GroomReservationPage> {
             ),
           ),
         )),
-        // Positioned(
-        //     bottom: -5,
-        //     left: -5,
-        //     child: SizedBox(
-        //       height: 140,
-        //       child: Image.asset("assets/images/cute-image-1.png"),
-        //     )),
       ]),
     );
   }
@@ -578,5 +551,51 @@ class _GroomReservationPageState extends State<GroomReservationPage> {
         _addressController.text = address;
       });
     }
+  }
+
+  void calculatePrice(String newValue) {
+    price = 0;
+    dbPetRef.onValue.listen((event) {
+      DataSnapshot snapshot = event.snapshot;
+      if (snapshot.value != null) {
+        // Check if the widget is still mounted and data is not null
+        Map<dynamic, dynamic> petData = snapshot.value as Map<dynamic, dynamic>;
+        // Iterate through the pet data to get pet names
+        petData.forEach((key, value) {
+          if (value['data']['name'] == newValue) {
+            petSize = value['data']['size'];
+
+            if (serviceName == "Cat Basic Grooming" ||
+                serviceName == "Dog Basic Grooming") {
+              if (petSize == "Small") {
+                price += 60;
+              } else if (petSize == "Medium") {
+                price += 65;
+              } else if (petSize == "Large") {
+                price += 70;
+              } else if (petSize == "Giant") {
+                price += 80;
+              } else {
+                print("Unknown error in price getting.");
+              }
+            } else if (serviceName == "Cat Full Grooming" ||
+                serviceName == "Dog Full Grooming") {
+              if (petSize == "Small") {
+                price += 80;
+              } else if (petSize == "Medium") {
+                price += 85;
+              } else if (petSize == "Large") {
+                price += 90;
+              } else if (petSize == "Giant") {
+                price += 100;
+              } else {
+                print("Unknown error in price getting.");
+              }
+              print('Pet size: $price'); // Checking purpose
+            }
+          }
+        });
+      }
+    });
   }
 }
