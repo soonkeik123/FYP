@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
-import 'package:ohmypet/pages/reservation/order_confirmation.dart';
 import 'package:ohmypet/pages/reservation/select_room.dart';
 import 'package:ohmypet/utils/colors.dart';
 import 'package:ohmypet/utils/dimensions.dart';
@@ -274,12 +273,12 @@ class _BoardingReservationState extends State<BoardingReservation> {
                           // Next Button
                           InkWell(
                             onTap: () {
-                              Navigator.push(
-                                context,
-                                MaterialPageRoute(
-                                    builder: (context) =>
-                                        const OrderConfirmationPage()), // Replace NewPage with the name of your new page class
-                              );
+                              // Navigator.push(
+                              //   context,
+                              //   MaterialPageRoute(
+                              //       builder: (context) =>
+                              //           const OrderConfirmationPage()), // Replace NewPage with the name of your new page class
+                              // );
                             },
                             child: Container(
                               margin:

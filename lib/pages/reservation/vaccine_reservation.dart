@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
-import 'package:ohmypet/pages/reservation/order_confirmation.dart';
 import 'package:ohmypet/utils/colors.dart';
 import 'package:ohmypet/utils/dimensions.dart';
 import 'package:ohmypet/widgets/big_text.dart';
@@ -229,11 +228,11 @@ class _VaccineReservationPageState extends State<VaccineReservationPage> {
                           // Next Button
                           InkWell(
                             onTap: () {
-                              Navigator.push(
-                                  context,
-                                  MaterialPageRoute(
-                                      builder: (context) =>
-                                          const OrderConfirmationPage()));
+                              // Navigator.push(
+                              //     context,
+                              //     MaterialPageRoute(
+                              //         builder: (context) =>
+                              //             const OrderConfirmationPage()));
                             },
                             child: Container(
                               margin:

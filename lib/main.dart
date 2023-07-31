@@ -15,7 +15,6 @@ import 'package:ohmypet/pages/profile/signup_screen.dart';
 import 'package:ohmypet/pages/reservation/boarding_reservation.dart';
 import 'package:ohmypet/pages/reservation/groom_reservation.dart';
 import 'package:ohmypet/pages/reservation/main_reservation_page.dart';
-import 'package:ohmypet/pages/reservation/order_confirmation.dart';
 import 'package:ohmypet/pages/reservation/select_room.dart';
 import 'package:ohmypet/pages/reservation/vaccine_reservation.dart';
 import 'package:ohmypet/pages/service/cat_boarding_info.dart';
@@ -101,8 +100,6 @@ class MyApp extends StatelessWidget {
         // TrackProgressPage.routeName: (context) => const TrackProgressPage(),
         MainServicePage.routeName: (context) => const MainServicePage(),
         MainReservationPage.routeName: (context) => const MainReservationPage(),
-        OrderConfirmationPage.routeName: (context) =>
-            const OrderConfirmationPage(),
         MainProfilePage.routeName: (context) => const MainProfilePage(),
         EditProfilePage.routeName: (context) => const EditProfilePage(),
         LoyaltyPointPage.routeName: (context) => const LoyaltyPointPage(),

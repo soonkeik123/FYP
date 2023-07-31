@@ -42,7 +42,7 @@ class _GroomReservationPageState extends State<GroomReservationPage> {
   late bool isDog; // Define if it's dog or cat
   late bool isFull; // Define if it is Full Grooming
 
-  String serviceName = "";
+  late String serviceName;
   String selectedName = "";
   String dropdownValue1 = '';
   String dropdownValue2 = '';
@@ -163,7 +163,11 @@ class _GroomReservationPageState extends State<GroomReservationPage> {
 
   @override
   Widget build(BuildContext context) {
-    if (petNames.isNotEmpty) dropdownValue1 = petNames.first;
+    if (petNames.isNotEmpty) {
+      dropdownValue1 = petNames.first;
+      selectedName = dropdownValue1;
+    }
+
     return Scaffold(
       backgroundColor: Colors.white,
       body: Column(children: [
@@ -215,6 +219,7 @@ class _GroomReservationPageState extends State<GroomReservationPage> {
                     onChanged: (String? newValue) {
                       setState(() {
                         dropdownValue1 = newValue!;
+                        selectedName = newValue;
                       });
                     },
                     items:
@@ -463,8 +468,18 @@ class _GroomReservationPageState extends State<GroomReservationPage> {
                       Navigator.push(
                           context,
                           MaterialPageRoute(
-                              builder: (context) =>
-                                  const OrderConfirmationPage()));
+                              builder: (context) => OrderConfirmationPage(
+                                    pet: selectedName,
+                                    service: serviceName,
+                                    date: dateInput.text,
+                                    time: dropdownValue2,
+                                    room: '',
+                                    taxi: isChecked,
+                                    price: 0,
+                                    address: _addressController.text,
+                                    package: '',
+                                    pointRedeem: false,
+                                  )));
                     },
                     child: Container(
                       margin: const EdgeInsets.symmetric(horizontal: 70),
@@ -543,7 +558,7 @@ class _GroomReservationPageState extends State<GroomReservationPage> {
 
       String address = '';
 
-      if (placemark.name != null) address += placemark.name! + ',';
+      if (placemark.name != null) address += placemark.name! + ', ';
       if (placemark.thoroughfare != null)
         address += placemark.thoroughfare! + ', ';
       if (placemark.subLocality != null) {
