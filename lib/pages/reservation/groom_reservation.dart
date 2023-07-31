@@ -594,6 +594,7 @@ class _GroomReservationPageState extends State<GroomReservationPage> {
               print('Pet size: $price'); // Checking purpose
             }
           }
+          price += 20;
         });
       }
     });

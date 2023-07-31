@@ -1,7 +1,7 @@
+import 'package:custom_date_range_picker/custom_date_range_picker.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_database/firebase_database.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_date_range_picker/flutter_date_range_picker.dart';
 import 'package:geocoding/geocoding.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:ohmypet/pages/reservation/select_room.dart';
@@ -37,7 +37,6 @@ class _BoardingReservationState extends State<BoardingReservation> {
 
   late bool isDog; // Define if it's dog or cat
 
-  late String serviceName;
   String roomtype = "";
   double price = 0;
 
@@ -54,6 +53,11 @@ class _BoardingReservationState extends State<BoardingReservation> {
   String selectedName = '';
   String dropdownValue = '';
   String petSize = '';
+  // Calender pick range date
+  String startDate = '';
+  String endDate = '';
+  // Amount of date (used to calculate price)
+  int numberOfDays = 1;
 
   bool _isDisposed = false;
 
@@ -246,16 +250,72 @@ class _BoardingReservationState extends State<BoardingReservation> {
                       height: 5,
                     ),
                     Container(
-                      width: double.maxFinite,
-                      height: 316,
-                      child: DateRangePickerWidget(
-                        maximumPeriodLength: 14,
-                        minimumPeriodLength: 1,
-                        // disabledDates: [DateTime(2023, 11, 20)],
-                        initialDisplayedDate: DateTime(2023, 8, 1),
-                        onPeriodChanged: (Period value) {
-                          debugPrint(value.toString());
-                        },
+                      height: 48,
+                      padding: const EdgeInsets.only(left: 10, right: 5),
+                      decoration: BoxDecoration(
+                        borderRadius:
+                            BorderRadius.circular(Dimensions.radius15),
+                        border:
+                            Border.all(color: AppColors.mainColor, width: 1.0),
+                      ),
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          Text(
+                            dateInput.text,
+                            style: TextStyle(
+                                fontSize: 16,
+                                color: AppColors.mainColor,
+                                fontWeight: FontWeight.w400),
+                          ),
+                          Container(
+                            alignment: Alignment.center,
+                            width: 45,
+                            height: 45,
+                            decoration: BoxDecoration(
+                              color: AppColors.dogBasicPurple,
+                              shape: BoxShape.circle,
+                            ),
+                            child: TextButton(
+                              onPressed: () {
+                                showCustomDateRangePicker(
+                                  context,
+                                  dismissible: true,
+                                  minimumDate: DateTime.now()
+                                      .add(const Duration(days: 1)),
+                                  maximumDate: DateTime.now()
+                                      .add(const Duration(days: 30)),
+                                  // startDate: DateTime.now()
+                                  //     .add(const Duration(days: 1)),
+                                  onApplyClick: (start, end) {
+                                    setState(() {
+                                      endDate = (end as DateTime)
+                                          .toString()
+                                          .split(' ')[0];
+                                      startDate = (start as DateTime)
+                                          .toString()
+                                          .split(' ')[0];
+                                      dateInput.text = "$startDate to $endDate";
+                                      numberOfDays = (end as DateTime)
+                                          .difference(start as DateTime)
+                                          .inDays;
+                                      print(
+                                          "Number of days between start and end: $numberOfDays");
+                                    });
+                                  },
+                                  onCancelClick: () {
+                                    setState(() {
+                                      endDate = '';
+                                      startDate = '';
+                                    });
+                                  },
+                                );
+                              },
+                              child: const Icon(Icons.calendar_today_outlined,
+                                  color: Colors.white),
+                            ),
+                          )
+                        ],
                       ),
                     ),
 
@@ -292,14 +352,20 @@ class _BoardingReservationState extends State<BoardingReservation> {
                               ),
                               child: TextButton(
                                   onPressed: () async {
+                                    if (petSize == '') {
+                                      calculatePrice(dropdownValue);
+                                    }
                                     roomtype = await Navigator.push(
                                       context,
                                       MaterialPageRoute(
                                           builder: (context) => isDog
-                                              ? SelectRoomPage(dogBoard: true)
+                                              ? SelectRoomPage(
+                                                  dogBoard: true,
+                                                  petSize: petSize)
                                               : SelectRoomPage(
-                                                  dogBoard:
-                                                      false)), // Replace NewPage with the name of new page class
+                                                  dogBoard: false,
+                                                  petSize: petSize,
+                                                )), // Replace NewPage with the name of new page class
                                     );
                                     print(roomtype);
                                     setState(() {
@@ -418,10 +484,10 @@ class _BoardingReservationState extends State<BoardingReservation> {
                             MaterialPageRoute(
                                 builder: (context) => OrderConfirmationPage(
                                       pet: selectedName,
-                                      service: serviceName,
+                                      service: _serviceTypeController.text,
                                       date: dateInput.text,
                                       time: '',
-                                      room: '',
+                                      room: roomSelected,
                                       taxi: isChecked,
                                       price: price,
                                       address: _addressController.text,
@@ -536,27 +602,31 @@ class _BoardingReservationState extends State<BoardingReservation> {
 
             if (petSize == "Small" || petSize == "Medium") {
               if (roomSelected == "D1" || roomSelected == "C1") {
-                price += 50;
+                price += (50 * numberOfDays);
               } else if (roomSelected == "D2" || roomSelected == "C2") {
-                price += 60;
+                price += (60 * numberOfDays);
               } else if (roomSelected == "D3" || roomSelected == "C3") {
-                price += 70;
+                price += (70 * numberOfDays);
               } else {
                 print("Unknown error in price getting.");
               }
             } else if (petSize == "Large" || petSize == "Giant") {
               if (roomSelected == "D1" || roomSelected == "C1") {
-                price += 60;
+                price += (60 * numberOfDays);
               } else if (roomSelected == "D2" || roomSelected == "C2") {
-                price += 70;
+                price += (70 * numberOfDays);
               } else if (roomSelected == "D3" || roomSelected == "C3") {
-                price += 80;
+                price += (80 * numberOfDays);
               } else {
                 print("Unknown error in price getting.");
               }
             }
+            if (isChecked) {
+              price += 20;
+            }
 
             print('Pet size: $petSize'); // Checking purpose
+            print('RM $price');
           }
         });
       }

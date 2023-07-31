@@ -126,9 +126,6 @@ class _OrderConfirmationPageState extends State<OrderConfirmationPage> {
         }
       }
     }
-    if (taxiChecked) {
-      totalPrice += 20;
-    }
     return totalPrice;
   }
 

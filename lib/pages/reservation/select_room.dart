@@ -9,8 +9,9 @@ import 'package:ohmypet/widgets/title_text.dart';
 class SelectRoomPage extends StatefulWidget {
   static const selectDogRoom = '/selectDogRoom';
   static const selectCatRoom = '/selectCatRoom';
+  String petSize;
   bool dogBoard;
-  SelectRoomPage({super.key, required this.dogBoard});
+  SelectRoomPage({super.key, required this.dogBoard, required this.petSize});
 
   @override
   State<SelectRoomPage> createState() => _SelectRoomPageState();
@@ -21,36 +22,47 @@ class _SelectRoomPageState extends State<SelectRoomPage> {
       viewportFraction: 0.85); // Decide the space between each slide
 
   late bool isDog;
+  late String petSize = '';
 
   List<Map<String, dynamic>> boardingList = [
     {
       'type': 'Cat Boarding',
       'rooms': ['C1', 'C2', 'C3'],
+      'names': ['General Room', 'Deluxe Room', 'Superior Room'],
       'imageURL': [
         'assets/images/cat-cage-2.png',
         'assets/images/cat-cage-1.png',
         'assets/images/cat-cage-3.png',
       ],
-      'prices': [0, 10, 20],
-      'descriptions': [
-        'No additional fee',
-        'Additional RM 10',
-        'Additional RM 20',
+      'small_medium': [
+        'RM 50 per Night',
+        'RM 60 per Night',
+        'RM 70 per Night',
+      ],
+      'large_giant': [
+        'RM 60 per Night',
+        'RM 70 per Night',
+        'RM 80 per Night',
       ],
     },
     {
       'type': 'Dog Boarding',
       'rooms': ['D1', 'D2', 'D3'],
+      'names': ['General Room', 'Deluxe Room', 'Superior Room'],
       'imageURL': [
         'assets/images/dog-cage-1.png',
         'assets/images/dog-cage-2.png',
         'assets/images/dog-cage-3.png',
       ],
-      'prices': [0, 10, 20],
-      'descriptions': [
-        'No additional fee',
-        'Additional RM 10',
-        'Additional RM 20',
+      'small_medium': [
+        'RM 50 per Night',
+        'RM 60 per Night',
+        'RM 70 per Night',
+      ],
+      'large_giant': [
+        'RM 60 per Night',
+        'RM 70 per Night',
+        'RM 80 per Night',
       ],
     },
   ];
@@ -59,6 +71,10 @@ class _SelectRoomPageState extends State<SelectRoomPage> {
   void initState() {
     // print("actual size = ${Dimensions.screenHeight}");
     isDog = widget.dogBoard;
+    setState(() {
+      petSize = widget.petSize;
+    });
+
     super.initState();
   }
 
@@ -115,7 +131,7 @@ class _SelectRoomPageState extends State<SelectRoomPage> {
                           // Slider for room
                           Container(
                             margin: const EdgeInsets.only(top: 20),
-                            height: 350,
+                            height: 370,
                             child: PageView.builder(
                                 controller: pageController,
                                 itemCount: 3,
@@ -160,14 +176,24 @@ class _SelectRoomPageState extends State<SelectRoomPage> {
                   ? TitleText(text: boardingList[1]['rooms'][index])
                   : TitleText(text: boardingList[0]['rooms'][index]),
               const SizedBox(
+                height: 2,
+              ),
+              isDog
+                  ? TitleText(text: boardingList[1]['names'][index])
+                  : TitleText(text: boardingList[0]['names'][index]),
+              const SizedBox(
                 height: 5,
               ),
               SmallText(
                 text: isDog
-                    ? boardingList[1]['descriptions'][index]
-                    : boardingList[0]['descriptions'][index],
-                size: 14,
-                color: AppColors.textColor,
+                    ? ((petSize == "Small" || petSize == "Medium")
+                        ? boardingList[1]['small_medium'][index]
+                        : boardingList[1]['large_giant'][index])
+                    : ((petSize == "Small" || petSize == "Medium")
+                        ? boardingList[0]['small_medium'][index]
+                        : boardingList[0]['large_giant'][index]),
+                size: 17,
+                color: Colors.blue.shade600,
               ),
               const SizedBox(
                 height: 10,

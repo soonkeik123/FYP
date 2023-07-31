@@ -15,7 +15,6 @@ import 'package:ohmypet/pages/profile/signup_screen.dart';
 import 'package:ohmypet/pages/reservation/boarding_reservation.dart';
 import 'package:ohmypet/pages/reservation/groom_reservation.dart';
 import 'package:ohmypet/pages/reservation/main_reservation_page.dart';
-import 'package:ohmypet/pages/reservation/select_room.dart';
 import 'package:ohmypet/pages/reservation/vaccine_reservation.dart';
 import 'package:ohmypet/pages/service/cat_boarding_info.dart';
 import 'package:ohmypet/pages/service/cat_groom_info.dart';
@@ -87,12 +86,6 @@ class MyApp extends StatelessWidget {
         BoardingReservation.dogBoardingReservation: (context) =>
             BoardingReservation(
               dogBoard: true,
-            ),
-        SelectRoomPage.selectDogRoom: (context) => SelectRoomPage(
-              dogBoard: true,
-            ),
-        SelectRoomPage.selectCatRoom: (context) => SelectRoomPage(
-              dogBoard: false,
             ),
         PetVaccineInfo.routeName: (context) => const PetVaccineInfo(),
         VaccineReservationPage.routeName: (context) =>
