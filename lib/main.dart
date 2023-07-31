@@ -106,10 +106,12 @@ class MyApp extends StatelessWidget {
         MainProfilePage.routeName: (context) => const MainProfilePage(),
         EditProfilePage.routeName: (context) => const EditProfilePage(),
         LoyaltyPointPage.routeName: (context) => const LoyaltyPointPage(),
-        ReservationManagement.staffRoute: (context) => const ReservationManagement(
+        ReservationManagement.staffRoute: (context) =>
+            const ReservationManagement(
               role: "staff",
             ),
-        ReservationManagement.adminRoute: (context) => const ReservationManagement(
+        ReservationManagement.adminRoute: (context) =>
+            const ReservationManagement(
               role: "admin",
             ),
         LoyaltyManagement.routeName: (context) => const LoyaltyManagement(),
