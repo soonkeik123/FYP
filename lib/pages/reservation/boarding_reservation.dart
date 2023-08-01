@@ -38,8 +38,8 @@ class _BoardingReservationState extends State<BoardingReservation> {
   late bool isDog; // Define if it's dog or cat
 
   String roomtype = "";
-  double price = 0;
-
+  late double price = 0;
+  double priceCalculated = 0;
   // Pet Selection
   List<String> petNames = [];
   List<Map> petList = [];
@@ -302,6 +302,7 @@ class _BoardingReservationState extends State<BoardingReservation> {
                                       print(
                                           "Number of days between start and end: $numberOfDays");
                                     });
+                                    calculatePrice(selectedName);
                                   },
                                   onCancelClick: () {
                                     setState(() {
@@ -371,6 +372,7 @@ class _BoardingReservationState extends State<BoardingReservation> {
                                     setState(() {
                                       roomSelected = roomtype;
                                     });
+                                    calculatePrice(selectedName);
                                   },
                                   child: TitleText(
                                     text: "View Room",
@@ -394,6 +396,7 @@ class _BoardingReservationState extends State<BoardingReservation> {
                               setState(() {
                                 isChecked = newValue ?? false;
                               });
+                              calculatePrice(selectedName);
                             }),
                         Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
@@ -489,7 +492,7 @@ class _BoardingReservationState extends State<BoardingReservation> {
                                       time: '',
                                       room: roomSelected,
                                       taxi: isChecked,
-                                      price: price,
+                                      price: priceCalculated,
                                       address: _addressController.text,
                                       package: '',
                                       pointRedeem: false,
@@ -589,7 +592,12 @@ class _BoardingReservationState extends State<BoardingReservation> {
   }
 
   void calculatePrice(String newValue) {
-    price = 0;
+    double price = 0;
+    if (isChecked) {
+      price = 20;
+    } else {
+      price = 0;
+    }
     dbPetRef.onValue.listen((event) {
       DataSnapshot snapshot = event.snapshot;
       if (snapshot.value != null) {
@@ -610,6 +618,10 @@ class _BoardingReservationState extends State<BoardingReservation> {
               } else {
                 print("Unknown error in price getting.");
               }
+              print('Total price: $price'); // Checking purpose
+              setState(() {
+                priceCalculated = price;
+              });
             } else if (petSize == "Large" || petSize == "Giant") {
               if (roomSelected == "D1" || roomSelected == "C1") {
                 price += (60 * numberOfDays);
@@ -620,13 +632,11 @@ class _BoardingReservationState extends State<BoardingReservation> {
               } else {
                 print("Unknown error in price getting.");
               }
+              print('Total price: $price'); // Checking purpose
+              setState(() {
+                priceCalculated = price;
+              });
             }
-            if (isChecked) {
-              price += 20;
-            }
-
-            print('Pet size: $petSize'); // Checking purpose
-            print('RM $price');
           }
         });
       }

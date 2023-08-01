@@ -26,6 +26,8 @@ import 'package:ohmypet/pages/service/pet_vaccination.dart';
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await Firebase.initializeApp();
+  // Stripe.publishableKey = stripePublishableKey;
+  // await Stripe.instance.applySettings();
   runApp(const MyApp());
 }
 
@@ -67,21 +69,25 @@ class MyApp extends StatelessWidget {
             GroomReservationPage(
               dogGroom: false,
               fullGroom: false,
+              freeService: false,
             ),
         GroomReservationPage.catFullGroomReservation: (context) =>
             GroomReservationPage(
               dogGroom: false,
               fullGroom: true,
+              freeService: false,
             ),
         GroomReservationPage.dogBasicGroomReservation: (context) =>
             GroomReservationPage(
               dogGroom: true,
               fullGroom: false,
+              freeService: false,
             ),
         GroomReservationPage.dogFullGroomReservation: (context) =>
             GroomReservationPage(
               dogGroom: true,
               fullGroom: true,
+              freeService: false,
             ),
         BoardingReservation.dogBoardingReservation: (context) =>
             BoardingReservation(

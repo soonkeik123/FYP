@@ -1,6 +1,7 @@
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_database/firebase_database.dart';
 import 'package:flutter/material.dart';
+import 'package:ohmypet/pages/reservation/groom_reservation.dart';
 import 'package:ohmypet/utils/colors.dart';
 import 'package:ohmypet/widgets/info_text.dart';
 
@@ -186,32 +187,124 @@ class CustomGridItem extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      margin: const EdgeInsets.only(left: 5, right: 5, bottom: 5),
-      decoration: BoxDecoration(
-          borderRadius: BorderRadius.circular(15),
-          color: Colors.white,
-          boxShadow: [
-            BoxShadow(
-                color: Color(int.parse(color)), spreadRadius: 1, blurRadius: 5)
-          ]),
-      child: Column(
-        children: [
-          Image.asset(
-            imageUrl,
-            height: 100,
-            width: 100,
-            fit: BoxFit.cover,
-          ),
-          // SizedBox(height: 8),
-          Text(
-            title,
-            style: const TextStyle(fontWeight: FontWeight.w500, fontSize: 15),
-          ),
-          Text("$point points",
-              style: const TextStyle(fontWeight: FontWeight.w400)),
-        ],
+    return InkWell(
+      onTap: () {
+        showConfirmationDialog(context, title);
+      },
+      child: Container(
+        margin: const EdgeInsets.only(left: 5, right: 5, bottom: 5),
+        decoration: BoxDecoration(
+            borderRadius: BorderRadius.circular(15),
+            color: Colors.white,
+            boxShadow: [
+              BoxShadow(
+                  color: Color(int.parse(color)),
+                  spreadRadius: 1,
+                  blurRadius: 5)
+            ]),
+        child: Column(
+          children: [
+            Image.asset(
+              imageUrl,
+              height: 100,
+              width: 100,
+              fit: BoxFit.cover,
+            ),
+            // SizedBox(height: 8),
+            Text(
+              title,
+              style: const TextStyle(fontWeight: FontWeight.w500, fontSize: 15),
+            ),
+            Text("$point points",
+                style: const TextStyle(fontWeight: FontWeight.w400)),
+          ],
+        ),
       ),
     );
+  }
+
+  void showConfirmationDialog(BuildContext context, String title) {
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(
+                10.0), // Set your desired border radius here
+          ),
+          backgroundColor:
+              Colors.white, // Set the background color of the dialog
+          title: Text('Confirmation'),
+          titleTextStyle: TextStyle(
+            color:
+                AppColors.mainColor, // Set your desired title text color here
+            fontSize: 20.0,
+            fontWeight: FontWeight.bold,
+          ),
+          content: Container(
+            height: 110,
+            child: Column(
+              children: [
+                Text(
+                    'You are about to enjoy a complimentary service! Confirm your redemption?'),
+                Text(
+                  '\n** Kindly be aware that Pet Taxi is not part of the free service.',
+                  style: TextStyle(color: AppColors.paraColor, fontSize: 14),
+                )
+              ],
+            ),
+          ),
+          contentTextStyle: TextStyle(
+            color:
+                AppColors.mainColor, // Set your desired content text color here
+            fontSize: 16.0,
+          ),
+          actions: <Widget>[
+            TextButton(
+              onPressed: () {
+                Navigator.pop(
+                    context, false); // Return false to indicate cancellation
+              },
+              child: Text('Cancel'),
+            ),
+            TextButton(
+              onPressed: () {
+                Navigator.pop(
+                    context, true); // Return true to indicate confirmation
+              },
+              child: Text('Confirm'),
+            ),
+          ],
+        );
+      },
+    ).then((value) {
+      if (value != null && value) {
+        if (title == 'Cat Basic Grooming') {
+          Navigator.push(
+              context,
+              MaterialPageRoute(
+                  builder: (context) => GroomReservationPage(
+                      dogGroom: false, fullGroom: false, freeService: true)));
+        } else if (title == 'Cat Full Grooming') {
+          Navigator.push(
+              context,
+              MaterialPageRoute(
+                  builder: (context) => GroomReservationPage(
+                      dogGroom: false, fullGroom: true, freeService: true)));
+        } else if (title == 'Dog Basic Grooming') {
+          Navigator.push(
+              context,
+              MaterialPageRoute(
+                  builder: (context) => GroomReservationPage(
+                      dogGroom: true, fullGroom: false, freeService: true)));
+        } else if (title == 'Dog Full Grooming') {
+          Navigator.push(
+              context,
+              MaterialPageRoute(
+                  builder: (context) => GroomReservationPage(
+                      dogGroom: true, fullGroom: true, freeService: true)));
+        }
+      } else {}
+    });
   }
 }

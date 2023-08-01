@@ -92,8 +92,6 @@ class _SignUpScreenState extends State<SignUpScreen> {
                       'phone': '6${_phoneTextController.text}',
                       'point': 0,
                       'role': 'user',
-
-                      // Add more data fields as needed
                     };
 
                     profileRef.set(profileData).then((_) {

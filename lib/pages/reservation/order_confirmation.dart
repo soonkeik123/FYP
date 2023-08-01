@@ -58,7 +58,7 @@ class _OrderConfirmationPageState extends State<OrderConfirmationPage> {
   // Address
   late String addressInput;
   // Price
-  late double price;
+  late double priceGet;
   // Package
   late String packageSelected;
   // Point Redemption
@@ -95,38 +95,15 @@ class _OrderConfirmationPageState extends State<OrderConfirmationPage> {
     addressInput = widget.address;
     packageSelected = widget.package;
     freeService = widget.pointRedeem;
-    price = calculatePrice();
+    priceGet = widget.price;
   }
 
-  double calculatePrice() {
-    double totalPrice = 0 + widget.price;
-    if (freeService) {
-      totalPrice = 0;
-    } else {
-      if (packageSelected.isEmpty) {
-        if (serviceSelected == "Cat Boarding" ||
-            serviceSelected == "Dog Boarding") {
-          if (getPetSize() == "Small" || getPetSize() == "Medium") {
-            if (roomSelected == "D1" || roomSelected == "C1") {
-              totalPrice += 50;
-            } else if (roomSelected == "D2" || roomSelected == "C2") {
-              totalPrice += 60;
-            } else if (roomSelected == "D3" || roomSelected == "C3") {
-              totalPrice += 70;
-            }
-          } else if (getPetSize() == "Large" || getPetSize() == "Giant") {
-            if (roomSelected == "D1" || roomSelected == "C1") {
-              totalPrice += 60;
-            } else if (roomSelected == "D2" || roomSelected == "C2") {
-              totalPrice += 70;
-            } else if (roomSelected == "D3" || roomSelected == "C3") {
-              totalPrice += 80;
-            }
-          }
-        }
-      }
+  void isFreeService() {
+    if (freeService && taxiChecked) {
+      priceGet = 20;
+    } else if (freeService && !taxiChecked) {
+      priceGet = 0;
     }
-    return totalPrice;
   }
 
   String getPetSize() {
@@ -156,6 +133,7 @@ class _OrderConfirmationPageState extends State<OrderConfirmationPage> {
 
   @override
   Widget build(BuildContext context) {
+    isFreeService();
     return Scaffold(
         backgroundColor: AppColors.themeColor,
         body: Column(
@@ -321,7 +299,7 @@ class _OrderConfirmationPageState extends State<OrderConfirmationPage> {
                         height: 5,
                       ),
                       Text(
-                        ("RM ${calculatePrice()}"),
+                        ("RM $priceGet"),
                         style: const TextStyle(
                             fontSize: 18, fontWeight: FontWeight.w500),
                       ),
@@ -333,7 +311,93 @@ class _OrderConfirmationPageState extends State<OrderConfirmationPage> {
                         alignment: Alignment.center,
                         child: InkWell(
                           onTap: () {
-                            print("ok He PRESSED!");
+                            isFreeService();
+                            User? user = FirebaseAuth.instance.currentUser;
+                            if (user != null) {
+                              String uid = user.uid;
+                              // Now you have the UID of the current user
+
+                              // For storing the reservation to database
+                              DatabaseReference reservationRef =
+                                  FirebaseDatabase.instance
+                                      .ref()
+                                      .child('reservations');
+                              // For update the user loyalty point
+                              DatabaseReference profileLoyaltyRef =
+                                  FirebaseDatabase.instance
+                                      .ref()
+                                      .child('users')
+                                      .child(uid)
+                                      .child('Profile')
+                                      .child('point');
+
+                              Map<String, dynamic> reservationData = {
+                                'user_id': uid,
+                                'pet': petSelected,
+                                'service': serviceSelected,
+                                'date': dateSelected,
+                                'time': timeSelected,
+                                'room': roomSelected,
+                                'taxi': taxiChecked,
+                                'address': addressInput,
+                                'package': packageSelected,
+                                'free_service': freeService,
+                                'price': priceGet,
+                                'payment_id': '',
+                                'status': 'Incoming',
+                                'stage': 0,
+                              };
+
+                              // Create a new unique key for reservation
+                              DatabaseReference newReservationRef =
+                                  reservationRef.push();
+
+                              // Set the reservation data at the new unique key
+                              newReservationRef
+                                  .set(reservationData)
+                                  .then((_) async {
+                                // Reservation data is successfully stored in the database
+                                print('Reservation data stored successfully');
+
+                                // Add and update the user's loyalty point
+                                // Get the current points value
+                                final DataSnapshot snapshot =
+                                    await profileLoyaltyRef.get();
+                                if (snapshot.exists) {
+                                  final data = snapshot.value;
+
+                                  int newPoint = 0;
+
+                                  if (freeService &&
+                                      (serviceSelected ==
+                                              'Cat Basic Grooming' ||
+                                          serviceSelected ==
+                                              'Dog Basic Grooming')) {
+                                    newPoint = int.parse(data.toString()) - 600;
+                                  } else if (freeService &&
+                                      (serviceSelected == 'Cat Full Grooming' ||
+                                          serviceSelected ==
+                                              'Dog Full Grooming')) {
+                                    newPoint = int.parse(data.toString()) - 800;
+                                  } else {
+                                    newPoint = int.parse(data.toString()) +
+                                        priceGet.toInt();
+                                  }
+
+                                  print("new point : $newPoint");
+                                  await profileLoyaltyRef
+                                      .set(newPoint)
+                                      .then((value) {
+                                    showSuccessfulDialog(context);
+                                    Navigator.popAndPushNamed(
+                                        context, '/reservation');
+                                  });
+                                }
+                              }).catchError((error) {
+                                // Handle the error if data storage fails
+                                print('Error storing reservation data: $error');
+                              });
+                            }
                           },
                           child: Container(
                             alignment: Alignment.center,
@@ -358,5 +422,47 @@ class _OrderConfirmationPageState extends State<OrderConfirmationPage> {
             ),
           ],
         ));
+  }
+
+  void showSuccessfulDialog(BuildContext context) {
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(20.0),
+          ),
+          title: Text('Reservation Added'),
+          content: Text(
+              'You have successfully added a new reservation! We will redirect you to reservation page now.\n\nYou may view your loyalty point at Profile page.'),
+          actions: <Widget>[
+            TextButton(
+              onPressed: () {
+                Navigator.pop(context); // Close the dialog
+              },
+              child: Text(
+                'Sure',
+                style: TextStyle(color: AppColors.mainColor),
+              ),
+            ),
+          ],
+          backgroundColor:
+              Colors.white, // Set your desired background color here
+          titleTextStyle: TextStyle(
+            color: Colors.green, // Set your desired title text color here
+            fontSize: 20.0,
+            fontWeight: FontWeight.bold,
+          ),
+          contentTextStyle: TextStyle(
+            color: Colors.black, // Set your desired content text color here
+            fontSize: 16.0,
+          ),
+          buttonPadding: EdgeInsets.symmetric(
+              horizontal: 16.0), // Set padding for the buttons
+
+          // You can also customize other properties like buttonTextStyle, elevation, etc.
+        );
+      },
+    );
   }
 }

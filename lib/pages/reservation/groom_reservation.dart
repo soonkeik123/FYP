@@ -19,8 +19,12 @@ class GroomReservationPage extends StatefulWidget {
   static const catFullGroomReservation = '/catFullGroomReservation';
   bool dogGroom;
   bool fullGroom;
+  bool freeService;
   GroomReservationPage(
-      {super.key, required this.dogGroom, required this.fullGroom});
+      {super.key,
+      required this.dogGroom,
+      required this.fullGroom,
+      required this.freeService});
 
   @override
   State<GroomReservationPage> createState() => _GroomReservationPageState();
@@ -41,7 +45,8 @@ class _GroomReservationPageState extends State<GroomReservationPage> {
   late bool isFull; // Define if it is Full Grooming
 
   late String serviceName;
-  double price = 0;
+  late double price = 0;
+  double priceCalculated = 0;
   String selectedName = "";
   String dropdownValue1 = '';
   String dropdownValue2 = '';
@@ -56,7 +61,7 @@ class _GroomReservationPageState extends State<GroomReservationPage> {
   TextEditingController dateInput = TextEditingController();
   // Pet Taxi Checkbox
   bool isChecked = false;
-
+  late bool isFree = false;
   bool _isDisposed = false;
 
   @override
@@ -74,6 +79,7 @@ class _GroomReservationPageState extends State<GroomReservationPage> {
       serviceName = "Cat Basic Grooming";
     }
     dropdownValue2 = timeList.first;
+    isFree = widget.freeService;
 
     // 'Recognize the user' and 'Define the path'
     User? user = FirebaseAuth.instance.currentUser;
@@ -153,7 +159,6 @@ class _GroomReservationPageState extends State<GroomReservationPage> {
     if (petNames.isNotEmpty) {
       dropdownValue1 = petNames.first;
     }
-
     return Scaffold(
       backgroundColor: Colors.white,
       body: Column(children: [
@@ -296,6 +301,8 @@ class _GroomReservationPageState extends State<GroomReservationPage> {
                           setState(() {
                             dateInput.text =
                                 formattedDate; //set output date to TextField value.
+
+                            calculatePrice(dropdownValue1);
                           });
                         } else {}
                       },
@@ -361,6 +368,7 @@ class _GroomReservationPageState extends State<GroomReservationPage> {
                             setState(() {
                               isChecked = newValue ?? false;
                             });
+                            calculatePrice(selectedName);
                           }),
                       Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
@@ -443,7 +451,6 @@ class _GroomReservationPageState extends State<GroomReservationPage> {
                       // In case that user havent choose any pet, set default to avoid blank
                       if (selectedName == "") {
                         selectedName = dropdownValue1;
-                        calculatePrice(dropdownValue1);
                       }
                       Navigator.push(
                           context,
@@ -455,10 +462,10 @@ class _GroomReservationPageState extends State<GroomReservationPage> {
                                     time: dropdownValue2,
                                     room: '',
                                     taxi: isChecked,
-                                    price: price,
+                                    price: priceCalculated,
                                     address: _addressController.text,
                                     package: '',
-                                    pointRedeem: false,
+                                    pointRedeem: isFree,
                                   )));
                     },
                     child: Container(
@@ -554,7 +561,12 @@ class _GroomReservationPageState extends State<GroomReservationPage> {
   }
 
   void calculatePrice(String newValue) {
-    price = 0;
+    double price = 0;
+    if (isChecked) {
+      price = 20;
+    } else {
+      price = 0;
+    }
     dbPetRef.onValue.listen((event) {
       DataSnapshot snapshot = event.snapshot;
       if (snapshot.value != null) {
@@ -578,6 +590,10 @@ class _GroomReservationPageState extends State<GroomReservationPage> {
               } else {
                 print("Unknown error in price getting.");
               }
+              print('Total price: $price'); // Checking purpose
+              setState(() {
+                priceCalculated = price;
+              });
             } else if (serviceName == "Cat Full Grooming" ||
                 serviceName == "Dog Full Grooming") {
               if (petSize == "Small") {
@@ -591,10 +607,12 @@ class _GroomReservationPageState extends State<GroomReservationPage> {
               } else {
                 print("Unknown error in price getting.");
               }
-              print('Pet size: $price'); // Checking purpose
+              print('Total price: $price'); // Checking purpose
+              setState(() {
+                priceCalculated = price;
+              });
             }
           }
-          price += 20;
         });
       }
     });
