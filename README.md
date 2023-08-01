@@ -1,6 +1,6 @@
 # ohmypet
 
-A new Flutter project.
+This repository contains the source code and documentation for my Final Year Project (FYP) in Bachelor of Software Engineering. The project aims to improve pet service management workflow, enabling reservation creation, viewing, and management, offering packages, and loyalty points redemption
 
 ## Getting Started
 
