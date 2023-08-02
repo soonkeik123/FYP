@@ -233,7 +233,7 @@ class _OrderConfirmationPageState extends State<OrderConfirmationPage> {
                           ? Column(
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
-                                Text(
+                                const Text(
                                   "Room Selected:",
                                   style: TextStyle(
                                       fontSize: 20, color: AppColors.mainColor),
@@ -432,15 +432,15 @@ class _OrderConfirmationPageState extends State<OrderConfirmationPage> {
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(20.0),
           ),
-          title: Text('Reservation Added'),
-          content: Text(
+          title: const Text('Reservation Added'),
+          content: const Text(
               'You have successfully added a new reservation! We will redirect you to reservation page now.\n\nYou may view your loyalty point at Profile page.'),
           actions: <Widget>[
             TextButton(
               onPressed: () {
                 Navigator.pop(context); // Close the dialog
               },
-              child: Text(
+              child: const Text(
                 'Sure',
                 style: TextStyle(color: AppColors.mainColor),
               ),
@@ -448,16 +448,16 @@ class _OrderConfirmationPageState extends State<OrderConfirmationPage> {
           ],
           backgroundColor:
               Colors.white, // Set your desired background color here
-          titleTextStyle: TextStyle(
+          titleTextStyle: const TextStyle(
             color: Colors.green, // Set your desired title text color here
             fontSize: 20.0,
             fontWeight: FontWeight.bold,
           ),
-          contentTextStyle: TextStyle(
+          contentTextStyle: const TextStyle(
             color: Colors.black, // Set your desired content text color here
             fontSize: 16.0,
           ),
-          buttonPadding: EdgeInsets.symmetric(
+          buttonPadding: const EdgeInsets.symmetric(
               horizontal: 16.0), // Set padding for the buttons
 
           // You can also customize other properties like buttonTextStyle, elevation, etc.

@@ -1,3 +1,5 @@
+import 'package:firebase_auth/firebase_auth.dart';
+import 'package:firebase_database/firebase_database.dart';
 import 'package:flutter/material.dart';
 import 'package:ohmypet/pages/reservation/track_progress.dart';
 import 'package:ohmypet/utils/colors.dart';
@@ -15,61 +17,105 @@ class MainReservationPage extends StatefulWidget {
 }
 
 class _MainReservationPageState extends State<MainReservationPage> {
+  // Create a reference to Firebase database
+  late DatabaseReference reservRef;
+
+  int allIndex = 0; // reservation index
+  String service = '';
+  String status = '';
+  String date = '';
+  String time = '';
+  String package = '';
+
+  List<Map<String, dynamic>> reservations = [];
+
   @override
   void initState() {
     super.initState();
 
-    // fetchData();
+    User? user = FirebaseAuth.instance.currentUser;
+    if (user != null) {
+      String uid = user.uid;
+      reservRef = FirebaseDatabase.instance.ref().child('reservations');
+      getReservationByID(uid);
+    }
   }
 
-  List<Map<String, dynamic>> orders = [
-    {
-      "id": 001,
-      "status": "Processing",
-      "service": "Dog Basic Grooming",
-      "date": "2023-07-20",
-      "time": "10:00 AM"
-    },
-    {
-      "id": 002,
-      "status": "Incoming",
-      "service": "Cat Boarding",
-      "date": "2023-07-21",
-      "time": "02:00 PM"
-    },
-    {
-      "id": 003,
-      "status": "Completed",
-      "service": "Cat Full Grooming",
-      "date": "2023-07-20",
-      "time": "10:00 AM"
-    },
-    {
-      "id": 004,
-      "status": "Incoming",
-      "service": "Cat Full Grooming",
-      "date": "2023-07-23",
-      "time": "02:00 PM"
-    },
-    {
-      "id": 005,
-      "status": "Canceled",
-      "service": "Cat Basic Grooming",
-      "date": "2023-07-21",
-      "time": "12:00 PM"
-    },
-    {
-      "id": 006,
-      "status": "Incoming",
-      "service": "Cat Basic Grooming",
-      "date": "2023-07-21",
-      "time": "12:00 PM"
-    },
-  ];
+  // Get  data by ID
+  Future<void> getReservationByID(String UID) async {
+    reservRef.onValue.listen((DatabaseEvent event) {
+      DataSnapshot snapshot = event.snapshot;
+      Map<dynamic, dynamic>? data = snapshot.value as Map<dynamic, dynamic>?;
+      if (data != null) {
+        // List<Map<String, dynamic>> filterReservations = [];
+        reservations.clear(); // Clear the list before adding new data
+        data.forEach((key, value) {
+          Map<String, dynamic> reservationData =
+              Map.from(value); // Access the inner map
+          reservationData['key'] = key;
 
-  List<Map<String, dynamic>> filterOrdersByStatus(
-      List<Map<String, dynamic>> orders, String status) {
-    return orders.where((order) => order["status"] == status).toList();
+          // Check if the user_id field matches the provided userID
+          if (reservationData['user_id'] == UID) {
+            setState(() {
+              // reservations.addAll(filterReservations);
+              reservations.add(reservationData);
+            });
+          }
+        });
+      }
+    });
+  }
+
+  // [
+  //   {
+  //     "id": 001,
+  //     "status": "Processing",
+  //     "service": "Dog Basic Grooming",
+  //     "date": "2023-07-20",
+  //     "time": "10:00 AM"
+  //   },
+  //   {
+  //     "id": 002,
+  //     "status": "Incoming",
+  //     "service": "Cat Boarding",
+  //     "date": "2023-07-21",
+  //     "time": "02:00 PM"
+  //   },
+  //   {
+  //     "id": 003,
+  //     "status": "Completed",
+  //     "service": "Cat Full Grooming",
+  //     "date": "2023-07-20",
+  //     "time": "10:00 AM"
+  //   },
+  //   {
+  //     "id": 004,
+  //     "status": "Incoming",
+  //     "service": "Cat Full Grooming",
+  //     "date": "2023-07-23",
+  //     "time": "02:00 PM"
+  //   },
+  //   {
+  //     "id": 005,
+  //     "status": "Canceled",
+  //     "service": "Cat Basic Grooming",
+  //     "date": "2023-07-21",
+  //     "time": "12:00 PM"
+  //   },
+  //   {
+  //     "id": 006,
+  //     "status": "Incoming",
+  //     "service": "Cat Basic Grooming",
+  //     "date": "2023-07-21",
+  //     "time": "12:00 PM"
+  //   },
+  // ];
+
+  List<Map<String, dynamic>> filterReservattionsByStatus(
+      List<Map<String, dynamic>> reservations, String status) {
+    return reservations
+        .where((reservations) => reservations["status"] == status)
+        .toList();
   }
 
   // Future<void> fetchData() async {
@@ -98,13 +144,13 @@ class _MainReservationPageState extends State<MainReservationPage> {
   @override
   Widget build(BuildContext context) {
     List<Map<String, dynamic>> incomingOrders =
-        filterOrdersByStatus(orders, "Incoming");
+        filterReservattionsByStatus(reservations, "Incoming");
     List<Map<String, dynamic>> processingOrders =
-        filterOrdersByStatus(orders, "Processing");
+        filterReservattionsByStatus(reservations, "Processing");
     List<Map<String, dynamic>> completedOrders =
-        filterOrdersByStatus(orders, "Completed");
+        filterReservattionsByStatus(reservations, "Completed");
     List<Map<String, dynamic>> canceledOrders =
-        filterOrdersByStatus(orders, "Canceled");
+        filterReservattionsByStatus(reservations, "Canceled");
 
     return Scaffold(
       backgroundColor: Colors.white,
@@ -141,22 +187,24 @@ class _MainReservationPageState extends State<MainReservationPage> {
                         if (index < processingOrders.length) {
                           // Display processing orders
                           return OrderItemWidget(
-                            id: processingOrders[index]['id'],
+                            id: index + 1,
                             status: processingOrders[index]["status"],
                             service: processingOrders[index]["service"],
                             date: processingOrders[index]["date"],
                             time: processingOrders[index]["time"],
+                            // room: processingOrders[index]["room"],
                           );
                         } else {
                           // Display incoming orders
                           int incomingIndex = index - processingOrders.length;
 
                           return OrderItemWidget(
-                            id: incomingOrders[incomingIndex]["id"],
+                            id: index + 1,
                             status: incomingOrders[incomingIndex]["status"],
                             service: incomingOrders[incomingIndex]["service"],
                             date: incomingOrders[incomingIndex]["date"],
                             time: incomingOrders[incomingIndex]["time"],
+                            // room: processingOrders[index]["room"],
                           );
                         }
                       },
@@ -184,22 +232,24 @@ class _MainReservationPageState extends State<MainReservationPage> {
                           if (index < completedOrders.length) {
                             // Display processing orders
                             return OrderItemWidget(
-                              id: completedOrders[index]["id"],
+                              id: index + 1,
                               status: completedOrders[index]["status"],
                               service: completedOrders[index]["service"],
                               date: completedOrders[index]["date"],
                               time: completedOrders[index]["time"],
+                              // room: processingOrders[index]["room"],
                             );
                           } else {
                             // Display incoming orders
                             int canceledIndex = index - completedOrders.length;
 
                             return OrderItemWidget(
-                              id: canceledOrders[canceledIndex]["id"],
+                              id: index + 1,
                               status: canceledOrders[canceledIndex]["status"],
                               service: canceledOrders[canceledIndex]["service"],
                               date: canceledOrders[canceledIndex]["date"],
                               time: canceledOrders[canceledIndex]["time"],
+                              // room: processingOrders[index]["room"],
                             );
                           }
                         },
@@ -223,6 +273,7 @@ class OrderItemWidget extends StatelessWidget {
   final String service;
   final String date;
   final String time;
+  // final String room;
 
   const OrderItemWidget({
     super.key,
@@ -231,6 +282,7 @@ class OrderItemWidget extends StatelessWidget {
     required this.service,
     required this.date,
     required this.time,
+    // required this.room,
   });
 
   // String serviceColor() {
@@ -316,6 +368,7 @@ class OrderItemWidget extends StatelessWidget {
                       fontSize: 18, fontWeight: FontWeight.w400),
                 ),
                 Text(
+                  // (room.isEmpty) ? time : room,
                   time,
                   style: const TextStyle(
                     fontSize: 18,

@@ -13,10 +13,10 @@ class AddAddressPage extends StatefulWidget {
 }
 
 class _AddAddressPageState extends State<AddAddressPage> {
-  TextEditingController _addressController = TextEditingController();
-  CameraPosition _cameraPosition = CameraPosition(
+  final TextEditingController _addressController = TextEditingController();
+  CameraPosition _cameraPosition = const CameraPosition(
       target: LatLng(1.5338304733168895, 103.68183000980095), zoom: 17);
-  late LatLng _initialPosition = LatLng(1.5338304733168895, 103.68183000980095);
+  late LatLng _initialPosition = const LatLng(1.5338304733168895, 103.68183000980095);
 
   @override
   void initState() {

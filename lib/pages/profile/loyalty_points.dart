@@ -234,14 +234,14 @@ class CustomGridItem extends StatelessWidget {
           ),
           backgroundColor:
               Colors.white, // Set the background color of the dialog
-          title: Text('Confirmation'),
-          titleTextStyle: TextStyle(
+          title: const Text('Confirmation'),
+          titleTextStyle: const TextStyle(
             color:
                 AppColors.mainColor, // Set your desired title text color here
             fontSize: 20.0,
             fontWeight: FontWeight.bold,
           ),
-          content: Container(
+          content: const SizedBox(
             height: 110,
             child: Column(
               children: [
@@ -254,7 +254,7 @@ class CustomGridItem extends StatelessWidget {
               ],
             ),
           ),
-          contentTextStyle: TextStyle(
+          contentTextStyle: const TextStyle(
             color:
                 AppColors.mainColor, // Set your desired content text color here
             fontSize: 16.0,
@@ -265,14 +265,14 @@ class CustomGridItem extends StatelessWidget {
                 Navigator.pop(
                     context, false); // Return false to indicate cancellation
               },
-              child: Text('Cancel'),
+              child: const Text('Cancel'),
             ),
             TextButton(
               onPressed: () {
                 Navigator.pop(
                     context, true); // Return true to indicate confirmation
               },
-              child: Text('Confirm'),
+              child: const Text('Confirm'),
             ),
           ],
         );

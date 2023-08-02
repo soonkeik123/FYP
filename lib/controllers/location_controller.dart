@@ -7,19 +7,19 @@ import 'package:ohmypet/models/address_model.dart';
 class LocationController extends GetxController implements GetxService {
   LocationRepo locationRepo;
   LocationController({required this.locationRepo});
-  bool _loading = false;
+  final bool _loading = false;
   late Position _position;
   late Position _pickPosition;
 
   Placemark placemark = Placemark();
-  Placemark _pickPlaceMark = Placemark();
+  final Placemark _pickPlaceMark = Placemark();
   // Placemark get pickPlaceMark => _pickPlaceMark;
 
-  List<AddressModel> _addressList = [];
+  final List<AddressModel> _addressList = [];
   List<AddressModel> get addressList => _addressList;
-  late List<AddressModel> _allAddressList = [];
-  List<String> _addressTypeList = ["home", "office", "others"];
-  int _addressTypeIndex = 0;
+  late final List<AddressModel> _allAddressList = [];
+  final List<String> _addressTypeList = ["home", "office", "others"];
+  final int _addressTypeIndex = 0;
   late Map<String, dynamic> _getAddress;
   Map get getAddress => _getAddress;
 

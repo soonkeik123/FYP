@@ -184,13 +184,25 @@ class _EditPetProfileState extends State<EditPetProfile> {
 
   void _onSizeSelected() {
     if (size1) {
-      selectedSize = "Small";
+      setState(() {
+        selectedSize = "Small";
+      });
     } else if (size2) {
-      selectedSize = "Medium";
+      setState(() {
+        selectedSize = "Medium";
+      });
     } else if (size3) {
-      selectedSize = "Large";
+      setState(() {
+        selectedSize = "Large";
+      });
     } else if (size4) {
-      selectedSize = "Giant";
+      setState(() {
+        selectedSize = "Giant";
+      });
+    } else if (!(size1 && size2 && size3 && size4)) {
+      setState(() {
+        selectedSize = '';
+      });
     }
   }
 
@@ -220,7 +232,7 @@ class _EditPetProfileState extends State<EditPetProfile> {
       } else if (petSize == 'Giant') {
         size4 = !size4;
       } else {
-        print("size leak");
+        print("No Size");
       }
       // Birthday
       dateInput.text = petBirthday;
@@ -242,8 +254,8 @@ class _EditPetProfileState extends State<EditPetProfile> {
           DatabaseReference petRef = dbPetRef.child(key).child('data');
           petRef.update(updatedData).then((_) {
             print('Pet updated successfully!');
+
             dispose();
-            Navigator.popAndPushNamed(context, '/home');
           }).catchError((error) {
             print('Error updating pet: $error');
           });
@@ -284,8 +296,8 @@ class _EditPetProfileState extends State<EditPetProfile> {
           petRef.remove().then((_) {
             print(
                 "Pet with name $petName and key $petKey removed successfully.");
-            dispose();
-            Navigator.popAndPushNamed(context, '/home');
+            showLoadingDialog(context)
+                .then((value) => Navigator.popAndPushNamed(context, '/home'));
           }).catchError((error) {
             print(
                 "Error removing pet with name $petName and key $petKey: $error");
@@ -302,6 +314,35 @@ class _EditPetProfileState extends State<EditPetProfile> {
       // Error retrieving data from the database
       print("Error fetching pet data: $error");
     });
+  }
+
+  Future<void> showLoadingDialog(BuildContext context) async {
+    showDialog(
+      context: context,
+      barrierDismissible:
+          false, // Prevent the dialog from being dismissed by tapping outside
+      builder: (BuildContext context) {
+        return Dialog(
+          child: Padding(
+            padding: const EdgeInsets.all(20.0),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                CircularProgressIndicator(), // Loading indicator
+                SizedBox(height: 10),
+                Text("Loading...", style: TextStyle(fontSize: 16)),
+              ],
+            ),
+          ),
+        );
+      },
+    );
+
+    // Delay the dialog dismissal for 2 seconds
+    await Future.delayed(Duration(seconds: 2));
+
+    // Close the dialog
+    Navigator.of(context).pop();
   }
 
   @override
@@ -854,7 +895,7 @@ class _EditPetProfileState extends State<EditPetProfile> {
                       //Remove
                       InkWell(
                         onTap: () {
-                          removePet(widget.petName);
+                          removeConfirmationDialog(context);
                         },
                         child: Container(
                           margin: const EdgeInsets.symmetric(
@@ -878,23 +919,38 @@ class _EditPetProfileState extends State<EditPetProfile> {
                       // Save
                       InkWell(
                         onTap: () {
-                          bool name = _nameController.text != petName;
-                          bool gender = selectedGender != petGender;
-                          bool type = dropdownValue1 != petType;
-                          bool breed = dropdownValue2 != petBreed;
-                          bool size = selectedSize != petSize;
-                          bool birthday = dateInput.text != petBirthday;
+                          bool isAllFilled = true;
 
-                          Map<String, String> updatedData = {
-                            if (name) 'name': _nameController.text,
-                            if (gender) 'gender': selectedGender,
-                            if (type) 'type': dropdownValue1,
-                            if (breed) 'breed': dropdownValue2,
-                            if (size) 'size': selectedSize,
-                            if (birthday) 'birthday': dateInput.text,
-                          };
+                          // Perform text field validation
+                          if (_nameController.text.isEmpty ||
+                              selectedSize.isEmpty) {
+                            isAllFilled = false;
+                          }
 
-                          updatePetByName(widget.petName, updatedData);
+                          if (isAllFilled) {
+                            bool name = _nameController.text != petName;
+                            bool gender = selectedGender != petGender;
+                            bool type = dropdownValue1 != petType;
+                            bool breed = dropdownValue2 != petBreed;
+                            bool size = selectedSize != petSize;
+                            bool birthday = dateInput.text != petBirthday;
+
+                            Map<String, String> updatedData = {
+                              if (name) 'name': _nameController.text,
+                              if (gender) 'gender': selectedGender,
+                              if (type) 'type': dropdownValue1,
+                              if (breed) 'breed': dropdownValue2,
+                              if (size) 'size': selectedSize,
+                              if (birthday) 'birthday': dateInput.text,
+                            };
+
+                            updatePetByName(widget.petName, updatedData);
+                            showLoadingDialog(context).then((value) =>
+                                Navigator.popAndPushNamed(context, '/home'));
+                            dispose();
+                          } else {
+                            showUnsuccessfulDialog(context);
+                          }
                         },
                         child: Container(
                           margin: const EdgeInsets.symmetric(
@@ -922,6 +978,169 @@ class _EditPetProfileState extends State<EditPetProfile> {
           ),
         )
       ]),
+    );
+  }
+
+  removeSuccessDialog(BuildContext context) {
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(10.0),
+          ),
+          backgroundColor: Colors.white,
+          title: Icon(
+            Icons.check_circle,
+            color: Colors.green,
+            size: 50.0,
+          ),
+          content: Text(
+            "Awww, you have successfully removed a pet from your account.. :(",
+            style: TextStyle(
+              color: Colors.green,
+              fontSize: 17.0,
+            ),
+            textAlign: TextAlign.center,
+          ),
+          actions: <Widget>[
+            TextButton(
+              onPressed: () {
+                Navigator.pop(context);
+                Navigator.popAndPushNamed(context, '/home');
+              },
+              child: Text('OK'),
+            ),
+          ],
+        );
+      },
+    );
+  }
+
+  void removeConfirmationDialog(BuildContext context) {
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(10.0),
+          ),
+          backgroundColor: Colors.white,
+          title: const Text('Remove Confirmation'),
+          titleTextStyle: const TextStyle(
+            color: Colors.red,
+            fontSize: 20.0,
+            fontWeight: FontWeight.bold,
+          ),
+          content: SizedBox(
+            height: 50,
+            child: Text(
+                'Are you sure you want to remove ${widget.petName.toUpperCase()} ?'),
+          ),
+          contentTextStyle: const TextStyle(
+            color: AppColors.catBasicRed,
+            fontSize: 17.0,
+          ),
+          actions: <Widget>[
+            TextButton(
+              onPressed: () {
+                Navigator.pop(
+                    context, false); // Return false to indicate cancellation
+              },
+              child: const Text(
+                'Cancel',
+                style: TextStyle(color: AppColors.paraColor, fontSize: 18),
+              ),
+            ),
+            TextButton(
+              onPressed: () {
+                Navigator.pop(
+                    context, true); // Return true to indicate confirmation
+              },
+              child: const Text('Delete',
+                  style: TextStyle(
+                      color: AppColors.catBasicRed,
+                      fontWeight: FontWeight.bold,
+                      fontSize: 18)),
+            ),
+          ],
+        );
+      },
+    ).then((value) {
+      if (value != null && value) {
+        removePet(widget.petName);
+      } else {}
+    });
+  }
+
+  showSuccessDialog(BuildContext context) {
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(10.0),
+          ),
+          backgroundColor: Colors.white,
+          title: Icon(
+            Icons.check_circle,
+            color: Colors.green,
+            size: 50.0,
+          ),
+          content: Text(
+            "You have successfully edited your pet information!",
+            style: TextStyle(
+              color: Colors.green,
+              fontSize: 17.0,
+            ),
+            textAlign: TextAlign.center,
+          ),
+          actions: <Widget>[
+            TextButton(
+              onPressed: () {
+                Navigator.pop(context);
+                Navigator.popAndPushNamed(context, '/home');
+              },
+              child: Text('OK'),
+            ),
+          ],
+        );
+      },
+    );
+  }
+
+  showUnsuccessfulDialog(BuildContext context) {
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(10.0),
+          ),
+          backgroundColor: Colors.white,
+          title: Icon(
+            Icons.cancel,
+            color: Colors.red,
+            size: 50.0,
+          ),
+          content: Text(
+            "Opps! Looks like you haven't fill up all the info yet! We will wait you 🐾",
+            style: TextStyle(
+              color: Colors.red,
+              fontSize: 17.0,
+            ),
+            textAlign: TextAlign.center,
+          ),
+          actions: <Widget>[
+            TextButton(
+              onPressed: () {
+                Navigator.pop(context);
+              },
+              child: Text('OK'),
+            ),
+          ],
+        );
+      },
     );
   }
 }

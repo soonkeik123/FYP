@@ -81,7 +81,6 @@ class _AddPetProfileState extends State<AddPetProfile> {
       String? newPetKey = userRef.push().key;
       userRef.child(newPetKey!).set({'data': pets}).then((_) {
         print('Data saved successfully!');
-        Navigator.pop(context);
       }).catchError((error) {
         print('Error saving data: $error');
       });
@@ -118,6 +117,10 @@ class _AddPetProfileState extends State<AddPetProfile> {
     } else if (size4) {
       setState(() {
         selectedSize = "Giant";
+      });
+    } else if (!(size1 && size2 && size3 && size4)) {
+      setState(() {
+        selectedSize = '';
       });
     }
   }
@@ -375,12 +378,10 @@ class _AddPetProfileState extends State<AddPetProfile> {
                             InkWell(
                               onTap: () {
                                 setState(() {
-                                  setState(() {
-                                    size1 = !size1;
-                                    size2 = false;
-                                    size3 = false;
-                                    size4 = false;
-                                  });
+                                  size1 = !size1;
+                                  size2 = false;
+                                  size3 = false;
+                                  size4 = false;
                                 });
                                 _onSizeSelected();
                               },
@@ -426,13 +427,12 @@ class _AddPetProfileState extends State<AddPetProfile> {
                             InkWell(
                               onTap: () {
                                 setState(() {
-                                  setState(() {
-                                    size1 = false;
-                                    size2 = !size2;
-                                    size3 = false;
-                                    size4 = false;
-                                  });
+                                  size1 = false;
+                                  size2 = !size2;
+                                  size3 = false;
+                                  size4 = false;
                                 });
+
                                 _onSizeSelected();
                               },
                               child: Container(
@@ -477,12 +477,10 @@ class _AddPetProfileState extends State<AddPetProfile> {
                             InkWell(
                               onTap: () {
                                 setState(() {
-                                  setState(() {
-                                    size1 = false;
-                                    size2 = false;
-                                    size3 = !size3;
-                                    size4 = false;
-                                  });
+                                  size1 = false;
+                                  size2 = false;
+                                  size3 = !size3;
+                                  size4 = false;
                                 });
                                 _onSizeSelected();
                               },
@@ -649,15 +647,32 @@ class _AddPetProfileState extends State<AddPetProfile> {
                   // Next Button
                   InkWell(
                     onTap: () {
-                      Map<String, String> pets = {
-                        'name': petNameController.text,
-                        'gender': selectedGender,
-                        'type': selectedPetType,
-                        'breed': selectedBreed,
-                        'size': selectedSize,
-                        'birthday': dateInput.text
-                      };
-                      saveData(pets);
+                      bool isAllFilled = true;
+
+                      // Perform text field validations
+                      if (petNameController.text.isEmpty ||
+                          selectedGender.isEmpty ||
+                          selectedPetType.isEmpty ||
+                          selectedBreed.isEmpty ||
+                          selectedSize.isEmpty ||
+                          dateInput.text.isEmpty) {
+                        isAllFilled = false;
+                      }
+
+                      if (isAllFilled) {
+                        Map<String, String> pets = {
+                          'name': petNameController.text,
+                          'gender': selectedGender,
+                          'type': selectedPetType,
+                          'breed': selectedBreed,
+                          'size': selectedSize,
+                          'birthday': dateInput.text
+                        };
+                        saveData(pets);
+                        showSuccessDialog(context);
+                      } else {
+                        showUnsuccessfulDialog(context);
+                      }
                     },
                     child: Container(
                       margin: const EdgeInsets.symmetric(
@@ -681,6 +696,77 @@ class _AddPetProfileState extends State<AddPetProfile> {
           ),
         )
       ]),
+    );
+  }
+
+  showSuccessDialog(BuildContext context) {
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(10.0),
+          ),
+          backgroundColor: Colors.white,
+          title: Icon(
+            Icons.check_circle,
+            color: Colors.green,
+            size: 50.0,
+          ),
+          content: Text(
+            "You've just added an adorable new pet! Book today to enjoy the paw-some experience!",
+            style: TextStyle(
+              color: Colors.green,
+              fontSize: 17.0,
+            ),
+            textAlign: TextAlign.center,
+          ),
+          actions: <Widget>[
+            TextButton(
+              onPressed: () {
+                Navigator.pop(context);
+                Navigator.popAndPushNamed(context, '/home');
+              },
+              child: Text('OK'),
+            ),
+          ],
+        );
+      },
+    );
+  }
+
+  showUnsuccessfulDialog(BuildContext context) {
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(10.0),
+          ),
+          backgroundColor: Colors.white,
+          title: Icon(
+            Icons.cancel,
+            color: Colors.red,
+            size: 50.0,
+          ),
+          content: Text(
+            "Opps! Looks like you haven't fill up all the info yet! We will wait you 🐾",
+            style: TextStyle(
+              color: Colors.red,
+              fontSize: 17.0,
+            ),
+            textAlign: TextAlign.center,
+          ),
+          actions: <Widget>[
+            TextButton(
+              onPressed: () {
+                Navigator.pop(context);
+              },
+              child: Text('OK'),
+            ),
+          ],
+        );
+      },
     );
   }
 }

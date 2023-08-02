@@ -34,10 +34,10 @@ class _GroomReservationPageState extends State<GroomReservationPage> {
   // Create a reference to Firebase database
   late DatabaseReference dbPetRef;
 
-  TextEditingController _addressController = TextEditingController();
-  CameraPosition _cameraPosition = CameraPosition(
+  final TextEditingController _addressController = TextEditingController();
+  final CameraPosition _cameraPosition = const CameraPosition(
       target: LatLng(1.5338304733168895, 103.68183000980095), zoom: 14);
-  LatLng _center = LatLng(1.5338304733168895, 103.68183000980095);
+  final LatLng _center = const LatLng(1.5338304733168895, 103.68183000980095);
   GoogleMapController? _mapController;
   Marker? _marker;
 
@@ -407,7 +407,7 @@ class _GroomReservationPageState extends State<GroomReservationPage> {
                                   _mapController = controller;
                                 },
                                 markers: _marker != null
-                                    ? Set<Marker>.from([_marker!])
+                                    ? <Marker>{_marker!}
                                     : {},
                                 onCameraMove: (CameraPosition position) {
                                   updateMarkerPosition(position);
@@ -426,11 +426,11 @@ class _GroomReservationPageState extends State<GroomReservationPage> {
                                 labelText: 'Enter Address',
                                 border: OutlineInputBorder(
                                   borderRadius: BorderRadius.circular(15),
-                                  borderSide: BorderSide(
+                                  borderSide: const BorderSide(
                                       color: AppColors.mainColor, width: 1.0),
                                 ),
                                 suffixIcon: IconButton(
-                                  icon: Icon(Icons.search),
+                                  icon: const Icon(Icons.search),
                                   onPressed: () {
                                     moveCameraToAddress();
                                   },
@@ -501,7 +501,7 @@ class _GroomReservationPageState extends State<GroomReservationPage> {
     List<Location> locations = await locationFromAddress(address);
     if (locations.isNotEmpty) {
       Location location = locations.first;
-      LatLng latLng = LatLng(location.latitude!, location.longitude!);
+      LatLng latLng = LatLng(location.latitude, location.longitude);
 
       // Move the camera to the specified address
       _mapController!.animateCamera(CameraUpdate.newLatLngZoom(latLng, 15));
@@ -514,7 +514,7 @@ class _GroomReservationPageState extends State<GroomReservationPage> {
   void updateMarkerPosition(CameraPosition position) {
     setState(() {
       _marker = Marker(
-        markerId: MarkerId("current_position"),
+        markerId: const MarkerId("current_position"),
         position: LatLng(position.target.latitude, position.target.longitude),
       );
     });
@@ -533,22 +533,23 @@ class _GroomReservationPageState extends State<GroomReservationPage> {
     List<Placemark> placemarks = await placemarkFromCoordinates(
         coordinates.latitude, coordinates.longitude);
 
-    if (placemarks != null && placemarks.isNotEmpty) {
+    if (placemarks.isNotEmpty) {
       Placemark placemark = placemarks.first;
 
       String address = '';
 
-      if (placemark.name != null) address += placemark.name! + ', ';
-      if (placemark.thoroughfare != null)
-        address += placemark.thoroughfare! + ', ';
+      if (placemark.name != null) address += '${placemark.name!}, ';
+      if (placemark.thoroughfare != null) {
+        address += '${placemark.thoroughfare!}, ';
+      }
       if (placemark.subLocality != null) {
-        address += placemark.subLocality! + ', ';
+        address += '${placemark.subLocality!}, ';
       }
       if (placemark.locality != null) {
-        address += placemark.locality! + ', ';
+        address += '${placemark.locality!}, ';
       }
       if (placemark.postalCode != null) {
-        address += placemark.postalCode! + ', ';
+        address += '${placemark.postalCode!}, ';
       }
       if (placemark.country != null) {
         address += placemark.country!;

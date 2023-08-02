@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
-import 'package:ohmypet/pages/reservation/vaccine_reservation.dart';
 import 'package:ohmypet/utils/colors.dart';
 import 'package:ohmypet/utils/dimensions.dart';
 import 'package:ohmypet/widgets/expandable_text.dart';
 import 'package:ohmypet/widgets/header.dart';
+import 'package:url_launcher/url_launcher.dart';
 
 class PetVaccineInfo extends StatelessWidget {
   static const routeName = '/petVaccineInfo';
@@ -154,19 +154,36 @@ class PetVaccineInfo extends StatelessWidget {
         ),
         child: TextButton(
             onPressed: () {
-              Navigator.push(
-                  context,
-                  MaterialPageRoute(
-                      builder: (context) => const VaccineReservationPage()));
+              String phoneNumber = "+60102211208";
+              openWhatsAppChat(phoneNumber);
+              // Navigator.push(
+              //     context,
+              //     MaterialPageRoute(
+              //         builder: (context) => const VaccineReservationPage()));
             },
             child: Text(
-              "Make Reservation",
+              "Contact Us for Enquiries",
               style: TextStyle(
                 color: Colors.white,
-                fontSize: Dimensions.font20,
+                fontSize: Dimensions.font18,
               ),
             )),
       ),
     );
+  }
+
+  void openWhatsAppChat(String phoneNumber) async {
+    String message = 'Hi, I would like to ask about pet vaccination!';
+    final Uri uri = Uri.https(
+      'api.whatsapp.com',
+      '/send',
+      {'phone': phoneNumber, 'text': (message)},
+    );
+    // Use the phone number with country code
+    if (await canLaunch(uri.toString())) {
+      await launch(uri.toString());
+    } else {
+      throw 'Could not launch $uri';
+    }
   }
 }

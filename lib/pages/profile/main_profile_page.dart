@@ -192,8 +192,7 @@ class _MainProfilePageState extends State<MainProfilePage> {
                           ),
                         ),
                         onTap: () {
-                          Navigator.popAndPushNamed(context, '/signIn')
-                              .then((_) => false);
+                          showConfirmLogoutDialog(context);
                         },
                       ),
                     ],
@@ -357,5 +356,63 @@ class _MainProfilePageState extends State<MainProfilePage> {
         activePage: 3,
       ),
     );
+  }
+
+  void showConfirmLogoutDialog(BuildContext context) {
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(10.0),
+          ),
+          backgroundColor: Colors.white,
+          title: const Text('Confirm Logout'),
+          titleTextStyle: const TextStyle(
+            color: Colors.red,
+            fontSize: 20.0,
+            fontWeight: FontWeight.bold,
+          ),
+          content: const SizedBox(
+            height: 50,
+            child: Text('Are you sure you want to logout?'),
+          ),
+          contentTextStyle: const TextStyle(
+            color: AppColors.catBasicRed,
+            fontSize: 17.0,
+          ),
+          actions: <Widget>[
+            TextButton(
+              onPressed: () {
+                Navigator.pop(
+                    context, false); // Return false to indicate cancellation
+              },
+              child: const Text(
+                'Cancel',
+                style: TextStyle(color: AppColors.paraColor, fontSize: 18),
+              ),
+            ),
+            TextButton(
+              onPressed: () {
+                Navigator.pop(
+                    context, true); // Return true to indicate confirmation
+              },
+              child: const Text('Logout',
+                  style: TextStyle(
+                      color: AppColors.catBasicRed,
+                      fontWeight: FontWeight.bold,
+                      fontSize: 18)),
+            ),
+          ],
+        );
+      },
+    ).then((value) {
+      if (value != null && value) {
+        Navigator.popAndPushNamed(context, '/signIn').then((_) => false);
+        FirebaseAuth.instance.signOut();
+      } else {
+        // User cancelled the logout
+      }
+    });
   }
 }

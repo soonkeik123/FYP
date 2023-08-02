@@ -296,20 +296,7 @@ class _EditProfilePageState extends State<EditProfilePage> {
                             ),
                           ),
                           onTap: () {
-                            bool fullname = fullNameController.text != userName;
-                            bool nickname = nicknameController != userNickname;
-                            bool phone = phoneController != userPhone;
-                            bool email = emailController != userEmail;
-
-                            Map<String, String> updatedData = {
-                              if (fullname)
-                                'full_name': fullNameController.text,
-                              if (nickname) 'nickname': nicknameController.text,
-                              if (phone) 'phone': phoneController.text,
-                              if (email) 'email': emailController.text,
-                            };
-
-                            updateUserData(updatedData);
+                            showConfirmationDialog(context);
                           },
                         ),
                       ],
@@ -331,5 +318,79 @@ class _EditProfilePageState extends State<EditProfilePage> {
     await profileRef.update(updatedData);
     print("Success");
     Navigator.popAndPushNamed(context, '/profile');
+  }
+
+  void showConfirmationDialog(BuildContext context) {
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(
+                10.0), // Set your desired border radius here
+          ),
+          backgroundColor:
+              Colors.white, // Set the background color of the dialog
+          title: const Text('Confirmation'),
+          titleTextStyle: const TextStyle(
+            color:
+                AppColors.mainColor, // Set your desired title text color here
+            fontSize: 20.0,
+            fontWeight: FontWeight.bold,
+          ),
+          content: const SizedBox(
+            height: 50,
+            child: Text('Do you confirm saving the information?'),
+          ),
+          contentTextStyle: const TextStyle(
+            color:
+                AppColors.mainColor, // Set your desired content text color here
+            fontSize: 17.0,
+          ),
+          actions: <Widget>[
+            TextButton(
+              onPressed: () {
+                Navigator.pop(
+                    context, false); // Return false to indicate cancellation
+              },
+              child: const Text('Cancel'),
+            ),
+            TextButton(
+              onPressed: () {
+                Navigator.pop(
+                    context, true); // Return true to indicate confirmation
+              },
+              child: const Text('Confirm'),
+            ),
+          ],
+        );
+      },
+    ).then((value) async {
+      if (value != null && value) {
+        bool fullname = fullNameController.text != userName;
+        bool nickname = nicknameController != userNickname;
+        bool phone = phoneController != userPhone;
+        bool email = emailController != userEmail;
+
+        Map<String, String> updatedData = {
+          if (fullname) 'full_name': fullNameController.text,
+          if (nickname) 'nickname': nicknameController.text,
+          if (phone) 'phone': phoneController.text,
+          if (email) 'email': emailController.text,
+        };
+        try {
+          User? user = FirebaseAuth.instance.currentUser;
+          if (user != null && email) {
+            await user.updateEmail(emailController.text);
+            print('Email updated successfully');
+          } else {
+            print('User not found');
+          }
+        } catch (e) {
+          print('Error updating email: $e');
+        }
+        updateUserData(updatedData);
+      } else {}
+    });
   }
 }
