@@ -1,3 +1,4 @@
+import 'package:firebase_database/firebase_database.dart';
 import 'package:flutter/material.dart';
 import 'package:ohmypet/widgets/admin_header.dart';
 import 'package:ohmypet/widgets/admin_navigation_bar.dart';
@@ -12,6 +13,9 @@ class PackageManagement extends StatefulWidget {
 }
 
 class _PackageManagementState extends State<PackageManagement> {
+  // Create a reference to Firebase database
+  late DatabaseReference profileRef;
+
   late String role;
 
   @override
@@ -98,6 +102,8 @@ class _PackageManagementState extends State<PackageManagement> {
         child: const Icon(Icons.menu_rounded, size: 26, color: Colors.white),
       ));
 
+  List<GlobalKey> itemKeys = [];
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -127,11 +133,19 @@ class _PackageManagementState extends State<PackageManagement> {
                 mainAxisSpacing: 14.0,
               ),
               itemBuilder: (context, index) {
-                return CustomGridItem(
-                  title: gridData[index]['title'],
-                  imageUrl: gridData[index]['imageUrl'],
-                  description: gridData[index]['description'],
-                  price: gridData[index]['price'],
+                final GlobalKey itemKey = GlobalKey();
+                itemKeys.add(itemKey);
+                final packageItem = gridData[index];
+                return GestureDetector(
+                  onLongPress: () =>
+                      _showLongPressOptions(context, index, itemKey),
+                  child: PackageItem(
+                    key: itemKey,
+                    title: packageItem['title'],
+                    imageUrl: packageItem['imageUrl'],
+                    description: packageItem['description'],
+                    price: packageItem['price'],
+                  ),
                 );
               },
             ),
@@ -150,15 +164,59 @@ class _PackageManagementState extends State<PackageManagement> {
           child: _offsetPopup()),
     );
   }
+
+  void _removePackage(int index) {
+    setState(() {
+      gridData.removeAt(index);
+    });
+  }
+
+  void _showLongPressOptions(
+      BuildContext context, int index, GlobalKey itemKey) {
+    final RenderBox overlay =
+        Overlay.of(context).context.findRenderObject() as RenderBox;
+    final RenderBox widgetRenderBox =
+        itemKey.currentContext?.findRenderObject() as RenderBox;
+
+    if (widgetRenderBox != null) {
+      final Offset tapPosition = widgetRenderBox.localToGlobal(Offset.zero);
+      final RelativeRect position = RelativeRect.fromRect(
+        Rect.fromPoints(tapPosition, tapPosition),
+        Offset(10, 0) & overlay.size,
+      );
+
+      showMenu(
+        context: context,
+        position: position,
+        items: [
+          PopupMenuItem(
+            value: 'edit',
+            child: Text('Edit Package'),
+          ),
+          PopupMenuItem(
+            value: 'remove',
+            child: Text('Remove Package'),
+          ),
+        ],
+        elevation: 8.0,
+      ).then((value) {
+        if (value == 'edit') {
+          // Handle Edit Package action
+        } else if (value == 'remove') {
+          // Handle Remove Package action
+        }
+      });
+    }
+  }
 }
 
-class CustomGridItem extends StatelessWidget {
+class PackageItem extends StatelessWidget {
   final String title;
   final String imageUrl;
   final String description;
   final int price;
 
-  const CustomGridItem(
+  const PackageItem(
       {super.key,
       required this.title,
       required this.imageUrl,

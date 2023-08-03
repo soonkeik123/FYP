@@ -231,11 +231,9 @@ class _LoyaltyManagementState extends State<LoyaltyManagement> {
                     ),
                     onTap: () {
                       // Check if all textfields are filled
-                      bool isAllFilled = false;
                       if (emailController.text.isNotEmpty) {
                         if (servIDController.text.isNotEmpty) {
                           if (pointController.text.isNotEmpty) {
-                            bool isAllFilled = true;
                             DatabaseReference ref =
                                 FirebaseDatabase.instance.ref();
 

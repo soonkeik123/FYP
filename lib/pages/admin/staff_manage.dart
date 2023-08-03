@@ -252,7 +252,6 @@ class _StaffManagementState extends State<StaffManagement> {
           if (userData['Profile']['full_name'] == name) {
             setState(() {
               uid = key;
-              print("helo UID");
             });
             final snapshot = await adminRef.child('users/$uid').get();
 
