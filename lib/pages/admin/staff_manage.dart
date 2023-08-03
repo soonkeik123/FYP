@@ -630,37 +630,6 @@ class _StaffManagementState extends State<StaffManagement> {
     });
   }
 
-  // String findUID(String name) {
-  //   DatabaseReference adminRef = FirebaseDatabase.instance.ref().child('users');
-
-  //   late String UID = '';
-  //   // Query the 'Profile' node to get admin users
-  //   Query adminQuery = adminRef;
-
-  //   // Listen for the value event
-  //   adminQuery.onValue.listen((DatabaseEvent event) {
-  //     // Access the DataSnapshot from the event
-  //     DataSnapshot snapshot = event.snapshot;
-  //     // Check if the snapshot's value is not null and is of type Map<dynamic, dynamic>
-  //     if (snapshot.value != null) {
-  //       // Convert the value to a Map<dynamic, dynamic>
-  //       Map<dynamic, dynamic> adminUsers =
-  //           snapshot.value as Map<dynamic, dynamic>;
-  //       // Loop through the snapshot's children (admin users)
-  //       adminUsers.forEach((key, userData) {
-  //         if (userData['Profile']['full_name'] == name) {
-  //           setState(() {
-  //             UID = key;
-  //             print("helo UID");
-  //           });
-  //         }
-  //       });
-  //     }
-  //   });
-  //   print("UID hola");
-  //   return UID;
-  // }
-
   void Clear() {
     nameController.clear();
     phoneController.clear();

@@ -21,6 +21,11 @@ class _LoyaltyManagementState extends State<LoyaltyManagement> {
   String staffEmail = "";
   String staffRole = "";
   String staffID = "";
+
+  TextEditingController emailController = TextEditingController();
+  TextEditingController servIDController = TextEditingController();
+  TextEditingController pointController = TextEditingController();
+
   @override
   void initState() {
     super.initState();
@@ -92,6 +97,8 @@ class _LoyaltyManagementState extends State<LoyaltyManagement> {
                   ),
                   // Textfield for user email
                   TextField(
+                    controller: emailController,
+                    keyboardType: TextInputType.emailAddress,
                     decoration: InputDecoration(
                       border: OutlineInputBorder(
                         borderSide: const BorderSide(
@@ -118,7 +125,7 @@ class _LoyaltyManagementState extends State<LoyaltyManagement> {
 
                   // Reservation ID
                   const Text(
-                    "Reservation ID",
+                    "Resv. ID / Serv. ID",
                     style: TextStyle(
                         color: AppColors.mainColor,
                         fontSize: 24,
@@ -129,6 +136,7 @@ class _LoyaltyManagementState extends State<LoyaltyManagement> {
                   ),
                   // Textfield
                   TextField(
+                    controller: servIDController,
                     decoration: InputDecoration(
                       border: OutlineInputBorder(
                         borderSide: const BorderSide(
@@ -145,8 +153,8 @@ class _LoyaltyManagementState extends State<LoyaltyManagement> {
                             const BorderSide(color: Colors.green, width: 1.0),
                         borderRadius: BorderRadius.circular(10.0),
                       ),
-                      hintText: 'Enter reservation ID',
-                      labelText: 'Reservation ID',
+                      hintText: 'Enter ID',
+                      labelText: 'Reservation ID / Service ID',
                     ),
                   ),
                   const SizedBox(
@@ -166,6 +174,8 @@ class _LoyaltyManagementState extends State<LoyaltyManagement> {
                   ),
                   // Textfield
                   TextField(
+                    controller: pointController,
+                    keyboardType: TextInputType.number,
                     decoration: InputDecoration(
                       border: OutlineInputBorder(
                         borderSide: const BorderSide(
@@ -198,16 +208,133 @@ class _LoyaltyManagementState extends State<LoyaltyManagement> {
                       decoration: BoxDecoration(
                           borderRadius: BorderRadius.circular(20),
                           color: AppColors.mainColor),
-                      child: const Text(
-                        "Save",
-                        style: TextStyle(
+                      child: Row(
+                        crossAxisAlignment: CrossAxisAlignment.center,
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          const Text(
+                            "Send",
+                            style: TextStyle(
+                                color: Colors.white,
+                                fontSize: 18,
+                                fontWeight: FontWeight.w400),
+                          ),
+                          SizedBox(
+                            width: 4,
+                          ),
+                          Icon(
+                            Icons.send,
                             color: Colors.white,
-                            fontSize: 18,
-                            fontWeight: FontWeight.w400),
+                          )
+                        ],
                       ),
                     ),
                     onTap: () {
-                      print("ok");
+                      // Check if all textfields are filled
+                      bool isAllFilled = false;
+                      if (emailController.text.isNotEmpty) {
+                        if (servIDController.text.isNotEmpty) {
+                          if (pointController.text.isNotEmpty) {
+                            bool isAllFilled = true;
+                            DatabaseReference ref =
+                                FirebaseDatabase.instance.ref();
+
+                            String uid = '';
+                            int currentPoint = 0;
+
+                            // Query the 'Profile' node to get users
+                            Query adminQuery = ref.child('users');
+
+                            // Listen for the value event
+                            adminQuery.onValue.listen((DatabaseEvent event) {
+                              // Access the DataSnapshot from the event
+                              DataSnapshot snapshot = event.snapshot;
+                              // Check if the snapshot's value is not null and is of type Map<dynamic, dynamic>
+                              if (snapshot.value != null) {
+                                // Convert the value to a Map<dynamic, dynamic>
+                                Map<dynamic, dynamic> adminUsers =
+                                    snapshot.value as Map<dynamic, dynamic>;
+                                // Loop through the snapshot's children (admin users)
+                                adminUsers.forEach((key, userData) async {
+                                  if (userData['Profile']['email'] ==
+                                      emailController.text) {
+                                    setState(() {
+                                      uid = key;
+                                      // get the original point from database
+                                      currentPoint =
+                                          userData['Profile']['point'];
+                                    });
+                                    // Accumulate the points become newPoint
+                                    int newPoint = currentPoint +
+                                        int.parse(pointController.text);
+                                    DatabaseReference userRef = FirebaseDatabase
+                                        .instance
+                                        .ref('users/$uid/Profile');
+                                    // update the newPoint into user Account
+                                    await userRef
+                                        .update({'point': '$newPoint'});
+
+                                    // Identify the current user (staff/admin)
+                                    User? user =
+                                        FirebaseAuth.instance.currentUser;
+                                    String executor = user!.uid;
+
+                                    // Prepare to post data to record this add point action
+                                    final loyaltyPointData = {
+                                      'user_id': uid,
+                                      'email': emailController.text,
+                                      'serv_id': servIDController.text,
+                                      'point': newPoint,
+                                      'executor': executor,
+                                    };
+
+                                    final newKey = FirebaseDatabase.instance
+                                        .ref()
+                                        .child('addLoyaltyRecord')
+                                        .push()
+                                        .key;
+
+                                    if (newKey != null) {
+                                      // Use the newKey to create a new node with the loyaltyPointData
+                                      FirebaseDatabase.instance
+                                          .ref()
+                                          .child('addLoyaltyRecord')
+                                          .child(newKey)
+                                          .set(loyaltyPointData)
+                                          .then((value) {
+                                        // Data is successfully stored in the database
+                                        print(
+                                            'Loyalty point data added successfully.');
+                                        showMessageDialog(
+                                            context,
+                                            "Points Added",
+                                            "You have added $newPoint points into this account successfully!");
+                                        Clear();
+                                      }).catchError((error) {
+                                        // Handle any errors that occur during the process
+                                        print(
+                                            'Error adding loyalty point data: $error');
+                                      });
+                                    }
+                                  }
+                                });
+                              }
+                            });
+                          } else {
+                            // point empty
+                            showMessageDialog(context, "Point Is Missing",
+                                "Please make sure you have entered the points.");
+                          }
+                        } else {
+                          // serv empty
+                          showMessageDialog(context, "ID Is Missing",
+                              "Please make sure you have entered the relevant service's or reservation's ID.");
+                        }
+                      } else {
+                        // email empty
+                        showMessageDialog(context, "Email Is Missing",
+                            "Please make sure you have entered the customer's E-mail.");
+                      }
                     },
                   )
                 ],
@@ -221,5 +348,32 @@ class _LoyaltyManagementState extends State<LoyaltyManagement> {
         role: staffRole,
       ),
     );
+  }
+
+  void showMessageDialog(
+      BuildContext context, String titleText, String contentText) {
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: Text(titleText),
+          content: Text(contentText),
+          actions: <Widget>[
+            TextButton(
+              onPressed: () {
+                Navigator.of(context).pop();
+              },
+              child: Text('OK'),
+            ),
+          ],
+        );
+      },
+    );
+  }
+
+  void Clear() {
+    emailController.clear();
+    servIDController.clear();
+    pointController.clear();
   }
 }
