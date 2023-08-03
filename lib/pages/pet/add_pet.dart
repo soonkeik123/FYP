@@ -708,12 +708,12 @@ class _AddPetProfileState extends State<AddPetProfile> {
             borderRadius: BorderRadius.circular(10.0),
           ),
           backgroundColor: Colors.white,
-          title: Icon(
+          title: const Icon(
             Icons.check_circle,
             color: Colors.green,
             size: 50.0,
           ),
-          content: Text(
+          content: const Text(
             "You've just added an adorable new pet! Book today to enjoy the paw-some experience!",
             style: TextStyle(
               color: Colors.green,
@@ -727,7 +727,7 @@ class _AddPetProfileState extends State<AddPetProfile> {
                 Navigator.pop(context);
                 Navigator.popAndPushNamed(context, '/home');
               },
-              child: Text('OK'),
+              child: const Text('OK'),
             ),
           ],
         );
@@ -744,12 +744,12 @@ class _AddPetProfileState extends State<AddPetProfile> {
             borderRadius: BorderRadius.circular(10.0),
           ),
           backgroundColor: Colors.white,
-          title: Icon(
+          title: const Icon(
             Icons.cancel,
             color: Colors.red,
             size: 50.0,
           ),
-          content: Text(
+          content: const Text(
             "Opps! Looks like you haven't fill up all the info yet! We will wait you 🐾",
             style: TextStyle(
               color: Colors.red,
@@ -762,7 +762,7 @@ class _AddPetProfileState extends State<AddPetProfile> {
               onPressed: () {
                 Navigator.pop(context);
               },
-              child: Text('OK'),
+              child: const Text('OK'),
             ),
           ],
         );

@@ -30,7 +30,7 @@ class _EditProfilePageState extends State<EditProfilePage> {
   TextEditingController nicknameController = TextEditingController();
   TextEditingController phoneController = TextEditingController();
   TextEditingController emailController = TextEditingController();
-
+  TextEditingController _passwordController = TextEditingController();
   @override
   void initState() {
     super.initState();
@@ -243,6 +243,43 @@ class _EditProfilePageState extends State<EditProfilePage> {
                             ),
                           ),
                         ),
+
+                        const SizedBox(
+                          height: 15,
+                        ),
+
+                        // New Password
+                        TitleText(
+                          text: "Change New Password",
+                          size: 16,
+                        ),
+                        const SizedBox(
+                          height: 5,
+                        ),
+                        Container(
+                          decoration: BoxDecoration(
+                            borderRadius: BorderRadius.circular(10),
+                            border: Border.all(
+                                color: AppColors.mainColor, width: 2.0),
+                          ),
+                          alignment: Alignment.centerLeft,
+                          // padding: EdgeInsets.only(bottom: ),
+                          width: 230,
+                          height: 40,
+                          padding: const EdgeInsets.only(left: 10),
+                          child: TextField(
+                            enabled: true,
+                            textAlign: TextAlign.left,
+                            controller: _passwordController,
+                            keyboardType: TextInputType.visiblePassword,
+                            obscureText: true,
+                            style: const TextStyle(color: AppColors.mainColor),
+                            decoration: const InputDecoration(
+                              border: InputBorder.none,
+                              contentPadding: EdgeInsets.only(bottom: 12),
+                            ),
+                          ),
+                        ),
                       ],
                     ),
                     const SizedBox(
@@ -368,9 +405,10 @@ class _EditProfilePageState extends State<EditProfilePage> {
     ).then((value) async {
       if (value != null && value) {
         bool fullname = fullNameController.text != userName;
-        bool nickname = nicknameController != userNickname;
-        bool phone = phoneController != userPhone;
-        bool email = emailController != userEmail;
+        bool nickname = nicknameController.text != userNickname;
+        bool phone = phoneController.text != userPhone;
+        bool email = emailController.text != userEmail;
+        bool password = _passwordController.text.isNotEmpty;
 
         Map<String, String> updatedData = {
           if (fullname) 'full_name': fullNameController.text,
@@ -380,9 +418,19 @@ class _EditProfilePageState extends State<EditProfilePage> {
         };
         try {
           User? user = FirebaseAuth.instance.currentUser;
-          if (user != null && email) {
+          if (user != null && email && password) {
+            await user.updateEmail(emailController.text);
+            await user.updatePassword(_passwordController.text);
+            print('Email updated successfully');
+          } else if (user != null && email) {
             await user.updateEmail(emailController.text);
             print('Email updated successfully');
+          } else if (user != null && password) {
+            await user.updatePassword(_passwordController.text);
+            print('password changed successfully');
+          }
+          if (user != null) {
+            print('No changes to email and password');
           } else {
             print('User not found');
           }

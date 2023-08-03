@@ -1,3 +1,5 @@
+import 'package:firebase_auth/firebase_auth.dart';
+import 'package:firebase_database/firebase_database.dart';
 import 'package:flutter/material.dart';
 import 'package:ohmypet/widgets/admin_header.dart';
 
@@ -15,85 +17,79 @@ class StaffManagement extends StatefulWidget {
 }
 
 class _StaffManagementState extends State<StaffManagement> {
+  // Create a reference to Firebase database
+  late DatabaseReference adminRef;
+
   late String role;
+  String staffName = '';
+  String staffEmail = '';
+  String staffPhone = '';
+
+  late List<Map> staff;
+  late List<Map> admin;
+
+  TextEditingController nameController = TextEditingController();
+  TextEditingController phoneController = TextEditingController();
+  TextEditingController emailController = TextEditingController();
+  TextEditingController _passwordController = TextEditingController();
 
   @override
   void initState() {
-    super.initState();
+    adminRef = FirebaseDatabase.instance.ref().child('users');
 
     role = widget.role;
-    // fetchData();
+    getStaffAndAdminUsers();
+    super.initState();
   }
 
   void refreshPage() {
-    print("Got iittt");
+    setState(() {
+      staff = filterOrdersByStatus(staffData, "staff");
+      admin = filterOrdersByStatus(staffData, "admin");
+    });
   }
 
-  List<Map<String, dynamic>> staffData = [
-    {
-      "id": 1,
-      "name": "NG MENG HUI",
-      "email": "hunter@gmail.com",
-      "role": "admin",
-      "create_date": "2023-07-20"
-    },
-    {
-      "id": 2,
-      "name": "John Doe",
-      "email": "johndoe@example.com",
-      "role": "staff",
-      "create_date": "2023-07-21"
-    },
-    {
-      "id": 3,
-      "name": "Jane Smith",
-      "email": "janesmith@example.com",
-      "role": "staff",
-      "create_date": "2023-07-22"
-    },
-    {
-      "id": 4,
-      "name": "Michael Lee",
-      "email": "michaellee@example.com",
-      "role": "staff",
-      "create_date": "2023-07-23"
-    },
-    {
-      "id": 5,
-      "name": "Emily Tan",
-      "email": "emilytan@example.com",
-      "role": "staff",
-      "create_date": "2023-07-24"
-    },
-  ];
+  List<Map> staffData = [];
 
-  List<Map<String, dynamic>> filterOrdersByStatus(
-      List<Map<String, dynamic>> orders, String status) {
+  Future<void> getStaffAndAdminUsers() async {
+    try {
+      // Get a reference to the 'users' node in the Realtime Database
+      DatabaseReference adminRef =
+          FirebaseDatabase.instance.ref().child('users');
+
+      // Query the 'Profile' node to get admin users
+      Query adminQuery = adminRef;
+
+      // Listen for the value event
+      adminQuery.onValue.listen((DatabaseEvent event) {
+        // Access the DataSnapshot from the event
+        DataSnapshot snapshot = event.snapshot;
+
+        // Check if the snapshot's value is not null and is of type Map<dynamic, dynamic>
+        if (snapshot.value != null) {
+          // Convert the value to a Map<dynamic, dynamic>
+          Map<dynamic, dynamic> adminUsers =
+              snapshot.value as Map<dynamic, dynamic>;
+          staffData.clear();
+          // Loop through the snapshot's children (admin users)
+          adminUsers.forEach((key, userData) {
+            if (userData['Profile']['role'] == 'admin' ||
+                userData['Profile']['role'] == 'staff') {
+              staffData.add(userData['Profile']);
+            }
+          });
+          refreshPage();
+          // print(staffData.toList());
+        }
+      });
+    } catch (e) {
+      print('Error getting admin users: $e');
+    }
+  }
+
+  List<Map> filterOrdersByStatus(List<Map> orders, String status) {
     return orders.where((order) => order["role"] == status).toList();
   }
-
-  // Future<void> fetchData() async {
-  //   await Future.delayed(Duration(seconds: 2)); // Simulating async fetch
-  //   // Once data is available, update the orders list
-  //   setState(() {
-  //     orders = [
-  //       Order(
-  //         id: '#001',
-  //         status: 'Processing',
-  //         serviceName: 'Pet Grooming',
-  //         date: '2023-07-20',
-  //         time: '10:00 AM',
-  //       ),
-  //       Order(
-  //         id: '#002',
-  //         status: 'Incoming',
-  //         serviceName: 'Pet Boarding',
-  //         date: '2023-07-21',
-  //         time: '12:00 PM',
-  //       ),
-  //     ];
-  //   });
-  // }
 
   Future<bool?> showConfirmationDialog(BuildContext context) async {
     return showDialog<bool>(
@@ -123,14 +119,265 @@ class _StaffManagementState extends State<StaffManagement> {
     );
   }
 
+  // ADD NEW MEMBER
+  void _showTopSheet(BuildContext context, String newRole) {
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return Padding(
+          padding: EdgeInsets.only(
+              top: 50.0), // Adjust the top padding to move the dialog down
+          child: AlertDialog(
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.all(Radius.circular(15)),
+            ),
+            title: Text(
+              'Add Profile',
+              style: TextStyle(
+                fontWeight: FontWeight.bold,
+                fontSize: 20.0,
+              ),
+            ),
+            content: SingleChildScrollView(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  TextField(
+                    decoration: InputDecoration(labelText: 'Name'),
+                    controller: nameController,
+                  ),
+                  SizedBox(height: 8.0),
+                  TextField(
+                    decoration: InputDecoration(labelText: 'Phone'),
+                    controller: phoneController,
+                  ),
+                  SizedBox(height: 8.0),
+                  TextField(
+                    decoration: InputDecoration(labelText: 'Email'),
+                    controller: emailController,
+                  ),
+                  SizedBox(height: 8.0),
+                  TextField(
+                    decoration: InputDecoration(labelText: 'Password'),
+                    controller: _passwordController,
+                    obscureText: true,
+                  ),
+                  SizedBox(height: 16.0),
+                  ElevatedButton(
+                    onPressed: () {
+                      bool isAllFilled = true;
+
+                      if (nameController.text.isEmpty ||
+                          phoneController.text.isEmpty ||
+                          emailController.text.isEmpty ||
+                          _passwordController.text.isEmpty) {
+                        isAllFilled = false;
+                      }
+                      if (isAllFilled) {
+                        FirebaseAuth.instance
+                            .createUserWithEmailAndPassword(
+                                email: emailController.text,
+                                password: _passwordController.text)
+                            .then((value) async {
+                          User? user = FirebaseAuth.instance.currentUser;
+                          if (user != null) {
+                            String uid = user.uid;
+                            // Now you have the UID of the current user
+
+                            DatabaseReference profileRef = FirebaseDatabase
+                                .instance
+                                .ref()
+                                .child('users')
+                                .child(uid)
+                                .child('Profile');
+
+                            Map<String, dynamic> profileData = {
+                              'full_name': nameController.text,
+                              'nickname': '',
+                              'email': emailController.text,
+                              'phone': '6${phoneController.text}',
+                              'point': 0,
+                              'role': newRole,
+                            };
+
+                            profileRef.set(profileData).then((_) {
+                              // Clear data
+                              Clear();
+                              print('Data saved successfully!');
+                              showMessageDialog(context, "ADD SUCCESSFUL",
+                                  "You have added a new member successfully!");
+                            }).catchError((error) {
+                              print('Error saving data: $error');
+                            });
+                          }
+                          Navigator.pop(context); // Close the top sheet
+                        });
+                      }
+                    },
+                    child: Text('Save'),
+                  ),
+                ],
+              ),
+            ),
+          ),
+        );
+      },
+    );
+  }
+
+  Future<void> _editStaffInfo(BuildContext context, String name) async {
+    TextEditingController editNameController = TextEditingController();
+    TextEditingController editPhoneController = TextEditingController();
+    TextEditingController editEmailController = TextEditingController();
+    _passwordController.clear();
+
+    final DatabaseReference adminRef = FirebaseDatabase.instance.ref();
+    String uid = '';
+
+    // Query the 'Profile' node to get admin users
+    Query adminQuery = adminRef.child('users');
+
+    // Listen for the value event
+    adminQuery.onValue.listen((DatabaseEvent event) {
+      // Access the DataSnapshot from the event
+      DataSnapshot snapshot = event.snapshot;
+      // Check if the snapshot's value is not null and is of type Map<dynamic, dynamic>
+      if (snapshot.value != null) {
+        // Convert the value to a Map<dynamic, dynamic>
+        Map<dynamic, dynamic> adminUsers =
+            snapshot.value as Map<dynamic, dynamic>;
+        // Loop through the snapshot's children (admin users)
+        adminUsers.forEach((key, userData) async {
+          if (userData['Profile']['full_name'] == name) {
+            setState(() {
+              uid = key;
+              print("helo UID");
+            });
+            final snapshot = await adminRef.child('users/$uid').get();
+
+            if (snapshot.exists) {
+              Map<dynamic, dynamic> originData = snapshot.value as Map;
+
+              if (userData != null && userData.containsKey('Profile')) {
+                Map<dynamic, dynamic> profileData = userData['Profile'] as Map;
+                staffName = profileData['full_name'] ?? '';
+                staffPhone = profileData['phone'] ?? '';
+                staffEmail = profileData['email'] ?? '';
+
+                editNameController.text = profileData['full_name'] ?? '';
+                editPhoneController.text = profileData['phone'] ?? '';
+                editEmailController.text = profileData['email'] ?? '';
+              } else {
+                print("User not found or missing Profile data.");
+              }
+            } else {
+              print("No data available.");
+            }
+          }
+        });
+      }
+    });
+
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return Padding(
+          padding: EdgeInsets.only(
+              top: 50.0), // Adjust the top padding to move the dialog down
+          child: AlertDialog(
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.all(Radius.circular(15)),
+            ),
+            title: Text(
+              'Edit Profile',
+              style: TextStyle(
+                fontWeight: FontWeight.bold,
+                fontSize: 20.0,
+              ),
+            ),
+            content: SingleChildScrollView(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  TextField(
+                    decoration: InputDecoration(labelText: 'Name'),
+                    controller: editNameController,
+                  ),
+                  SizedBox(height: 8.0),
+                  TextField(
+                    decoration: InputDecoration(labelText: 'Phone'),
+                    controller: editPhoneController,
+                  ),
+                  SizedBox(height: 8.0),
+                  TextField(
+                    decoration: InputDecoration(labelText: 'Email'),
+                    controller: editEmailController,
+                  ),
+                  SizedBox(height: 16.0),
+                  ElevatedButton(
+                    onPressed: () {
+                      bool isAllFilled = true;
+
+                      if (editNameController.text.isEmpty ||
+                          editPhoneController.text.isEmpty ||
+                          editEmailController.text.isEmpty) {
+                        isAllFilled = false;
+                      }
+                      if (isAllFilled) {
+                        bool name = (staffName != editNameController.text);
+                        bool phone = (staffPhone != editPhoneController.text);
+                        bool email = (staffEmail != editEmailController.text);
+
+                        DatabaseReference profileRef = FirebaseDatabase.instance
+                            .ref()
+                            .child('users')
+                            .child(uid)
+                            .child('Profile');
+
+                        Map<String, dynamic> staffData = {
+                          if (name) 'full_name': editNameController.text,
+                          if (email) 'email': editEmailController.text,
+                          if (phone) 'phone': editPhoneController.text,
+                        };
+
+                        profileRef.update(staffData).then((_) {
+                          showMessageDialog(context, "EDIT SUCCESSFUL",
+                              "You have edited this staff's information");
+                          print('Data saved successfully!');
+                          Navigator.pop(context);
+                        }).catchError((error) {
+                          print('Error saving data: $error');
+                        });
+
+                        Navigator.pop(context); // Close the top sheet
+                      } else {
+                        showMessageDialog(
+                            context,
+                            "Please Fill Up All Form Fields",
+                            "Please make sure to fill up all the required form fields.");
+                      }
+                    },
+                    child: Text('Save'),
+                  ),
+                ],
+              ),
+            ),
+          ),
+        );
+      },
+    );
+  }
+
   Widget _offsetPopup() => PopupMenuButton<int>(
       // padding: const EdgeInsets.only(bottom: 2),
-      offset: const Offset(0, -70),
+      offset: const Offset(-15, -70),
       itemBuilder: (context) => [
             const PopupMenuItem(
               value: 1,
               child: Text(
-                "Add New Member",
+                "Add New Staff",
                 style:
                     TextStyle(color: Colors.black, fontWeight: FontWeight.w400),
               ),
@@ -138,22 +385,18 @@ class _StaffManagementState extends State<StaffManagement> {
             const PopupMenuItem(
               value: 2,
               child: Text(
-                "Edit Staff",
-                style:
-                    TextStyle(color: Colors.black, fontWeight: FontWeight.w400),
-              ),
-            ),
-            const PopupMenuItem(
-              value: 3,
-              child: Text(
-                "Remove Member",
+                "Add Administrator",
                 style:
                     TextStyle(color: Colors.black, fontWeight: FontWeight.w400),
               ),
             ),
           ],
       onSelected: (value) {
-        setState(() {});
+        if (value == 1) {
+          _showTopSheet(context, "staff");
+        } else if (value == 2) {
+          _showTopSheet(context, "admin");
+        }
       },
       icon: Container(
         height: double.infinity,
@@ -168,10 +411,10 @@ class _StaffManagementState extends State<StaffManagement> {
 
   @override
   Widget build(BuildContext context) {
-    List<Map<String, dynamic>> staff = filterOrdersByStatus(staffData, "staff");
-    List<Map<String, dynamic>> admin = filterOrdersByStatus(staffData, "admin");
-    List<int> dismissedItemIds = [];
+    List<Map> staff = filterOrdersByStatus(staffData, "staff");
+    List<Map> admin = filterOrdersByStatus(staffData, "admin");
 
+    List<int> dismissedItemIds = [];
     return Scaffold(
       backgroundColor: Colors.white,
       body: Column(
@@ -210,32 +453,21 @@ class _StaffManagementState extends State<StaffManagement> {
                         physics: const NeverScrollableScrollPhysics(),
                         itemCount: admin.length,
                         itemBuilder: (context, index) {
-                          // Display processing orders
-                          // return staffItemWidget(
-                          //   id: admin[index]['id'],
-                          //   name: admin[index]["name"],
-                          //   email: admin[index]["email"],
-                          //   createDate: admin[index]["create_date"],
-                          // );
-
                           return Dismissible(
-                            key: Key(admin[index]['id'].toString()),
+                            key: Key(admin[index]['email']),
                             direction: DismissDirection.horizontal,
 
                             // On confirming
                             confirmDismiss: (direction) async {
                               if (direction == DismissDirection.startToEnd) {
-                                Navigator.pushNamed(
-                                    context, '/packageManagement');
+                                _editStaffInfo(
+                                    context, admin[index]['full_name']);
                               } else if (direction ==
                                   DismissDirection.endToStart) {
-                                // Show a delete dialog or prompt to delete
-                                // Return true to allow the action, false to cancel it
                                 return showConfirmationDialog(context)
                                     .then((confirmDelete) {
                                   if (confirmDelete == true) {
-                                    staff.remove(index);
-                                    refreshPage();
+                                    removeStaff(admin[index]['full_name']);
                                   } else {}
                                   return null;
                                 });
@@ -266,10 +498,9 @@ class _StaffManagementState extends State<StaffManagement> {
                               ),
                             ),
                             child: staffItemWidget(
-                              id: admin[index]['id'],
-                              name: admin[index]["name"],
+                              name: admin[index]["full_name"],
                               email: admin[index]["email"],
-                              createDate: admin[index]["create_date"],
+                              phone: admin[index]["phone"],
                             ),
                           );
                         },
@@ -298,24 +529,15 @@ class _StaffManagementState extends State<StaffManagement> {
                           physics: const NeverScrollableScrollPhysics(),
                           itemCount: staff.length,
                           itemBuilder: (context, index) {
-                            // Display processing orders
-                            // return staffItemWidget(
-                            //   id: staff[index]['id'],
-                            //   name: staff[index]["name"],
-                            //   email: staff[index]["email"],
-                            //   createDate: staff[index]["create_date"],
-                            // );
-
                             return Dismissible(
-                              key: Key(staff[index]['id'].toString()),
                               direction: DismissDirection.horizontal,
 
                               // On confirming
                               confirmDismiss: (direction) async {
                                 // Edit
                                 if (direction == DismissDirection.startToEnd) {
-                                  Navigator.pushNamed(
-                                      context, '/packageManagement');
+                                  _editStaffInfo(
+                                      context, staff[index]['full_name']);
 
                                   // Delete
                                 } else if (direction ==
@@ -323,7 +545,7 @@ class _StaffManagementState extends State<StaffManagement> {
                                   return showConfirmationDialog(context)
                                       .then((confirmDelete) {
                                     if (confirmDelete == true) {
-                                      staff.remove(index);
+                                      removeStaff(staff[index]['full_name']);
                                     } else {
                                       // Cancel the delete action
                                       // You may want to update the list to show the item again
@@ -358,11 +580,11 @@ class _StaffManagementState extends State<StaffManagement> {
                                   ),
                                 ),
                               ),
+                              key: Key(staff[index]['email']),
                               child: staffItemWidget(
-                                id: staff[index]['id'],
-                                name: staff[index]["name"],
+                                name: staff[index]["full_name"],
                                 email: staff[index]["email"],
-                                createDate: staff[index]["create_date"],
+                                phone: staff[index]["phone"],
                               ),
                             );
                           },
@@ -379,20 +601,105 @@ class _StaffManagementState extends State<StaffManagement> {
           SizedBox(height: 70, width: 70, child: _offsetPopup()),
     );
   }
+
+  void removeStaff(String adminRemove) {
+    // Query the 'Profile' node to get admin users
+    Query adminQuery = adminRef;
+
+    // Listen for the value event
+    adminQuery.onValue.listen((DatabaseEvent event) {
+      // Access the DataSnapshot from the event
+      DataSnapshot snapshot = event.snapshot;
+
+      // Check if the snapshot's value is not null and is of type Map<dynamic, dynamic>
+      if (snapshot.value != null) {
+        // Convert the value to a Map<dynamic, dynamic>
+        Map<dynamic, dynamic> adminUsers =
+            snapshot.value as Map<dynamic, dynamic>;
+        // Loop through the snapshot's children (admin users)
+        adminUsers.forEach((key, userData) {
+          if (userData['Profile']['full_name'] == adminRemove) {
+            FirebaseDatabase.instance.ref('users/$key').remove();
+
+            // Unable to remove user from Authentication easily
+          }
+        });
+
+        // print(staffData.toList());
+      }
+    });
+  }
+
+  // String findUID(String name) {
+  //   DatabaseReference adminRef = FirebaseDatabase.instance.ref().child('users');
+
+  //   late String UID = '';
+  //   // Query the 'Profile' node to get admin users
+  //   Query adminQuery = adminRef;
+
+  //   // Listen for the value event
+  //   adminQuery.onValue.listen((DatabaseEvent event) {
+  //     // Access the DataSnapshot from the event
+  //     DataSnapshot snapshot = event.snapshot;
+  //     // Check if the snapshot's value is not null and is of type Map<dynamic, dynamic>
+  //     if (snapshot.value != null) {
+  //       // Convert the value to a Map<dynamic, dynamic>
+  //       Map<dynamic, dynamic> adminUsers =
+  //           snapshot.value as Map<dynamic, dynamic>;
+  //       // Loop through the snapshot's children (admin users)
+  //       adminUsers.forEach((key, userData) {
+  //         if (userData['Profile']['full_name'] == name) {
+  //           setState(() {
+  //             UID = key;
+  //             print("helo UID");
+  //           });
+  //         }
+  //       });
+  //     }
+  //   });
+  //   print("UID hola");
+  //   return UID;
+  // }
+
+  void Clear() {
+    nameController.clear();
+    phoneController.clear();
+    emailController.clear();
+    _passwordController.clear();
+  }
+}
+
+void showMessageDialog(
+    BuildContext context, String titleText, String contentText) {
+  showDialog(
+    context: context,
+    builder: (BuildContext context) {
+      return AlertDialog(
+        title: Text(titleText),
+        content: Text(contentText),
+        actions: <Widget>[
+          TextButton(
+            onPressed: () {
+              Navigator.of(context).pop();
+            },
+            child: Text('OK'),
+          ),
+        ],
+      );
+    },
+  );
 }
 
 class staffItemWidget extends StatelessWidget {
-  final int id;
   final String name;
   final String email;
-  final String createDate;
+  final String phone;
 
   const staffItemWidget({
     super.key,
-    required this.id,
     required this.name,
     required this.email,
-    required this.createDate,
+    required this.phone,
   });
 
   @override
@@ -434,27 +741,12 @@ class staffItemWidget extends StatelessWidget {
               Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      Text(
-                        name.toUpperCase(),
-                        style: const TextStyle(
-                            fontSize: 19,
-                            color: AppColors.mainColor,
-                            fontWeight: FontWeight.w500),
-                      ),
-                      const SizedBox(
-                        width: 10,
-                      ),
-                      Text(
-                        '#$id',
-                        style: const TextStyle(
-                            fontSize: 19,
-                            color: AppColors.mainColor,
-                            fontWeight: FontWeight.w500),
-                      ),
-                    ],
+                  Text(
+                    name.toUpperCase(),
+                    style: const TextStyle(
+                        fontSize: 19,
+                        color: AppColors.mainColor,
+                        fontWeight: FontWeight.w500),
                   ),
                   Text(
                     email,
@@ -464,7 +756,7 @@ class staffItemWidget extends StatelessWidget {
                         fontWeight: FontWeight.w400),
                   ),
                   Text(
-                    "Since $createDate",
+                    "Phone: +$phone",
                     style: const TextStyle(
                         fontSize: 16,
                         color: Colors.black,

@@ -322,9 +322,9 @@ class _EditPetProfileState extends State<EditPetProfile> {
       barrierDismissible:
           false, // Prevent the dialog from being dismissed by tapping outside
       builder: (BuildContext context) {
-        return Dialog(
+        return const Dialog(
           child: Padding(
-            padding: const EdgeInsets.all(20.0),
+            padding: EdgeInsets.all(20.0),
             child: Column(
               mainAxisSize: MainAxisSize.min,
               children: [
@@ -339,7 +339,7 @@ class _EditPetProfileState extends State<EditPetProfile> {
     );
 
     // Delay the dialog dismissal for 2 seconds
-    await Future.delayed(Duration(seconds: 2));
+    await Future.delayed(const Duration(seconds: 2));
 
     // Close the dialog
     Navigator.of(context).pop();
@@ -990,12 +990,12 @@ class _EditPetProfileState extends State<EditPetProfile> {
             borderRadius: BorderRadius.circular(10.0),
           ),
           backgroundColor: Colors.white,
-          title: Icon(
+          title: const Icon(
             Icons.check_circle,
             color: Colors.green,
             size: 50.0,
           ),
-          content: Text(
+          content: const Text(
             "Awww, you have successfully removed a pet from your account.. :(",
             style: TextStyle(
               color: Colors.green,
@@ -1009,7 +1009,7 @@ class _EditPetProfileState extends State<EditPetProfile> {
                 Navigator.pop(context);
                 Navigator.popAndPushNamed(context, '/home');
               },
-              child: Text('OK'),
+              child: const Text('OK'),
             ),
           ],
         );
@@ -1082,12 +1082,12 @@ class _EditPetProfileState extends State<EditPetProfile> {
             borderRadius: BorderRadius.circular(10.0),
           ),
           backgroundColor: Colors.white,
-          title: Icon(
+          title: const Icon(
             Icons.check_circle,
             color: Colors.green,
             size: 50.0,
           ),
-          content: Text(
+          content: const Text(
             "You have successfully edited your pet information!",
             style: TextStyle(
               color: Colors.green,
@@ -1101,7 +1101,7 @@ class _EditPetProfileState extends State<EditPetProfile> {
                 Navigator.pop(context);
                 Navigator.popAndPushNamed(context, '/home');
               },
-              child: Text('OK'),
+              child: const Text('OK'),
             ),
           ],
         );
@@ -1118,12 +1118,12 @@ class _EditPetProfileState extends State<EditPetProfile> {
             borderRadius: BorderRadius.circular(10.0),
           ),
           backgroundColor: Colors.white,
-          title: Icon(
+          title: const Icon(
             Icons.cancel,
             color: Colors.red,
             size: 50.0,
           ),
-          content: Text(
+          content: const Text(
             "Opps! Looks like you haven't fill up all the info yet! We will wait you 🐾",
             style: TextStyle(
               color: Colors.red,
@@ -1136,7 +1136,7 @@ class _EditPetProfileState extends State<EditPetProfile> {
               onPressed: () {
                 Navigator.pop(context);
               },
-              child: Text('OK'),
+              child: const Text('OK'),
             ),
           ],
         );

@@ -800,7 +800,7 @@ class _TrackProgressPageState extends State<TrackProgressPage>
             fontSize: 20.0,
             fontWeight: FontWeight.bold,
           ),
-          content: SizedBox(
+          content: const SizedBox(
             height: 50,
             child: Text('Do you want to cancel this reservation?'),
           ),
