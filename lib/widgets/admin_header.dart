@@ -9,39 +9,6 @@ class AdminHeader extends StatelessWidget {
 
   AdminHeader({super.key, required this.pageTitle});
 
-  Widget _offsetPopup() => PopupMenuButton<int>(
-        padding: const EdgeInsets.only(bottom: 2),
-        // offset: Offset(0, 30),
-        itemBuilder: (context) => [
-          const PopupMenuItem(
-            value: 1,
-            child: Text(
-              "Show only current",
-              style:
-                  TextStyle(color: Colors.black, fontWeight: FontWeight.w700),
-            ),
-          ),
-          const PopupMenuItem(
-            value: 2,
-            child: Text(
-              "Show all reservation",
-              style:
-                  TextStyle(color: Colors.black, fontWeight: FontWeight.w700),
-            ),
-          ),
-        ],
-        onSelected: (value) {
-          popUpOption = value;
-        },
-        icon: const Icon(
-          Icons.filter_alt_outlined,
-          color: AppColors.mainColor,
-          size: 30,
-        ),
-      );
-
-  int popUpOption = 0;
-
   @override
   Widget build(BuildContext context) {
     if (pageTitle == "MANAGE PACKAGE" ||
