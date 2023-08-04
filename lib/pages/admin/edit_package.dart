@@ -10,20 +10,30 @@ import '../../utils/colors.dart';
 import '../../utils/dimensions.dart';
 import '../../widgets/big_text.dart';
 
-class AddPackagePage extends StatefulWidget {
-  const AddPackagePage({super.key});
+class EditPackagePage extends StatefulWidget {
+  final String packageID;
+  const EditPackagePage({super.key, required this.packageID});
 
   @override
-  State<AddPackagePage> createState() => _AddPackagePageState();
+  State<EditPackagePage> createState() => _EditPackagePageState();
 }
 
-class _AddPackagePageState extends State<AddPackagePage> {
+class _EditPackagePageState extends State<EditPackagePage> {
+  // Create a reference to Firebase database
+  late DatabaseReference packageRef;
+
   File? _chosenImage;
   final ImagePicker _picker = ImagePicker();
   String storeImagePath = '';
 
+  @override
+  void initState() {
+    super.initState();
+
+    getSelectedPackageData();
+  }
+
   TextEditingController _titleController = TextEditingController();
-  TextEditingController _imageUController = TextEditingController();
   TextEditingController _descriptionController = TextEditingController();
   TextEditingController _priceController = TextEditingController();
 
@@ -228,7 +238,9 @@ class _AddPackagePageState extends State<AddPackagePage> {
                                     DatabaseReference packageRef =
                                         FirebaseDatabase.instance
                                             .ref()
-                                            .child('packages');
+                                            .child('packages')
+                                            .child(widget.packageID);
+
                                     Map<String, dynamic> packageData = {
                                       'title': _titleController.text,
                                       'description':
@@ -237,18 +249,14 @@ class _AddPackagePageState extends State<AddPackagePage> {
                                       'imageUrl': storeImagePath,
                                     };
 
-                                    // Use push() to generate a unique key for the new data
-                                    DatabaseReference newPackageRef =
-                                        packageRef.push();
-
-                                    newPackageRef.set(packageData).then((_) {
+                                    packageRef.set(packageData).then((_) {
                                       // Clear data
                                       Clear();
-                                      print('Package saved successfully!');
+                                      print('Package edited successfully!');
                                       showSuccessDialog(
                                           context,
-                                          "ADD SUCCESSFUL",
-                                          "You have added a new package successfully!");
+                                          "EDIT SUCCESSFUL",
+                                          "You have edited an existing package successfully! Let's check it out!");
                                     }).catchError((error) {
                                       print('Error saving data: $error');
                                     });
@@ -257,8 +265,6 @@ class _AddPackagePageState extends State<AddPackagePage> {
                                   showMessageDialog(context, "Failed to Save",
                                       "Package image is required. Please make sure you have uploaded an image.");
                                 }
-
-                                print(_chosenImage);
                               },
                               child: Container(
                                 margin:
@@ -270,9 +276,9 @@ class _AddPackagePageState extends State<AddPackagePage> {
                                   color: AppColors.mainColor,
                                 ),
                                 height: 45,
-                                width: 150,
+                                width: 160,
                                 child: BigText(
-                                  text: "Save Package",
+                                  text: "Save Changes",
                                   size: 17,
                                   color: Colors.white,
                                 ),
@@ -429,5 +435,26 @@ class _AddPackagePageState extends State<AddPackagePage> {
     _titleController.clear();
     _descriptionController.clear();
     _priceController.clear();
+  }
+
+  Future<void> getSelectedPackageData() async {
+    final pid = widget.packageID;
+
+    final DatabaseReference packageRef = FirebaseDatabase.instance.ref();
+    final snapshot = await packageRef.child('packages/$pid').get();
+
+    if (snapshot.exists) {
+      Clear();
+      final Map existPackage = snapshot.value as Map;
+      setState(() {
+        _titleController.text = existPackage['title'];
+        // _imageUController = existPackage['imageUrl'];
+        _descriptionController.text = existPackage['description'];
+        _priceController.text = existPackage['price'];
+        _chosenImage = File(existPackage['imageUrl']);
+      });
+    } else {
+      print('No data available');
+    }
   }
 }

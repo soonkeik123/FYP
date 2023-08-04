@@ -1,6 +1,7 @@
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_database/firebase_database.dart';
 import 'package:flutter/material.dart';
+import 'package:ohmypet/pages/admin/staff_manage.dart';
 import 'package:ohmypet/pages/reservation/groom_reservation.dart';
 import 'package:ohmypet/utils/colors.dart';
 import 'package:ohmypet/widgets/info_text.dart';
@@ -44,7 +45,7 @@ class _LoyaltyPointPageState extends State<LoyaltyPointPage> {
       Map<dynamic, dynamic> userData = snapshot.value as Map;
 
       // Access individual properties of the user data
-      int point = userData['point'];
+      int point = int.parse(userData['point']);
 
       setState(() {
         loyaltyPoint = point;
@@ -156,12 +157,12 @@ class _LoyaltyPointPageState extends State<LoyaltyPointPage> {
                 mainAxisSpacing: 10.0,
               ),
               itemBuilder: (context, index) {
-                print(gridData.toString());
                 return CustomGridItem(
                   title: gridData[index]['title'],
                   imageUrl: gridData[index]['imageUrl'],
                   color: gridData[index]['color'],
                   point: gridData[index]['point'],
+                  currentPoint: loyaltyPoint,
                 );
               },
             ),
@@ -177,19 +178,26 @@ class CustomGridItem extends StatelessWidget {
   final String imageUrl;
   final String point;
   final String color;
+  final int currentPoint;
 
   const CustomGridItem(
       {super.key,
       required this.title,
       required this.imageUrl,
       required this.point,
-      required this.color});
+      required this.color,
+      required this.currentPoint});
 
   @override
   Widget build(BuildContext context) {
     return InkWell(
       onTap: () {
-        showConfirmationDialog(context, title);
+        if (currentPoint >= int.parse(point)) {
+          showConfirmationDialog(context, title);
+        } else {
+          showMessageDialog(context, "Low Point",
+              "Sorry, we found that you are having insufficient points to redem this service. We will wait until you accumulate enough point.");
+        }
       },
       child: Container(
         margin: const EdgeInsets.only(left: 5, right: 5, bottom: 5),
@@ -242,13 +250,13 @@ class CustomGridItem extends StatelessWidget {
             fontWeight: FontWeight.bold,
           ),
           content: const SizedBox(
-            height: 110,
+            height: 125,
             child: Column(
               children: [
                 Text(
                     'You are about to enjoy a complimentary service! Confirm your redemption?'),
                 Text(
-                  '\n** Kindly be aware that Pet Taxi is not part of the free service.',
+                  '\n** Kindly be aware that Pet Taxi is not part of the free service. It charges RM20 for a round trip.',
                   style: TextStyle(color: AppColors.paraColor, fontSize: 14),
                 )
               ],

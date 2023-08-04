@@ -1,6 +1,9 @@
+import 'dart:io';
+
 import 'package:firebase_database/firebase_database.dart';
 import 'package:flutter/material.dart';
 import 'package:ohmypet/pages/admin/add_package.dart';
+import 'package:ohmypet/pages/admin/edit_package.dart';
 import 'package:ohmypet/widgets/admin_header.dart';
 import 'package:ohmypet/widgets/admin_navigation_bar.dart';
 
@@ -17,54 +20,32 @@ class PackageManagement extends StatefulWidget {
 
 class _PackageManagementState extends State<PackageManagement> {
   // Create a reference to Firebase database
-  late DatabaseReference profileRef;
+  late DatabaseReference packageRef;
 
   late String role;
+  String packageTitle = '';
+  String packageDescription = '';
+  String packagePrice = '';
+  String packageImageUrl = '';
 
   @override
   void initState() {
     super.initState();
 
+    packageRef = FirebaseDatabase.instance.ref('packages');
+    getPackageInfo();
+
     role = widget.role;
   }
 
-  final List<Map<String, dynamic>> gridData = [
-    {
-      'title': 'August Super Saver',
-      'imageUrl': 'assets/images/p4.png',
-      'description':
-          'Enjoy our August saver by booking any kind of services, with FREE pet taxi fee!',
-      'price': 90,
-    },
-    {
-      'title': 'Pampered Pooch Package',
-      'imageUrl': 'assets/images/p1.png',
-      'description':
-          'Treat your furry friend with our Pampered Pooch Package, including a luxurious bath, grooming, and massage!',
-      'price': 120,
-    },
-    {
-      'title': 'Kitty Cuddle Time',
-      'imageUrl': 'assets/images/p2.png',
-      'description':
-          'Give your kitty some extra love and cuddle time with our Kitty Cuddle Time service!',
-      'price': 60,
-    },
-    {
-      'title': 'Puppy Playdate',
-      'imageUrl': 'assets/images/p3.png',
-      'description':
-          'Let your puppy socialize and have fun with other adorable pups in our Puppy Playdate!',
-      'price': 50,
-    },
-    {
-      'title': 'Boarding Saver',
-      'imageUrl': 'assets/images/p2.png',
-      'description':
-          'Enjoy a super deal of 50% discount on a pet boarding service!!',
-      'price': 30,
-    },
-  ];
+  void refreshData() {
+    setState(() {
+      getPackageInfo();
+    });
+  }
+
+  late List<Map> gridData = [];
+  late List<String> gridDataID = [];
 
   Widget _offsetPopup() => PopupMenuButton<int>(
       onSelected: (value) {
@@ -127,17 +108,17 @@ class _PackageManagementState extends State<PackageManagement> {
               itemBuilder: (context, index) {
                 final GlobalKey itemKey = GlobalKey();
                 itemKeys.add(itemKey);
-                final packageItem = gridData[index];
+
                 return GestureDetector(
                   onLongPress: () =>
                       _showLongPressOptions(context, index, itemKey),
                   onTap: () => _showPackageDetail(context, index, itemKey),
                   child: PackageItem(
                     key: itemKey,
-                    title: packageItem['title'],
-                    imageUrl: packageItem['imageUrl'],
-                    description: packageItem['description'],
-                    price: packageItem['price'],
+                    title: gridData[index]['title'],
+                    imageUrl: gridData[index]['imageUrl'],
+                    description: gridData[index]['description'],
+                    price: double.parse(gridData[index]['price']),
                   ),
                 );
               },
@@ -158,12 +139,6 @@ class _PackageManagementState extends State<PackageManagement> {
     );
   }
 
-  void _removePackage(int index) {
-    setState(() {
-      gridData.removeAt(index);
-    });
-  }
-
   void _showLongPressOptions(
       BuildContext context, int index, GlobalKey itemKey) {
     final RenderBox overlay =
@@ -177,7 +152,6 @@ class _PackageManagementState extends State<PackageManagement> {
         Rect.fromPoints(tapPosition, tapPosition),
         Offset(10, 0) & overlay.size,
       );
-
       showMenu(
         context: context,
         position: position,
@@ -194,9 +168,13 @@ class _PackageManagementState extends State<PackageManagement> {
         elevation: 8.0,
       ).then((value) {
         if (value == 'edit') {
-          // Handle Edit Package action
+          Navigator.push(
+              context,
+              MaterialPageRoute(
+                  builder: (context) =>
+                      EditPackagePage(packageID: gridDataID[index])));
         } else if (value == 'remove') {
-          removeConfirmationDialog(context);
+          removeConfirmationDialog(context, gridDataID[index], index);
         }
       });
     }
@@ -217,8 +195,8 @@ class _PackageManagementState extends State<PackageManagement> {
               crossAxisAlignment: CrossAxisAlignment.stretch,
               mainAxisSize: MainAxisSize.min,
               children: [
-                Image.asset(
-                  gridData[index]['imageUrl'],
+                Image.file(
+                  File(gridData[index]['imageUrl']),
                   height: 200,
                   fit: BoxFit.cover,
                 ),
@@ -263,7 +241,7 @@ class _PackageManagementState extends State<PackageManagement> {
   }
 
   // Confirm Remove Action
-  void removeConfirmationDialog(BuildContext context) {
+  void removeConfirmationDialog(BuildContext context, String pid, index) {
     showDialog(
       context: context,
       builder: (BuildContext context) {
@@ -313,9 +291,45 @@ class _PackageManagementState extends State<PackageManagement> {
       },
     ).then((value) {
       if (value != null && value) {
-        // Remove
+        packageRef = FirebaseDatabase.instance.ref('packages/$pid');
+
+        packageRef.remove();
+        // gridData.removeAt(index);
       } else {}
     });
+  }
+
+  void getPackageInfo() {
+    try {
+      // // Get a reference to the 'users' node in the Realtime Database
+      DatabaseReference packageRef =
+          FirebaseDatabase.instance.ref().child('packages');
+
+      // Query the 'packages' node to get package data
+      Query packageQuery = packageRef;
+
+      // Listen for the value event
+      packageQuery.onValue.listen((DatabaseEvent event) {
+        // Access the DataSnapshot from the event
+        DataSnapshot snapshot = event.snapshot;
+
+        // Check if the snapshot's value is not null and is of type Map<dynamic, dynamic>
+        if (snapshot.value != null) {
+          // Convert the value to a Map<dynamic, dynamic>
+          Map<dynamic, dynamic> packageItem = snapshot.value as Map;
+          gridData.clear();
+          // Loop through the snapshot's children (admin users)
+          packageItem.forEach((key, packageData) {
+            setState(() {
+              gridData.add(packageData);
+              gridDataID.add(key);
+            });
+          });
+        }
+      });
+    } catch (e) {
+      print('Error getting admin users: $e');
+    }
   }
 }
 
@@ -323,7 +337,7 @@ class PackageItem extends StatelessWidget {
   final String title;
   final String imageUrl;
   final String description;
-  final int price;
+  final double price;
 
   const PackageItem(
       {super.key,
@@ -348,8 +362,8 @@ class PackageItem extends StatelessWidget {
         children: [
           SizedBox(
             height: 120,
-            child: Image.asset(
-              imageUrl,
+            child: Image.file(
+              File(imageUrl),
               fit: BoxFit.cover,
             ),
           ),

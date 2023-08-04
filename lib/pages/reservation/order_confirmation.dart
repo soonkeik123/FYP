@@ -180,14 +180,6 @@ class _OrderConfirmationPageState extends State<OrderConfirmationPage> {
                         style: const TextStyle(
                             fontSize: 18, fontWeight: FontWeight.w500),
                       ),
-                      // Column(
-                      //   crossAxisAlignment: CrossAxisAlignment.start,
-                      //   children:
-                      //   selectedService.map((item) => Text(item,
-                      //           style: const TextStyle(
-                      //               fontSize: 18, fontWeight: FontWeight.w500)))
-                      //       .toList(),
-                      // ),
                       const SizedBox(
                         height: 10,
                       ),
@@ -384,7 +376,6 @@ class _OrderConfirmationPageState extends State<OrderConfirmationPage> {
                                         priceGet.toInt();
                                   }
 
-                                  print("new point : $newPoint");
                                   await profileLoyaltyRef
                                       .set(newPoint)
                                       .then((value) {

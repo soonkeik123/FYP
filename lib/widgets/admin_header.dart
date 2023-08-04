@@ -53,7 +53,7 @@ class AdminHeader extends StatelessWidget {
                           color: AppColors.mainColor,
                           size: Dimensions.iconSize26),
                     ),
-                    onTap: () => Navigator.popAndPushNamed(context, '/signIn'),
+                    onTap: () => showConfirmDialog(context),
                   ),
                 )
               ],
@@ -102,5 +102,61 @@ class AdminHeader extends StatelessWidget {
         ),
       );
     }
+  }
+
+  // Confirm Remove Action
+  void showConfirmDialog(BuildContext context) {
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(10.0),
+          ),
+          backgroundColor: Colors.white,
+          title: const Text('Logout'),
+          titleTextStyle: const TextStyle(
+            color: Colors.red,
+            fontSize: 20.0,
+            fontWeight: FontWeight.bold,
+          ),
+          content: SizedBox(
+            height: 50,
+            child: Text('Are you sure you want to sign out?'),
+          ),
+          contentTextStyle: const TextStyle(
+            color: AppColors.catBasicRed,
+            fontSize: 17.0,
+          ),
+          actions: <Widget>[
+            TextButton(
+              onPressed: () {
+                Navigator.pop(
+                    context, false); // Return false to indicate cancellation
+              },
+              child: const Text(
+                'Cancel',
+                style: TextStyle(color: AppColors.paraColor, fontSize: 18),
+              ),
+            ),
+            TextButton(
+              onPressed: () {
+                Navigator.pop(
+                    context, true); // Return true to indicate confirmation
+              },
+              child: const Text('Confirm',
+                  style: TextStyle(
+                      color: AppColors.catBasicRed,
+                      fontWeight: FontWeight.bold,
+                      fontSize: 18)),
+            ),
+          ],
+        );
+      },
+    ).then((value) {
+      if (value != null && value) {
+        Navigator.popAndPushNamed(context, '/signIn');
+      } else {}
+    });
   }
 }
