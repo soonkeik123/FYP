@@ -1,3 +1,4 @@
+import 'package:firebase_database/firebase_database.dart';
 import 'package:flutter/material.dart';
 import 'package:ohmypet/utils/colors.dart';
 import 'package:ohmypet/widgets/header.dart';
@@ -7,7 +8,7 @@ import '../../widgets/info_text.dart';
 class TrackProgressPage extends StatefulWidget {
   static const routeName = '/trackProgress';
 
-  int reservationID;
+  String reservationID;
 
   TrackProgressPage({super.key, required this.reservationID});
 
@@ -17,7 +18,7 @@ class TrackProgressPage extends StatefulWidget {
 
 class _TrackProgressPageState extends State<TrackProgressPage>
     with TickerProviderStateMixin {
-  int currentID = 0;
+  String currentID = '';
   int stage = 0;
   double boundary = 12.5;
   int loyaltyPoint = 146;
@@ -49,7 +50,8 @@ class _TrackProgressPageState extends State<TrackProgressPage>
     controller.value = 0.0;
     // controller.repeat();
 
-    currentID = widget.reservationID;
+    currentID =
+        (widget.reservationID).substring(widget.reservationID.length - 5);
     super.initState();
   }
 
@@ -162,19 +164,24 @@ class _TrackProgressPageState extends State<TrackProgressPage>
                       child: Row(
                         mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                         children: [
-                          Container(
-                            height: 40,
-                            width: 130,
-                            alignment: Alignment.center,
-                            decoration: BoxDecoration(
-                              color: AppColors.catBasicRed,
-                              borderRadius: BorderRadius.circular(30),
+                          InkWell(
+                            onTap: () => removeConfirmationDialog(
+                              context,
                             ),
-                            child: const Text(
-                              "Cancel",
-                              style: TextStyle(
-                                  fontWeight: FontWeight.w500,
-                                  color: Colors.white),
+                            child: Container(
+                              height: 40,
+                              width: 130,
+                              alignment: Alignment.center,
+                              decoration: BoxDecoration(
+                                color: AppColors.catBasicRed,
+                                borderRadius: BorderRadius.circular(30),
+                              ),
+                              child: const Text(
+                                "Cancel",
+                                style: TextStyle(
+                                    fontWeight: FontWeight.w500,
+                                    color: Colors.white),
+                              ),
                             ),
                           ),
                           Container(
@@ -786,6 +793,7 @@ class _TrackProgressPageState extends State<TrackProgressPage>
   }
 
   void removeConfirmationDialog(BuildContext context) {
+    print(widget.reservationID);
     showDialog(
       context: context,
       builder: (BuildContext context) {
@@ -833,9 +841,18 @@ class _TrackProgressPageState extends State<TrackProgressPage>
           ],
         );
       },
-    ).then((value) {
+    ).then((value) async {
       if (value != null && value) {
-        // Cancel the reservation
+        final ref = FirebaseDatabase.instance.ref('reservations');
+
+        //  Map<String, dynamic> profileData = {
+        //                       'status': 'Canceled',
+        //                     };
+        await ref.update({
+          "${widget.reservationID}/status": 'Canceled',
+        }).then((value) {
+          Navigator.pop(context);
+        });
       } else {}
     });
   }

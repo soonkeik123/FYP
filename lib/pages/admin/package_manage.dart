@@ -361,7 +361,7 @@ class PackageItem extends StatelessWidget {
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
           SizedBox(
-            height: 120,
+            height: 130,
             child: Image.file(
               File(imageUrl),
               fit: BoxFit.cover,
@@ -371,6 +371,7 @@ class PackageItem extends StatelessWidget {
           Text(
             title,
             style: const TextStyle(fontWeight: FontWeight.w500, fontSize: 15),
+            overflow: TextOverflow.ellipsis,
           ),
           const SizedBox(
             height: 2,

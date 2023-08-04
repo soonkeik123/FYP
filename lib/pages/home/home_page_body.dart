@@ -1,3 +1,5 @@
+import 'dart:io';
+
 import 'package:dots_indicator/dots_indicator.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_database/firebase_database.dart';
@@ -8,6 +10,8 @@ import 'package:ohmypet/utils/colors.dart';
 import 'package:ohmypet/utils/dimensions.dart';
 import 'package:ohmypet/widgets/big_text.dart';
 import 'package:ohmypet/widgets/small_text.dart';
+
+import '../admin/package_manage.dart';
 
 class HomePageBody extends StatefulWidget {
   const HomePageBody({super.key});
@@ -34,7 +38,10 @@ class _HomePageBodyState extends State<HomePageBody> {
   final double _scaleFactor = 0.8;
   final double _height = 220;
 
-  final List<Map<String, dynamic>> gridData = [
+  late List<Map> packages = [];
+  late List<String> packageID = [];
+
+  final List<Map<String, dynamic>> serviceData = [
     {
       'title': 'Cat Basic Grooming',
       'color': '0xFFC62828',
@@ -73,6 +80,7 @@ class _HomePageBodyState extends State<HomePageBody> {
   ];
 
   bool isDog = true;
+  List<GlobalKey> itemKeys = [];
 
   @override
   void initState() {
@@ -93,6 +101,8 @@ class _HomePageBodyState extends State<HomePageBody> {
           .child(uid)
           .child('Pet');
     }
+
+    getAllPackage();
   }
 
   @override
@@ -117,24 +127,17 @@ class _HomePageBodyState extends State<HomePageBody> {
         });
       }
     });
-    dbPetRef.onValue.listen((event) {
-      // The event snapshot contains the data
-      DataSnapshot snapshot = event.snapshot;
-      if (snapshot.value != null) {
-        // Handle the data as needed
-        // print('Data: ${snapshot.value}');
-      } else {
-        // Handle the case when data is null or does not exist
-        // print('No data available.');
-      }
-    });
-    // Method to fetch data from Firebase
-    // final snapshot = await databaseReference.get();
-    // if (snapshot.exists) {
-    //     print(snapshot.value);
-    // } else {
-    //     print('No data available.');
-    // }
+    // dbPetRef.onValue.listen((event) {
+    //   // The event snapshot contains the data
+    //   DataSnapshot snapshot = event.snapshot;
+    //   if (snapshot.value != null) {
+    //     // Handle the data as needed
+    //     // print('Data: ${snapshot.value}');
+    //   } else {
+    //     // Handle the case when data is null or does not exist
+    //     // print('No data available.');
+    //   }
+    // });
 
     return Stack(
       children: [
@@ -298,7 +301,7 @@ class _HomePageBodyState extends State<HomePageBody> {
                 height: 170,
                 child: ListView.builder(
                   scrollDirection: Axis.horizontal,
-                  itemCount: gridData.length,
+                  itemCount: serviceData.length,
                   itemBuilder: (context, index) {
                     return Padding(
                       padding: const EdgeInsets.all(6.0),
@@ -312,8 +315,8 @@ class _HomePageBodyState extends State<HomePageBody> {
                             borderRadius:
                                 BorderRadius.circular(Dimensions.radius20),
                             border: Border.all(
-                                color:
-                                    Color(int.parse(gridData[index]['color'])),
+                                color: Color(
+                                    int.parse(serviceData[index]['color'])),
                                 width: 1.5),
                           ),
                           child: Column(
@@ -326,7 +329,7 @@ class _HomePageBodyState extends State<HomePageBody> {
                                     shape: BoxShape.circle,
                                     image: DecorationImage(
                                       image: AssetImage(
-                                          gridData[index]['imageURL']),
+                                          serviceData[index]['imageURL']),
                                     )),
                               ),
                               const SizedBox(height: 8),
@@ -335,12 +338,12 @@ class _HomePageBodyState extends State<HomePageBody> {
                                 // margin: EdgeInsets.symmetric(horizontal: 25),
                                 alignment: Alignment.center,
                                 child: Text(
-                                  gridData[index]['title'],
+                                  serviceData[index]['title'],
                                   style: TextStyle(
                                       fontSize: 14,
                                       fontWeight: FontWeight.w400,
-                                      color: Color(
-                                          int.parse(gridData[index]['color']))),
+                                      color: Color(int.parse(
+                                          serviceData[index]['color']))),
                                 ),
                               ),
                             ],
@@ -402,46 +405,29 @@ class _HomePageBodyState extends State<HomePageBody> {
               // List of service and images
               Container(
                 margin: const EdgeInsets.only(left: 10, right: 10, bottom: 20),
-                height: 540,
+                height: 430,
                 child: GridView.builder(
-                  physics: const NeverScrollableScrollPhysics(),
+                  physics: const AlwaysScrollableScrollPhysics(),
                   shrinkWrap: true,
-                  controller: ScrollController(keepScrollOffset: false),
+                  itemCount: packages.length,
                   gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-                      crossAxisCount: 2,
-                      childAspectRatio: (1 / 1.5),
-                      crossAxisSpacing: 10,
-                      mainAxisSpacing: 10),
-                  itemCount: 4,
-                  itemBuilder: (BuildContext context, int index) {
-                    // final packageItem = dataList[index]; Replace if have actual list
+                    childAspectRatio: (130 / 160),
+                    crossAxisCount: 2, // Number of columns
+                    crossAxisSpacing: 10.0,
+                    mainAxisSpacing: 14.0,
+                  ),
+                  itemBuilder: (context, index) {
+                    final GlobalKey itemKey = GlobalKey();
+                    itemKeys.add(itemKey);
 
-                    return Container(
-                      // padding: EdgeInsets.all(),
-                      child: Card(
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.center,
-                          children: [
-                            // Image.asset(packageItem.imagePath),
-                            Container(
-                              margin: const EdgeInsets.only(top: 15),
-                              width: 120,
-                              height: 120,
-                              decoration: BoxDecoration(
-                                borderRadius:
-                                    BorderRadius.circular(Dimensions.radius15),
-                                image: const DecorationImage(
-                                    fit: BoxFit.cover,
-                                    image: AssetImage("assets/images/p4.png")),
-                              ),
-                            ),
-                            const SizedBox(
-                              height: 10,
-                            ),
-                            const Text("Boarding + Grooming"),
-                            const Text("Started from RM125"),
-                          ],
-                        ),
+                    return GestureDetector(
+                      onTap: () => _showPackageDetail(context, index, itemKey),
+                      child: PackageItem(
+                        key: itemKey,
+                        title: packages[index]['title'],
+                        imageUrl: packages[index]['imageUrl'],
+                        description: packages[index]['description'],
+                        price: double.parse(packages[index]['price']),
                       ),
                     );
                   },
@@ -451,6 +437,66 @@ class _HomePageBodyState extends State<HomePageBody> {
           ),
         ),
       ],
+    );
+  }
+
+  // View Package item detail
+  void _showPackageDetail(BuildContext context, int index, GlobalKey itemKey) {
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return Dialog(
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(10),
+          ),
+          child: Container(
+            padding: const EdgeInsets.all(16),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Image.file(
+                  File(packages[index]['imageUrl']),
+                  height: 250,
+                  fit: BoxFit.cover,
+                ),
+                const SizedBox(height: 16),
+                Text(
+                  packages[index]['title'],
+                  style: TextStyle(
+                    fontWeight: FontWeight.w500,
+                    fontSize: 20,
+                  ),
+                ),
+                const SizedBox(height: 8),
+                Text(
+                  packages[index]['description'],
+                  style: TextStyle(
+                    fontSize: 16,
+                  ),
+                ),
+                const SizedBox(height: 8),
+                Text(
+                  'Price: RM ${packages[index]['price']}',
+                  style: TextStyle(
+                    fontSize: 18,
+                    fontWeight: FontWeight.bold,
+                    color: Colors.green,
+                  ),
+                ),
+                const SizedBox(height: 16),
+                ElevatedButton(
+                  onPressed: () {
+                    // Handle the button action here (if needed)
+                    Navigator.pop(context); // Close the dialog
+                  },
+                  child: Text('Close'),
+                ),
+              ],
+            ),
+          ),
+        );
+      },
     );
   }
 
@@ -603,5 +649,19 @@ class _HomePageBodyState extends State<HomePageBody> {
         ],
       ),
     );
+  }
+
+  Future<void> getAllPackage() async {
+    final ref = FirebaseDatabase.instance.ref();
+    final event = await ref.child('packages').once(DatabaseEventType.value);
+
+    final packageSnapshot = event.snapshot;
+    packages.clear();
+    packageID.clear();
+    Map packagesItem = packageSnapshot.value as Map;
+    packagesItem.forEach((key, value) {
+      packages.add(value);
+      packageID.add(key);
+    });
   }
 }
