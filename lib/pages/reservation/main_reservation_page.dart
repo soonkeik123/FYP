@@ -21,14 +21,11 @@ class _MainReservationPageState extends State<MainReservationPage> {
   late DatabaseReference reservRef;
 
   int allIndex = 0; // reservation index
-  String service = '';
-  String status = '';
-  String date = '';
-  String time = '';
-  String package = '';
 
-  List<Map<String, dynamic>> reservations = [];
-  List<String> reservationID = [];
+  List<Map<String, dynamic>> ongoingReservations = [];
+  List<Map<String, dynamic>> historyReservations = [];
+  List<String> ongoingReservationID = [];
+  List<String> historyReservationID = [];
 
   @override
   void initState() {
@@ -49,7 +46,7 @@ class _MainReservationPageState extends State<MainReservationPage> {
       Map<dynamic, dynamic>? data = snapshot.value as Map<dynamic, dynamic>?;
       if (data != null) {
         // List<Map<String, dynamic>> filterReservations = [];
-        reservations.clear(); // Clear the list before adding new data
+        ongoingReservations.clear(); // Clear the list before adding new data
         data.forEach((key, value) {
           Map<String, dynamic> reservationData =
               Map.from(value); // Access the inner map
@@ -57,32 +54,39 @@ class _MainReservationPageState extends State<MainReservationPage> {
 
           // Check if the user_id field matches the provided userID
           if (reservationData['user_id'] == UID) {
-            setState(() {
-              // reservations.addAll(filterReservations);
-              reservations.add(reservationData);
-              reservationID.add(key);
-            });
+            if (reservationData['status'] == 'Incoming' ||
+                reservationData['status'] == 'Processing') {
+              setState(() {
+                ongoingReservations.add(reservationData);
+                ongoingReservationID.add(key);
+              });
+            } else {
+              setState(() {
+                historyReservations.add(reservationData);
+                historyReservationID.add(key);
+              });
+            }
           }
         });
       }
     });
   }
 
-  List<Map<String, dynamic>> filterReservattionsByStatus(
-      List<Map<String, dynamic>> reservations, String status, String status2) {
-    return reservations
-        .where((reservations) =>
-            reservations["status"] == status ||
-            reservations["status"] == status2)
-        .toList();
-  }
+  // List<Map<String, dynamic>> filterReservattionsByStatus(
+  //     List<Map<String, dynamic>> reservations, String status, String status2) {
+  //   return reservations
+  //       .where((reservations) =>
+  //           reservations["status"] == status ||
+  //           reservations["status"] == status2)
+  //       .toList();
+  // }
 
   @override
   Widget build(BuildContext context) {
-    List<Map<String, dynamic>> ongoingOrders =
-        filterReservattionsByStatus(reservations, "Incoming", "Processing");
-    List<Map<String, dynamic>> historyOrders =
-        filterReservattionsByStatus(reservations, "Completed", "Canceled");
+    // List<Map<String, dynamic>> ongoingOrders = filterReservattionsByStatus(
+    //     ongoingReservations, "Incoming", "Processing");
+    // List<Map<String, dynamic>> historyOrders = filterReservattionsByStatus(
+    //     ongoingReservations, "Completed", "Canceled");
 
     return Scaffold(
       backgroundColor: Colors.white,
@@ -113,15 +117,15 @@ class _MainReservationPageState extends State<MainReservationPage> {
                     child: ListView.builder(
                       shrinkWrap: true,
                       physics: const NeverScrollableScrollPhysics(),
-                      itemCount: ongoingOrders.length,
+                      itemCount: ongoingReservations.length,
                       itemBuilder: (context, index) {
                         // Display processing orders
                         return OrderItemWidget(
-                          id: reservationID[index],
-                          status: ongoingOrders[index]["status"],
-                          service: ongoingOrders[index]["service"],
-                          date: ongoingOrders[index]["date"],
-                          time: ongoingOrders[index]["time"],
+                          id: ongoingReservationID[index],
+                          status: ongoingReservations[index]["status"],
+                          service: ongoingReservations[index]["service"],
+                          date: ongoingReservations[index]["date"],
+                          time: ongoingReservations[index]["time"],
                         );
                       },
                     ),
@@ -142,15 +146,15 @@ class _MainReservationPageState extends State<MainReservationPage> {
                       child: ListView.builder(
                         shrinkWrap: true,
                         physics: const NeverScrollableScrollPhysics(),
-                        itemCount: historyOrders.length,
+                        itemCount: historyReservations.length,
                         itemBuilder: (context, index) {
                           // Display processing orders
                           return OrderItemWidget(
-                            id: reservationID[index],
-                            status: historyOrders[index]["status"],
-                            service: historyOrders[index]["service"],
-                            date: historyOrders[index]["date"],
-                            time: historyOrders[index]["time"],
+                            id: historyReservationID[index],
+                            status: historyReservations[index]["status"],
+                            service: historyReservations[index]["service"],
+                            date: historyReservations[index]["date"],
+                            time: historyReservations[index]["time"],
                             // room: processingOrders[index]["room"],
                           );
                         },

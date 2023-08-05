@@ -73,7 +73,7 @@ class _LoyaltyManagementState extends State<LoyaltyManagement> {
         child: Column(
           children: [
             // Header
-            AdminHeader(pageTitle: "MANAGE LOYALTY"),
+            const AdminHeader(pageTitle: "MANAGE LOYALTY"),
 
             // Body content
             Container(
@@ -208,11 +208,11 @@ class _LoyaltyManagementState extends State<LoyaltyManagement> {
                       decoration: BoxDecoration(
                           borderRadius: BorderRadius.circular(20),
                           color: AppColors.mainColor),
-                      child: Row(
+                      child: const Row(
                         crossAxisAlignment: CrossAxisAlignment.center,
                         mainAxisAlignment: MainAxisAlignment.center,
                         children: [
-                          const Text(
+                          Text(
                             "Send",
                             style: TextStyle(
                                 color: Colors.white,
@@ -361,7 +361,7 @@ class _LoyaltyManagementState extends State<LoyaltyManagement> {
               onPressed: () {
                 Navigator.of(context).pop();
               },
-              child: Text('OK'),
+              child: const Text('OK'),
             ),
           ],
         );

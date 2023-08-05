@@ -48,47 +48,6 @@ class _ViewPetPageState extends State<ViewPetPage> {
 
   // Get a specific pet by name
   void getPetByName(String petName) {
-    // // Query to filter pets by name
-    // Query petQuery =
-    //     dbPetRef.orderByChild('name').equalTo(petName);
-    // // Real-time event listener
-    // petQuery.onValue.listen((event) {
-    //   DataSnapshot snapshot = event.snapshot;
-    //   if (snapshot.value != null) {
-    //     // Convert the snapshot value to a Map
-    //     Map<dynamic, dynamic> petData = snapshot.value as Map<dynamic, dynamic>;
-
-    //     // Iterate through the Map to get individual pet data
-    //     petData.forEach((key, value) {
-    //       print('Pet with key $key has data: $value');
-
-    //       // Access individual properties of the pet
-    //       String name = value['name'];
-    //       String gender = value['gender'];
-    //       String breed = value['breed'];
-    //       String size = value['size'];
-    //       String birthday = value['birthday'];
-    //       String type = value['type'];
-
-    //       // Do something with the pet data
-    //       setState(() {
-    //         petName = name;
-    //         petBreed = breed;
-    //         petGender = gender;
-    //         petSize = size;
-    //         petBirthday = birthday;
-    //         petType = type;
-    //       });
-    //       print("Been Here");
-    //     });
-    //   } else {
-    //     // No pet with the specified name found
-    //     print('No pet with name $petName found.');
-    //   }
-    // }, onError: (error) {
-    //   // Error retrieving data from the database
-    //   print('Error fetching pet data: $error');
-    // });
     dbPetRef.onValue.listen((DatabaseEvent event) {
       DataSnapshot snapshot = event.snapshot;
       Map<dynamic, dynamic>? data = snapshot.value as Map<dynamic, dynamic>?;
@@ -109,18 +68,10 @@ class _ViewPetPageState extends State<ViewPetPage> {
       // Simulate a data refresh by adding a new item to the list
       petDataList.add(pet);
       print(petDataList);
-
-      // petName = specificPet['name'];
-      // petGender = specificPet['gender'];
-      // petBreed = specificPet['breed'];
-      // petType = specificPet['type'];
-      // petSize = specificPet['size'];
-      // petBirthday = specificPet['birthday'];
     });
     // Find the first pet with the matching name in the petDataList
     List<Map<String, dynamic>> matchingPets = [];
 
-    // Find all pets with the matching name in the petDataList
     // Find all pets with the matching name in the petDataList
     for (var pet in petDataList) {
       if (pet['name'] == widget.petName) {
@@ -184,7 +135,8 @@ class _ViewPetPageState extends State<ViewPetPage> {
                                 fit: BoxFit.contain,
                                 image: petType == 'Dog'
                                     ? const AssetImage("assets/images/dog.jpeg")
-                                    : const AssetImage("assets/images/cat.jpg"))),
+                                    : const AssetImage(
+                                        "assets/images/cat.jpg"))),
                       ),
                     ),
                     Container(

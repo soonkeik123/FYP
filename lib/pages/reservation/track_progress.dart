@@ -89,7 +89,7 @@ class _TrackProgressPageState extends State<TrackProgressPage>
     } else if (stage == 4) {
       return "Grooming";
     } else if (stage == 5) {
-      return "Vaccinating";
+      return "Awaiting";
     } else if (stage == 6) {
       return "Boarding";
     } else if (stage == 7) {
@@ -133,7 +133,7 @@ class _TrackProgressPageState extends State<TrackProgressPage>
                           const SizedBox(
                             height: 20,
                           ),
-                          const Text("Current Stage:",
+                          const Text("Booking Process:",
                               style: TextStyle(
                                   color: Colors.black,
                                   fontSize: 22,
@@ -492,7 +492,7 @@ class _TrackProgressPageState extends State<TrackProgressPage>
                             height: 60,
                           ),
                           Text(
-                            "Your fur-baby is getting their special vaccine treatment right meow! Don't worry, we've got it all under control and will make sure they're as happy and healthy as ever! ",
+                            "Your fur-baby has enjoyed their previous services! Before the next step, we will let'em take a rest and will make sure they're on safety spot!",
                             textAlign: TextAlign.center,
                             style: TextStyle(
                                 color: Colors.black.withOpacity(0.5),

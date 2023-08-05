@@ -196,7 +196,7 @@ class CustomGridItem extends StatelessWidget {
           showConfirmationDialog(context, title);
         } else {
           showMessageDialog(context, "Low Point",
-              "Sorry, we found that you are having insufficient points to redem this service. We will wait until you accumulate enough point.");
+              "Sorry, we found that you are having insufficient points to redeem this service. We will wait until you accumulate enough point.");
         }
       },
       child: Container(

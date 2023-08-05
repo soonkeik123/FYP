@@ -213,6 +213,9 @@ class CatBoardingInfo extends StatelessWidget {
                         ],
                       ),
                     ),
+                    SizedBox(
+                      height: 20,
+                    ),
                     Container(
                       width: MediaQuery.of(context).size.width,
                       padding:

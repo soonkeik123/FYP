@@ -7,7 +7,7 @@ import 'title_text.dart';
 class AdminHeader extends StatelessWidget {
   final String pageTitle;
 
-  AdminHeader({super.key, required this.pageTitle});
+  const AdminHeader({super.key, required this.pageTitle});
 
   @override
   Widget build(BuildContext context) {
@@ -120,7 +120,7 @@ class AdminHeader extends StatelessWidget {
             fontSize: 20.0,
             fontWeight: FontWeight.bold,
           ),
-          content: SizedBox(
+          content: const SizedBox(
             height: 50,
             child: Text('Are you sure you want to sign out?'),
           ),

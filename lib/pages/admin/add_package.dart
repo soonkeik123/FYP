@@ -22,10 +22,10 @@ class _AddPackagePageState extends State<AddPackagePage> {
   final ImagePicker _picker = ImagePicker();
   String storeImagePath = '';
 
-  TextEditingController _titleController = TextEditingController();
-  TextEditingController _imageUController = TextEditingController();
-  TextEditingController _descriptionController = TextEditingController();
-  TextEditingController _priceController = TextEditingController();
+  final TextEditingController _titleController = TextEditingController();
+  final TextEditingController _imageUController = TextEditingController();
+  final TextEditingController _descriptionController = TextEditingController();
+  final TextEditingController _priceController = TextEditingController();
 
   @override
   Widget build(BuildContext context) {
@@ -34,11 +34,11 @@ class _AddPackagePageState extends State<AddPackagePage> {
       body: Column(
         children: [
           // header
-          AdminHeader(pageTitle: "Add Package"),
+          const AdminHeader(pageTitle: "Add Package"),
 
           Expanded(
               child: Container(
-            padding: EdgeInsets.symmetric(vertical: 20, horizontal: 30),
+            padding: const EdgeInsets.symmetric(vertical: 20, horizontal: 30),
             height: double.maxFinite,
             width: double.maxFinite,
             child: SingleChildScrollView(
@@ -57,13 +57,13 @@ class _AddPackagePageState extends State<AddPackagePage> {
                           ),
                           child: _chosenImage != null
                               ? Image.file(_chosenImage!, fit: BoxFit.cover)
-                              : Icon(Icons.add_photo_alternate,
+                              : const Icon(Icons.add_photo_alternate,
                                   size: 40, color: Colors.grey),
                         ),
-                        SizedBox(
+                        const SizedBox(
                           height: 5,
                         ),
-                        Text(
+                        const Text(
                           "Upload Image",
                           style: TextStyle(
                               color: Colors.blue,
@@ -74,7 +74,7 @@ class _AddPackagePageState extends State<AddPackagePage> {
                     ),
                   ),
 
-                  SizedBox(
+                  const SizedBox(
                     height: 15,
                   ),
 
@@ -185,7 +185,7 @@ class _AddPackagePageState extends State<AddPackagePage> {
                           // Textfield for package title
                           TextField(
                             controller: _priceController,
-                            keyboardType: TextInputType.numberWithOptions(),
+                            keyboardType: const TextInputType.numberWithOptions(),
                             decoration: InputDecoration(
                               border: OutlineInputBorder(
                                 borderSide: const BorderSide(
@@ -306,24 +306,24 @@ class _AddPackagePageState extends State<AddPackagePage> {
           content: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
-              Icon(
+              const Icon(
                 Icons.check_circle,
                 color: Colors.green,
                 size: 60,
               ),
-              SizedBox(height: 20),
+              const SizedBox(height: 20),
               Text(
                 title,
-                style: TextStyle(
+                style: const TextStyle(
                   color: Colors.black,
                   fontWeight: FontWeight.bold,
                   fontSize: 20,
                 ),
               ),
-              SizedBox(height: 10),
+              const SizedBox(height: 10),
               Text(
                 message,
-                style: TextStyle(
+                style: const TextStyle(
                   color: Colors.black,
                   fontSize: 16,
                 ),
@@ -337,7 +337,7 @@ class _AddPackagePageState extends State<AddPackagePage> {
                 Navigator.pop(context); // Pop the dialog
                 Navigator.pop(context); // Pop the current page
               },
-              child: Text(
+              child: const Text(
                 'OK',
                 style: TextStyle(
                   color: Colors.green,
@@ -365,7 +365,7 @@ class _AddPackagePageState extends State<AddPackagePage> {
               onPressed: () {
                 Navigator.of(context).pop();
               },
-              child: Text('OK'),
+              child: const Text('OK'),
             ),
           ],
         );
@@ -381,8 +381,8 @@ class _AddPackagePageState extends State<AddPackagePage> {
           mainAxisSize: MainAxisSize.min,
           children: [
             ListTile(
-              leading: Icon(Icons.photo_library),
-              title: Text('Choose from gallery'),
+              leading: const Icon(Icons.photo_library),
+              title: const Text('Choose from gallery'),
               onTap: () {
                 // Call the image picker function here
                 openImagePicker();
@@ -420,7 +420,7 @@ class _AddPackagePageState extends State<AddPackagePage> {
     // Copy the chosen image to the new file
     await imageFile.copy(savedImage.path);
 
-    storeImagePath = '${savedImage.path}';
+    storeImagePath = savedImage.path;
 
     print('Image saved locally: ${savedImage.path}');
   }

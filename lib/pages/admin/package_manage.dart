@@ -50,7 +50,7 @@ class _PackageManagementState extends State<PackageManagement> {
   Widget _offsetPopup() => PopupMenuButton<int>(
       onSelected: (value) {
         Navigator.push(
-            context, MaterialPageRoute(builder: (context) => AddPackagePage()));
+            context, MaterialPageRoute(builder: (context) => const AddPackagePage()));
       },
       offset: const Offset(0, -40),
       itemBuilder: (context) => [
@@ -85,7 +85,7 @@ class _PackageManagementState extends State<PackageManagement> {
           child: Column(
         children: [
           // header
-          AdminHeader(pageTitle: "MANAGE PACKAGE"),
+          const AdminHeader(pageTitle: "MANAGE PACKAGE"),
 
           // Body content
           // Items
@@ -146,38 +146,36 @@ class _PackageManagementState extends State<PackageManagement> {
     final RenderBox widgetRenderBox =
         itemKey.currentContext?.findRenderObject() as RenderBox;
 
-    if (widgetRenderBox != null) {
-      final Offset tapPosition = widgetRenderBox.localToGlobal(Offset.zero);
-      final RelativeRect position = RelativeRect.fromRect(
-        Rect.fromPoints(tapPosition, tapPosition),
-        Offset(10, 0) & overlay.size,
-      );
-      showMenu(
-        context: context,
-        position: position,
-        items: [
-          PopupMenuItem(
-            value: 'edit',
-            child: Text('Edit Package'),
-          ),
-          PopupMenuItem(
-            value: 'remove',
-            child: Text('Remove Package'),
-          ),
-        ],
-        elevation: 8.0,
-      ).then((value) {
-        if (value == 'edit') {
-          Navigator.push(
-              context,
-              MaterialPageRoute(
-                  builder: (context) =>
-                      EditPackagePage(packageID: gridDataID[index])));
-        } else if (value == 'remove') {
-          removeConfirmationDialog(context, gridDataID[index], index);
-        }
-      });
-    }
+    final Offset tapPosition = widgetRenderBox.localToGlobal(Offset.zero);
+    final RelativeRect position = RelativeRect.fromRect(
+      Rect.fromPoints(tapPosition, tapPosition),
+      const Offset(10, 0) & overlay.size,
+    );
+    showMenu(
+      context: context,
+      position: position,
+      items: [
+        const PopupMenuItem(
+          value: 'edit',
+          child: Text('Edit Package'),
+        ),
+        const PopupMenuItem(
+          value: 'remove',
+          child: Text('Remove Package'),
+        ),
+      ],
+      elevation: 8.0,
+    ).then((value) {
+      if (value == 'edit') {
+        Navigator.push(
+            context,
+            MaterialPageRoute(
+                builder: (context) =>
+                    EditPackagePage(packageID: gridDataID[index])));
+      } else if (value == 'remove') {
+        removeConfirmationDialog(context, gridDataID[index], index);
+      }
+    });
   }
 
   // View Package item detail
@@ -203,7 +201,7 @@ class _PackageManagementState extends State<PackageManagement> {
                 const SizedBox(height: 16),
                 Text(
                   gridData[index]['title'],
-                  style: TextStyle(
+                  style: const TextStyle(
                     fontWeight: FontWeight.w500,
                     fontSize: 20,
                   ),
@@ -211,14 +209,14 @@ class _PackageManagementState extends State<PackageManagement> {
                 const SizedBox(height: 8),
                 Text(
                   gridData[index]['description'],
-                  style: TextStyle(
+                  style: const TextStyle(
                     fontSize: 16,
                   ),
                 ),
                 const SizedBox(height: 8),
                 Text(
                   'Price: RM ${gridData[index]['price']}',
-                  style: TextStyle(
+                  style: const TextStyle(
                     fontSize: 18,
                     fontWeight: FontWeight.bold,
                     color: Colors.green,
@@ -230,7 +228,7 @@ class _PackageManagementState extends State<PackageManagement> {
                     // Handle the button action here (if needed)
                     Navigator.pop(context); // Close the dialog
                   },
-                  child: Text('Close'),
+                  child: const Text('Close'),
                 ),
               ],
             ),
@@ -256,7 +254,7 @@ class _PackageManagementState extends State<PackageManagement> {
             fontSize: 20.0,
             fontWeight: FontWeight.bold,
           ),
-          content: SizedBox(
+          content: const SizedBox(
             height: 50,
             child: Text('Are you sure you want to remove this package ?'),
           ),

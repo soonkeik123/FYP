@@ -463,7 +463,7 @@ class _HomePageBodyState extends State<HomePageBody> {
                 const SizedBox(height: 16),
                 Text(
                   packages[index]['title'],
-                  style: TextStyle(
+                  style: const TextStyle(
                     fontWeight: FontWeight.w500,
                     fontSize: 20,
                   ),
@@ -471,14 +471,14 @@ class _HomePageBodyState extends State<HomePageBody> {
                 const SizedBox(height: 8),
                 Text(
                   packages[index]['description'],
-                  style: TextStyle(
+                  style: const TextStyle(
                     fontSize: 16,
                   ),
                 ),
                 const SizedBox(height: 8),
                 Text(
                   'Price: RM ${packages[index]['price']}',
-                  style: TextStyle(
+                  style: const TextStyle(
                     fontSize: 18,
                     fontWeight: FontWeight.bold,
                     color: Colors.green,
@@ -490,7 +490,7 @@ class _HomePageBodyState extends State<HomePageBody> {
                     // Handle the button action here (if needed)
                     Navigator.pop(context); // Close the dialog
                   },
-                  child: Text('Close'),
+                  child: const Text('Close'),
                 ),
               ],
             ),

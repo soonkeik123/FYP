@@ -25,17 +25,25 @@ class _StaffManagementState extends State<StaffManagement> {
   String staffEmail = '';
   String staffPhone = '';
 
+  String currentAdminName = '';
+  String currentAdminID = '';
+
   late List<Map> staff;
   late List<Map> admin;
 
   TextEditingController nameController = TextEditingController();
   TextEditingController phoneController = TextEditingController();
   TextEditingController emailController = TextEditingController();
-  TextEditingController _passwordController = TextEditingController();
+  final TextEditingController _passwordController = TextEditingController();
 
   @override
   void initState() {
     adminRef = FirebaseDatabase.instance.ref().child('users');
+
+    User? user = FirebaseAuth.instance.currentUser;
+    if (user != null) {
+      currentAdminID = user.uid;
+    }
 
     role = widget.role;
     getStaffAndAdminUsers();
@@ -76,6 +84,9 @@ class _StaffManagementState extends State<StaffManagement> {
             if (userData['Profile']['role'] == 'admin' ||
                 userData['Profile']['role'] == 'staff') {
               staffData.add(userData['Profile']);
+            }
+            if (key == currentAdminID) {
+              currentAdminName = userData['Profile']['full_name'];
             }
           });
           refreshPage();
@@ -125,13 +136,13 @@ class _StaffManagementState extends State<StaffManagement> {
       context: context,
       builder: (BuildContext context) {
         return Padding(
-          padding: EdgeInsets.only(
+          padding: const EdgeInsets.only(
               top: 50.0), // Adjust the top padding to move the dialog down
           child: AlertDialog(
-            shape: RoundedRectangleBorder(
+            shape: const RoundedRectangleBorder(
               borderRadius: BorderRadius.all(Radius.circular(15)),
             ),
-            title: Text(
+            title: const Text(
               'Add Profile',
               style: TextStyle(
                 fontWeight: FontWeight.bold,
@@ -144,26 +155,26 @@ class _StaffManagementState extends State<StaffManagement> {
                 mainAxisSize: MainAxisSize.min,
                 children: [
                   TextField(
-                    decoration: InputDecoration(labelText: 'Name'),
+                    decoration: const InputDecoration(labelText: 'Name'),
                     controller: nameController,
                   ),
-                  SizedBox(height: 8.0),
+                  const SizedBox(height: 8.0),
                   TextField(
-                    decoration: InputDecoration(labelText: 'Phone'),
+                    decoration: const InputDecoration(labelText: 'Phone'),
                     controller: phoneController,
                   ),
-                  SizedBox(height: 8.0),
+                  const SizedBox(height: 8.0),
                   TextField(
-                    decoration: InputDecoration(labelText: 'Email'),
+                    decoration: const InputDecoration(labelText: 'Email'),
                     controller: emailController,
                   ),
-                  SizedBox(height: 8.0),
+                  const SizedBox(height: 8.0),
                   TextField(
-                    decoration: InputDecoration(labelText: 'Password'),
+                    decoration: const InputDecoration(labelText: 'Password'),
                     controller: _passwordController,
                     obscureText: true,
                   ),
-                  SizedBox(height: 16.0),
+                  const SizedBox(height: 16.0),
                   ElevatedButton(
                     onPressed: () {
                       bool isAllFilled = true;
@@ -215,7 +226,7 @@ class _StaffManagementState extends State<StaffManagement> {
                         });
                       }
                     },
-                    child: Text('Save'),
+                    child: const Text('Save'),
                   ),
                 ],
               ),
@@ -282,13 +293,13 @@ class _StaffManagementState extends State<StaffManagement> {
       context: context,
       builder: (BuildContext context) {
         return Padding(
-          padding: EdgeInsets.only(
+          padding: const EdgeInsets.only(
               top: 50.0), // Adjust the top padding to move the dialog down
           child: AlertDialog(
-            shape: RoundedRectangleBorder(
+            shape: const RoundedRectangleBorder(
               borderRadius: BorderRadius.all(Radius.circular(15)),
             ),
-            title: Text(
+            title: const Text(
               'Edit Profile',
               style: TextStyle(
                 fontWeight: FontWeight.bold,
@@ -301,20 +312,20 @@ class _StaffManagementState extends State<StaffManagement> {
                 mainAxisSize: MainAxisSize.min,
                 children: [
                   TextField(
-                    decoration: InputDecoration(labelText: 'Name'),
+                    decoration: const InputDecoration(labelText: 'Name'),
                     controller: editNameController,
                   ),
-                  SizedBox(height: 8.0),
+                  const SizedBox(height: 8.0),
                   TextField(
-                    decoration: InputDecoration(labelText: 'Phone'),
+                    decoration: const InputDecoration(labelText: 'Phone'),
                     controller: editPhoneController,
                   ),
-                  SizedBox(height: 8.0),
+                  const SizedBox(height: 8.0),
                   TextField(
-                    decoration: InputDecoration(labelText: 'Email'),
+                    decoration: const InputDecoration(labelText: 'Email'),
                     controller: editEmailController,
                   ),
-                  SizedBox(height: 16.0),
+                  const SizedBox(height: 16.0),
                   ElevatedButton(
                     onPressed: () {
                       bool isAllFilled = true;
@@ -358,7 +369,7 @@ class _StaffManagementState extends State<StaffManagement> {
                             "Please make sure to fill up all the required form fields.");
                       }
                     },
-                    child: Text('Save'),
+                    child: const Text('Save'),
                   ),
                 ],
               ),
@@ -419,7 +430,7 @@ class _StaffManagementState extends State<StaffManagement> {
       body: Column(
         children: [
           // Header
-          AdminHeader(pageTitle: "MANAGE STAFF"),
+          const AdminHeader(pageTitle: "MANAGE STAFF"),
 
           // Body
           Expanded(
@@ -466,7 +477,15 @@ class _StaffManagementState extends State<StaffManagement> {
                                 return showConfirmationDialog(context)
                                     .then((confirmDelete) {
                                   if (confirmDelete == true) {
-                                    removeStaff(admin[index]['full_name']);
+                                    if (admin[index]['full_name'] ==
+                                        currentAdminName) {
+                                      showMessageDialog(
+                                          context,
+                                          "Fail to Remove",
+                                          "You cannot delete your account by yourself.");
+                                    } else {
+                                      removeStaff(admin[index]['full_name']);
+                                    }
                                   } else {}
                                   return null;
                                 });
@@ -650,7 +669,7 @@ void showMessageDialog(
             onPressed: () {
               Navigator.of(context).pop();
             },
-            child: Text('OK'),
+            child: const Text('OK'),
           ),
         ],
       );

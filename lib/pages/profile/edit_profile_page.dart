@@ -30,7 +30,7 @@ class _EditProfilePageState extends State<EditProfilePage> {
   TextEditingController nicknameController = TextEditingController();
   TextEditingController phoneController = TextEditingController();
   TextEditingController emailController = TextEditingController();
-  TextEditingController _passwordController = TextEditingController();
+  final TextEditingController _passwordController = TextEditingController();
   @override
   void initState() {
     super.initState();
