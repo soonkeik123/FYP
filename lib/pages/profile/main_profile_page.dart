@@ -52,7 +52,7 @@ class _MainProfilePageState extends State<MainProfilePage> {
       String nickname = userData['nickname'];
       String email = userData['email'];
       String phone = userData['phone'];
-      int point = int.parse(userData['point']);
+      int point = userData['point'] as int;
 
       setState(() {
         userName = name;

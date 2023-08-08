@@ -45,7 +45,7 @@ class _LoyaltyPointPageState extends State<LoyaltyPointPage> {
       Map<dynamic, dynamic> userData = snapshot.value as Map;
 
       // Access individual properties of the user data
-      int point = int.parse(userData['point']);
+      int point = userData['point'] as int;
 
       setState(() {
         loyaltyPoint = point;
@@ -131,17 +131,34 @@ class _LoyaltyPointPageState extends State<LoyaltyPointPage> {
 
           // Services that can be redeemed free with certain points
           // Title
-          Container(
-              alignment: Alignment.centerLeft,
-              margin: const EdgeInsets.only(
-                left: 30,
-                top: 30,
-              ),
-              child: BigText(
-                text: "Redeem",
-                color: AppColors.mainColor,
-                size: 20,
-              )),
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Container(
+                  alignment: Alignment.centerLeft,
+                  margin: const EdgeInsets.only(
+                    left: 30,
+                    top: 30,
+                  ),
+                  child: BigText(
+                    text: "Redeem",
+                    color: AppColors.mainColor,
+                    size: 20,
+                  )),
+              Container(
+                  alignment: Alignment.centerRight,
+                  margin: const EdgeInsets.only(
+                    right: 20,
+                    top: 30,
+                  ),
+                  padding: EdgeInsets.only(top: 3),
+                  child: BigText(
+                    text: "Redemption History >",
+                    color: Colors.black54,
+                    size: 14,
+                  )),
+            ],
+          ),
           // Items
           Container(
             margin: const EdgeInsets.only(left: 10, right: 10, bottom: 0),

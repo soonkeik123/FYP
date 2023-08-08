@@ -65,11 +65,8 @@ class _StaffManagementState extends State<StaffManagement> {
       DatabaseReference adminRef =
           FirebaseDatabase.instance.ref().child('users');
 
-      // Query the 'Profile' node to get admin users
-      Query adminQuery = adminRef;
-
       // Listen for the value event
-      adminQuery.onValue.listen((DatabaseEvent event) {
+      adminRef.onValue.listen((DatabaseEvent event) {
         // Access the DataSnapshot from the event
         DataSnapshot snapshot = event.snapshot;
 
@@ -79,14 +76,16 @@ class _StaffManagementState extends State<StaffManagement> {
           Map<dynamic, dynamic> adminUsers =
               snapshot.value as Map<dynamic, dynamic>;
           staffData.clear();
+          // print(adminUsers); // Checking purpose
           // Loop through the snapshot's children (admin users)
           adminUsers.forEach((key, userData) {
-            if (userData['Profile']['role'] == 'admin' ||
-                userData['Profile']['role'] == 'staff') {
-              staffData.add(userData['Profile']);
+            final userProfile = userData['Profile'];
+            if (userProfile['role'] == 'admin' ||
+                userProfile['role'] == 'staff') {
+              staffData.add(userProfile);
             }
             if (key == currentAdminID) {
-              currentAdminName = userData['Profile']['full_name'];
+              currentAdminName = userProfile['full_name'];
             }
           });
           refreshPage();
@@ -424,7 +423,6 @@ class _StaffManagementState extends State<StaffManagement> {
     List<Map> staff = filterOrdersByStatus(staffData, "staff");
     List<Map> admin = filterOrdersByStatus(staffData, "admin");
 
-    List<int> dismissedItemIds = [];
     return Scaffold(
       backgroundColor: Colors.white,
       body: Column(

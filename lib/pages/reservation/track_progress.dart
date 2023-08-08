@@ -1,9 +1,11 @@
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_database/firebase_database.dart';
 import 'package:flutter/material.dart';
 import 'package:ohmypet/utils/colors.dart';
 import 'package:ohmypet/widgets/header.dart';
 
 import '../../widgets/info_text.dart';
+import '../../widgets/title_text.dart';
 
 class TrackProgressPage extends StatefulWidget {
   static const routeName = '/trackProgress';
@@ -18,10 +20,32 @@ class TrackProgressPage extends StatefulWidget {
 
 class _TrackProgressPageState extends State<TrackProgressPage>
     with TickerProviderStateMixin {
+  // Create a reference to Firebase database
+  late DatabaseReference reservRef;
+  late DatabaseReference petRef;
+  String currentUID = '';
+
+  // Variable to store data
+  String reservationId = '';
+  String paymentId = '';
+  String customerId = '';
+  String customerName = '';
+  Map selectedPet = {};
+  String petName = '';
+  String serviceType = '';
+  String services = '';
+  bool taxiRequired = false;
+  String address = '';
+  String reservedDate = '';
+  String reservedTime = '';
+  String package = '';
+  double price = 0;
+  String status = '';
+  late bool pointRedeem;
+
   String currentID = '';
   int stage = 0;
   double boundary = 12.5;
-  int loyaltyPoint = 146;
 
   late AnimationController controller;
   bool determinate = false;
@@ -39,20 +63,79 @@ class _TrackProgressPageState extends State<TrackProgressPage>
   @override
   void initState() {
     controller = AnimationController(
-      /// [AnimationController]s can be created with `vsync: this` because of
-      /// [TickerProviderStateMixin].
       vsync: this,
       upperBound: 1.0,
       duration: const Duration(seconds: 2),
     )..addListener(() {
         setState(() {});
       });
-    controller.value = 0.0;
-    // controller.repeat();
+    // controller.value = 0.0;
+    controller.repeat();
+
+    User? user = FirebaseAuth.instance.currentUser;
+    if (user != null) {
+      currentUID = user.uid;
+    }
+    final rid = widget.reservationID;
+    reservRef = FirebaseDatabase.instance.ref('reservations/$rid');
+    fetchReservationData().then((value) => fetchPetData());
 
     currentID =
         (widget.reservationID).substring(widget.reservationID.length - 5);
     super.initState();
+  }
+
+  // Get data
+  Future<void> fetchReservationData() async {
+    final snapshot = await reservRef.get();
+    if (snapshot.exists) {
+      Map reservationData = snapshot.value as Map;
+      setState(() {
+        reservationId = widget.reservationID;
+        paymentId = reservationData['payment_id'];
+        customerId = reservationData['user_id'];
+        services = reservationData['service'];
+        taxiRequired = reservationData['taxi'];
+        address = reservationData['address'];
+        reservedDate = reservationData['date'];
+        reservedTime = reservationData['time'];
+        package = reservationData['package'];
+        price = double.parse(reservationData['price'].toString());
+        stage = reservationData['stage'];
+        status = reservationData['status'];
+        pointRedeem = reservationData['free_service'];
+        petName = reservationData['pet'];
+      });
+      final nameSnapshot = await FirebaseDatabase.instance
+          .ref('users/$customerId/Profile')
+          .child('full_name')
+          .get();
+      setState(() {
+        customerName = nameSnapshot.value.toString();
+        if (package.isNotEmpty) {
+          serviceType = "Package";
+        } else if (pointRedeem) {
+          serviceType = "Loyalty Point Redemption";
+        } else {
+          serviceType = "Normal";
+        }
+      });
+    }
+  }
+
+  Future<void> fetchPetData() async {
+    petRef = FirebaseDatabase.instance.ref('users/$customerId/Pet');
+    petRef.onValue.listen((DatabaseEvent event) {
+      DataSnapshot snapshot = event.snapshot;
+      Map petData = snapshot.value as Map;
+      petData.forEach((key, value) {
+        if (value['data']['name'] == petName) {
+          setState(() {
+            selectedPet = value['data'];
+          });
+        }
+      });
+    });
   }
 
   void updateProgress() {
@@ -67,13 +150,14 @@ class _TrackProgressPageState extends State<TrackProgressPage>
 
       // Set the value of the new controller to the desired percentage
     );
-    controller.value = boundary / 100.0;
+    // controller.value = boundary / 100.0;
     print(boundary);
   }
 
   @override
   void dispose() {
     controller.dispose();
+    reservRef.onDisconnect();
     super.dispose();
   }
 
@@ -102,6 +186,7 @@ class _TrackProgressPageState extends State<TrackProgressPage>
 
   @override
   Widget build(BuildContext context) {
+    fetchReservationData();
     return Scaffold(
       backgroundColor: Colors.white,
       body: Column(
@@ -110,7 +195,6 @@ class _TrackProgressPageState extends State<TrackProgressPage>
           const CustomHeader(pageTitle: "Track Progress"),
 
           // ------body content-----
-
           // Incoming
           stage == 0
               ? Column(
@@ -717,7 +801,7 @@ class _TrackProgressPageState extends State<TrackProgressPage>
                                     height: 15,
                                   ),
                                   InfoText(
-                                      text: "$loyaltyPoint pt",
+                                      text: "${price.toInt()} pt",
                                       size: 40,
                                       normal: false,
                                       color: AppColors.mainColor),
@@ -759,20 +843,24 @@ class _TrackProgressPageState extends State<TrackProgressPage>
                         ],
                       ),
                     ),
-                    Container(
-                      height: 45,
-                      width: 200,
-                      alignment: Alignment.center,
-                      decoration: BoxDecoration(
-                        color: AppColors.mainColor.withOpacity(0.8),
-                        borderRadius: BorderRadius.circular(30),
-                      ),
-                      child: const Text(
-                        "View Loyalty Points",
-                        style: TextStyle(
-                            fontWeight: FontWeight.w500,
-                            color: Colors.white,
-                            fontSize: 16),
+                    InkWell(
+                      onTap: () =>
+                          Navigator.popAndPushNamed(context, '/loyaltyPoint'),
+                      child: Container(
+                        height: 45,
+                        width: 200,
+                        alignment: Alignment.center,
+                        decoration: BoxDecoration(
+                          color: AppColors.mainColor.withOpacity(0.8),
+                          borderRadius: BorderRadius.circular(30),
+                        ),
+                        child: const Text(
+                          "View Loyalty Points",
+                          style: TextStyle(
+                              fontWeight: FontWeight.w500,
+                              color: Colors.white,
+                              fontSize: 16),
+                        ),
                       ),
                     )
                   ],
@@ -780,15 +868,6 @@ class _TrackProgressPageState extends State<TrackProgressPage>
               : Container(),
         ],
       ),
-      floatingActionButton: FloatingActionButton(onPressed: () {
-        if (stage < 8) {
-          setState(() {
-            stage++;
-          });
-        }
-
-        updateProgress();
-      }),
     );
   }
 
@@ -855,5 +934,605 @@ class _TrackProgressPageState extends State<TrackProgressPage>
         });
       } else {}
     });
+  }
+}
+
+class ReservationDetail extends StatefulWidget {
+  final String reservationID;
+  const ReservationDetail({super.key, required this.reservationID});
+
+  @override
+  State<ReservationDetail> createState() => _ReservationDetailState();
+}
+
+class _ReservationDetailState extends State<ReservationDetail> {
+  // Create a reference to Firebase database
+  late DatabaseReference reservRef;
+  late DatabaseReference petRef;
+  String currentUID = '';
+
+  // Variable to store data
+  String reservationId = '';
+  String paymentId = '';
+  String customerId = '';
+  String customerName = '';
+  Map selectedPet = {};
+  String petName = '';
+  String serviceType = '';
+  String services = '';
+  bool taxiRequired = false;
+  String address = '';
+  String reservedDate = '';
+  String reservedTime = '';
+  String package = '';
+  double price = 0;
+  String status = '';
+  late bool pointRedeem;
+
+  String currentID = '';
+  int stage = 0;
+  double boundary = 12.5;
+
+  late AnimationController controller;
+  bool determinate = false;
+  bool isFullGroom = false;
+  bool changePic = true;
+
+  // final Completer<GoogleMapController> _controller =
+  //     Completer<GoogleMapController>();
+
+  // static const CameraPosition _kGooglePlex = CameraPosition(
+  //   target: LatLng(37.42796133580664, -122.085749655962),
+  //   zoom: 14.4746,
+  // );
+
+  @override
+  void initState() {
+    User? user = FirebaseAuth.instance.currentUser;
+    if (user != null) {
+      currentUID = user.uid;
+    }
+    final rid = widget.reservationID;
+    reservRef = FirebaseDatabase.instance.ref('reservations/$rid');
+    fetchReservationData().then((value) => fetchPetData());
+
+    currentID =
+        (widget.reservationID).substring(widget.reservationID.length - 5);
+    super.initState();
+  }
+
+  // Get data
+  Future<void> fetchReservationData() async {
+    final snapshot = await reservRef.get();
+    if (snapshot.exists) {
+      Map reservationData = snapshot.value as Map;
+      setState(() {
+        reservationId = widget.reservationID;
+        paymentId = reservationData['payment_id'];
+        customerId = reservationData['user_id'];
+        services = reservationData['service'];
+        taxiRequired = reservationData['taxi'];
+        address = reservationData['address'];
+        reservedDate = reservationData['date'];
+        reservedTime = reservationData['time'];
+        package = reservationData['package'];
+        price = double.parse(reservationData['price'].toString());
+        stage = reservationData['stage'];
+        status = reservationData['status'];
+        pointRedeem = reservationData['free_service'];
+        petName = reservationData['pet'];
+      });
+      final nameSnapshot = await FirebaseDatabase.instance
+          .ref('users/$customerId/Profile')
+          .child('full_name')
+          .get();
+      setState(() {
+        customerName = nameSnapshot.value.toString();
+        if (package.isNotEmpty) {
+          serviceType = "Package";
+        } else if (pointRedeem) {
+          serviceType = "Loyalty Point Redemption";
+        } else {
+          serviceType = "Normal";
+        }
+      });
+    }
+  }
+
+  Future<void> fetchPetData() async {
+    petRef = FirebaseDatabase.instance.ref('users/$customerId/Pet');
+    petRef.onValue.listen((DatabaseEvent event) {
+      DataSnapshot snapshot = event.snapshot;
+      Map petData = snapshot.value as Map;
+      petData.forEach((key, value) {
+        if (value['data']['name'] == petName) {
+          setState(() {
+            selectedPet = value['data'];
+          });
+        }
+      });
+    });
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      backgroundColor: Colors.white,
+      body: Column(
+        children: [
+          // Header
+          const CustomHeader(pageTitle: 'Reservation Detail'),
+
+          Expanded(
+              child: SingleChildScrollView(
+                  child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.center,
+                      children: [
+                Container(
+                  decoration: BoxDecoration(
+                      border: Border.all(width: 1, color: AppColors.mainColor),
+                      borderRadius: BorderRadius.circular(15)),
+                  width: MediaQuery.of(context).size.width,
+                  padding: const EdgeInsets.only(
+                      left: 5, right: 5, top: 5, bottom: 5),
+                  margin: const EdgeInsets.only(
+                      top: 80, left: 15, right: 10, bottom: 15),
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Row(
+                        children: [
+                          SizedBox(
+                            width: 120,
+                            child: TitleText(
+                              text: "Reservation ID:",
+                              size: 16,
+                            ),
+                          ),
+                          const SizedBox(
+                            width: 5,
+                          ),
+                          TitleText(
+                            text: reservationId.replaceFirst("-", ""),
+                            size: 16,
+                          ),
+                        ],
+                      ),
+                      const SizedBox(
+                        height: 10,
+                      ),
+                      Row(
+                        children: [
+                          SizedBox(
+                            width: 120,
+                            child: TitleText(
+                              text: "Payment ID:",
+                              size: 16,
+                            ),
+                          ),
+                          const SizedBox(
+                            width: 5,
+                          ),
+                          TitleText(
+                            text: paymentId,
+                            size: 16,
+                          ),
+                        ],
+                      ),
+                      const SizedBox(
+                        height: 10,
+                      ),
+                      Row(
+                        children: [
+                          SizedBox(
+                            width: 120,
+                            child: TitleText(
+                              text: "Customer Name:",
+                              size: 16,
+                            ),
+                          ),
+                          const SizedBox(
+                            width: 5,
+                          ),
+                          TitleText(
+                            text: customerName,
+                            size: 16,
+                          ),
+                        ],
+                      ),
+                      const SizedBox(
+                        height: 10,
+                      ),
+                      Row(
+                        children: [
+                          SizedBox(
+                            width: 120,
+                            child: TitleText(
+                              text: "Selected Pet:",
+                              size: 16,
+                            ),
+                          ),
+                          const SizedBox(
+                            width: 5,
+                          ),
+                          ElevatedButton(
+                              onPressed: () {
+                                petInfoDialog(context);
+                              },
+                              child: const Text('Show Pet Info'))
+                        ],
+                      ),
+                      const SizedBox(
+                        height: 10,
+                      ),
+                      Row(
+                        children: [
+                          SizedBox(
+                            width: 120,
+                            child: TitleText(
+                              text: "Service Type:",
+                              size: 16,
+                            ),
+                          ),
+                          const SizedBox(
+                            width: 5,
+                          ),
+                          TitleText(
+                            text: serviceType,
+                            size: 16,
+                          ),
+                        ],
+                      ),
+                      const SizedBox(
+                        height: 10,
+                      ),
+                      if (serviceType == 'Package')
+                        Row(
+                          children: [
+                            SizedBox(
+                              width: 120,
+                              child: TitleText(
+                                text: "Package:",
+                                size: 16,
+                              ),
+                            ),
+                            const SizedBox(
+                              width: 5,
+                            ),
+                            TitleText(
+                              text: package,
+                              size: 16,
+                            ),
+                          ],
+                        ),
+                      if (serviceType == 'Package')
+                        const SizedBox(
+                          height: 10,
+                        ),
+                      Row(
+                        children: [
+                          SizedBox(
+                            width: 120,
+                            child: TitleText(
+                              text: "Services:",
+                              size: 16,
+                            ),
+                          ),
+                          const SizedBox(
+                            width: 5,
+                          ),
+                          TitleText(
+                            text: services,
+                            size: 16,
+                          ),
+                        ],
+                      ),
+                      const SizedBox(
+                        height: 10,
+                      ),
+                      Row(
+                        children: [
+                          SizedBox(
+                            width: 120,
+                            child: TitleText(
+                              text: "Taxi Required:",
+                              size: 16,
+                            ),
+                          ),
+                          const SizedBox(
+                            width: 5,
+                          ),
+                          TitleText(
+                            text: taxiRequired.toString(),
+                            size: 16,
+                          ),
+                        ],
+                      ),
+                      const SizedBox(
+                        height: 10,
+                      ),
+                      taxiRequired
+                          ? Row(
+                              children: [
+                                SizedBox(
+                                  width: 120,
+                                  child: TitleText(
+                                    text: "Address:",
+                                    size: 16,
+                                  ),
+                                ),
+                                const SizedBox(
+                                  width: 5,
+                                ),
+                                SizedBox(
+                                  width: 196,
+                                  child: Text(
+                                    address,
+                                    softWrap: true,
+                                    // overflow: TextOverflow.clip,
+                                    style: const TextStyle(
+                                      fontSize: 15,
+                                      color: AppColors.mainColor,
+                                    ),
+                                  ),
+                                )
+                              ],
+                            )
+                          : Container(),
+                      if (taxiRequired)
+                        const SizedBox(
+                          height: 10,
+                        ),
+                      Row(
+                        children: [
+                          SizedBox(
+                            width: 120,
+                            child: TitleText(
+                              text: "Reserved Date:",
+                              size: 16,
+                            ),
+                          ),
+                          const SizedBox(
+                            width: 5,
+                          ),
+                          TitleText(
+                            text: reservedDate,
+                            size: 16,
+                          ),
+                        ],
+                      ),
+                      const SizedBox(
+                        height: 10,
+                      ),
+                      Row(
+                        children: [
+                          SizedBox(
+                            width: 120,
+                            child: TitleText(
+                              text: "Reserved Time:",
+                              size: 16,
+                            ),
+                          ),
+                          const SizedBox(
+                            width: 5,
+                          ),
+                          TitleText(
+                            text: reservedTime,
+                            size: 16,
+                          ),
+                        ],
+                      ),
+                      const SizedBox(
+                        height: 10,
+                      ),
+                      Row(
+                        children: [
+                          SizedBox(
+                            width: 120,
+                            child: TitleText(
+                              text: "Price:",
+                              size: 16,
+                            ),
+                          ),
+                          const SizedBox(
+                            width: 5,
+                          ),
+                          TitleText(
+                            text: price.toString(),
+                            size: 16,
+                          ),
+                        ],
+                      ),
+                      const SizedBox(
+                        height: 10,
+                      ),
+                      Row(
+                        children: [
+                          SizedBox(
+                            width: 120,
+                            child: TitleText(
+                              text: "Status:",
+                              size: 16,
+                            ),
+                          ),
+                          const SizedBox(
+                            width: 5,
+                          ),
+                          TitleText(
+                            text: status,
+                            size: 16,
+                          ),
+                        ],
+                      ),
+                      const SizedBox(
+                        height: 10,
+                      ),
+                      Row(
+                        children: [
+                          SizedBox(
+                            width: 120,
+                            child: TitleText(
+                              text: "Stage:",
+                              size: 16,
+                            ),
+                          ),
+                          const SizedBox(
+                            width: 5,
+                          ),
+                          TitleText(
+                            text: _identifyStage(),
+                            size: 16,
+                          ),
+                        ],
+                      ),
+                    ],
+                  ),
+                ),
+              ])))
+        ],
+      ),
+    );
+  }
+
+  String _identifyStage() {
+    if (stage == 0) {
+      return "Incoming";
+    } else if (stage == 1) {
+      return "Pick Up";
+    } else if (stage == 2) {
+      return "Sending";
+    } else if (stage == 3) {
+      return "Queuing";
+    } else if (stage == 4) {
+      return "Grooming";
+    } else if (stage == 5) {
+      return "Awaiting";
+    } else if (stage == 6) {
+      return "Boarding";
+    } else if (stage == 7) {
+      return "Deliver Home";
+    } else if (stage == 8) {
+      return "Completed";
+    }
+    return "";
+  }
+
+  void petInfoDialog(BuildContext context) {
+    showDialog(
+        context: context,
+        builder: (BuildContext context) {
+          return AlertDialog(
+            title: const Text('Pet Information'),
+            content: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Row(
+                  children: [
+                    const SizedBox(
+                      width: 80,
+                      child: Text(
+                        "Name",
+                        style: TextStyle(
+                          fontWeight: FontWeight.w300,
+                          fontSize: 18,
+                        ),
+                      ),
+                    ),
+                    InfoText(
+                      text: selectedPet['name'],
+                      normal: false,
+                      size: 18,
+                    ),
+                  ],
+                ),
+                Row(
+                  children: [
+                    const SizedBox(
+                      width: 80,
+                      child: Text(
+                        "Gender",
+                        style: TextStyle(
+                          fontWeight: FontWeight.w300,
+                          fontSize: 18,
+                        ),
+                      ),
+                    ),
+                    InfoText(
+                      text: selectedPet['gender'],
+                      normal: false,
+                      size: 18,
+                    ),
+                  ],
+                ),
+                Row(
+                  children: [
+                    const SizedBox(
+                      width: 80,
+                      child: Text(
+                        "Pet Type",
+                        style: TextStyle(
+                          fontWeight: FontWeight.w300,
+                          fontSize: 18,
+                        ),
+                      ),
+                    ),
+                    InfoText(
+                      text: selectedPet['type'],
+                      normal: false,
+                      size: 18,
+                    ),
+                  ],
+                ),
+                Row(
+                  children: [
+                    const SizedBox(
+                      width: 80,
+                      child: Text(
+                        "Breed",
+                        style: TextStyle(
+                          fontWeight: FontWeight.w300,
+                          fontSize: 18,
+                        ),
+                      ),
+                    ),
+                    InfoText(
+                      text: selectedPet['breed'],
+                      normal: false,
+                      size: 18,
+                    ),
+                  ],
+                ),
+                Row(
+                  children: [
+                    const SizedBox(
+                      width: 80,
+                      child: Text(
+                        "Size",
+                        style: TextStyle(
+                          fontWeight: FontWeight.w300,
+                          fontSize: 18,
+                        ),
+                      ),
+                    ),
+                    InfoText(
+                      text: selectedPet['size'],
+                      normal: false,
+                      size: 18,
+                    ),
+                  ],
+                ),
+              ],
+            ),
+            actions: [
+              TextButton(
+                onPressed: () {
+                  Navigator.pop(context); // Close the dialog
+                },
+                child: const Text('Close'),
+              ),
+            ],
+          );
+        });
   }
 }

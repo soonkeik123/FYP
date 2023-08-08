@@ -6,6 +6,8 @@ import 'package:ohmypet/widgets/admin_header.dart';
 import '../../utils/colors.dart';
 import '../../widgets/admin_navigation_bar.dart';
 
+late String role;
+
 class ReservationManagement extends StatefulWidget {
   static const staffRoute = '/staffManageReservation';
   static const adminRoute = '/adminManageReservation';
@@ -20,7 +22,7 @@ class _ReservationManagementState extends State<ReservationManagement> {
   // Create a reference to Firebase database
   late DatabaseReference reservRef;
 
-  late String role; // to differentiate the role of current
+  // to differentiate the role of current
 
   @override
   void initState() {
@@ -302,8 +304,10 @@ class OrderItemWidget extends StatelessWidget {
         Navigator.push(
             context,
             MaterialPageRoute(
-                builder: (context) =>
-                    ReservationActionPage(reservationID: id)));
+                builder: (context) => ReservationActionPage(
+                      reservationID: id,
+                      role: role,
+                    )));
       },
     );
   }

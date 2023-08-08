@@ -49,8 +49,8 @@ class _PackageManagementState extends State<PackageManagement> {
 
   Widget _offsetPopup() => PopupMenuButton<int>(
       onSelected: (value) {
-        Navigator.push(
-            context, MaterialPageRoute(builder: (context) => const AddPackagePage()));
+        Navigator.push(context,
+            MaterialPageRoute(builder: (context) => const AddPackagePage()));
       },
       offset: const Offset(0, -40),
       itemBuilder: (context) => [
@@ -223,9 +223,44 @@ class _PackageManagementState extends State<PackageManagement> {
                   ),
                 ),
                 const SizedBox(height: 16),
+                Row(
+                  children: [
+                    Expanded(
+                      child: ElevatedButton(
+                        onPressed: () {
+                          Navigator.pop(context); // Close the dialog
+                          Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                  builder: (context) => EditPackagePage(
+                                      packageID: gridDataID[index])));
+                        },
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: Colors.orange, // Set the button color to orange
+                        ),
+                        child: const Text('Edit'),
+                      ),
+                    ),
+                    const SizedBox(
+                        width: 8), // Add some spacing between the buttons
+                    Expanded(
+                      child: ElevatedButton(
+                        onPressed: () {
+                          Navigator.pop(context); // Close the dialog
+                          removeConfirmationDialog(
+                              context, gridDataID[index], index);
+                        },
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: Colors.red, // Set the button color to red
+                        ),
+                        child: const Text('Remove'),
+                      ),
+                    ),
+                  ],
+                ),
                 ElevatedButton(
                   onPressed: () {
-                    // Handle the button action here (if needed)
+                    // Handle the "Close" button action here
                     Navigator.pop(context); // Close the dialog
                   },
                   child: const Text('Close'),
@@ -299,7 +334,7 @@ class _PackageManagementState extends State<PackageManagement> {
 
   void getPackageInfo() {
     try {
-      // // Get a reference to the 'users' node in the Realtime Database
+      // // Get a reference to the 'packages' node in the Realtime Database
       DatabaseReference packageRef =
           FirebaseDatabase.instance.ref().child('packages');
 

@@ -72,22 +72,8 @@ class _MainReservationPageState extends State<MainReservationPage> {
     });
   }
 
-  // List<Map<String, dynamic>> filterReservattionsByStatus(
-  //     List<Map<String, dynamic>> reservations, String status, String status2) {
-  //   return reservations
-  //       .where((reservations) =>
-  //           reservations["status"] == status ||
-  //           reservations["status"] == status2)
-  //       .toList();
-  // }
-
   @override
   Widget build(BuildContext context) {
-    // List<Map<String, dynamic>> ongoingOrders = filterReservattionsByStatus(
-    //     ongoingReservations, "Incoming", "Processing");
-    // List<Map<String, dynamic>> historyOrders = filterReservattionsByStatus(
-    //     ongoingReservations, "Completed", "Canceled");
-
     return Scaffold(
       backgroundColor: Colors.white,
       body: Column(children: [
@@ -126,6 +112,7 @@ class _MainReservationPageState extends State<MainReservationPage> {
                           service: ongoingReservations[index]["service"],
                           date: ongoingReservations[index]["date"],
                           time: ongoingReservations[index]["time"],
+                          pet: ongoingReservations[index]["pet"],
                         );
                       },
                     ),
@@ -155,7 +142,7 @@ class _MainReservationPageState extends State<MainReservationPage> {
                             service: historyReservations[index]["service"],
                             date: historyReservations[index]["date"],
                             time: historyReservations[index]["time"],
-                            // room: processingOrders[index]["room"],
+                            pet: historyReservations[index]["pet"],
                           );
                         },
                       )),
@@ -178,6 +165,7 @@ class OrderItemWidget extends StatelessWidget {
   final String service;
   final String date;
   final String time;
+  final String pet;
 
   const OrderItemWidget({
     super.key,
@@ -186,6 +174,7 @@ class OrderItemWidget extends StatelessWidget {
     required this.service,
     required this.date,
     required this.time,
+    required this.pet,
   });
 
   String textColor() {
@@ -244,6 +233,12 @@ class OrderItemWidget extends StatelessWidget {
               Text(service,
                   style: const TextStyle(
                       fontSize: 20, fontWeight: FontWeight.w500)),
+              const SizedBox(
+                height: 5,
+              ),
+              Text("Pet: $pet",
+                  style: const TextStyle(
+                      fontSize: 18, fontWeight: FontWeight.w400)),
               const SizedBox(
                 height: 5,
               ),
@@ -314,6 +309,12 @@ class OrderItemWidget extends StatelessWidget {
               const SizedBox(
                 height: 5,
               ),
+              Text("Pet: $pet",
+                  style: const TextStyle(
+                      fontSize: 18, fontWeight: FontWeight.w400)),
+              const SizedBox(
+                height: 5,
+              ),
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
@@ -336,11 +337,20 @@ class OrderItemWidget extends StatelessWidget {
           ),
         ),
         onTap: () {
-          print(id + status + service + date + time);
-          Navigator.push(
-              context,
-              MaterialPageRoute(
-                  builder: (context) => TrackProgressPage(reservationID: id)));
+          if (status == 'Completed' || status == 'Canceled') {
+            Navigator.push(
+                context,
+                MaterialPageRoute(
+                    builder: (context) => ReservationDetail(
+                          reservationID: id,
+                        )));
+          } else {
+            Navigator.push(
+                context,
+                MaterialPageRoute(
+                    builder: (context) =>
+                        TrackProgressPage(reservationID: id)));
+          }
         },
       );
     }

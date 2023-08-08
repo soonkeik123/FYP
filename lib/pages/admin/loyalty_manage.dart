@@ -230,109 +230,7 @@ class _LoyaltyManagementState extends State<LoyaltyManagement> {
                       ),
                     ),
                     onTap: () {
-                      // Check if all textfields are filled
-                      if (emailController.text.isNotEmpty) {
-                        if (servIDController.text.isNotEmpty) {
-                          if (pointController.text.isNotEmpty) {
-                            DatabaseReference ref =
-                                FirebaseDatabase.instance.ref();
-
-                            String uid = '';
-                            int currentPoint = 0;
-
-                            // Query the 'Profile' node to get users
-                            Query adminQuery = ref.child('users');
-
-                            // Listen for the value event
-                            adminQuery.onValue.listen((DatabaseEvent event) {
-                              // Access the DataSnapshot from the event
-                              DataSnapshot snapshot = event.snapshot;
-                              // Check if the snapshot's value is not null and is of type Map<dynamic, dynamic>
-                              if (snapshot.value != null) {
-                                // Convert the value to a Map<dynamic, dynamic>
-                                Map<dynamic, dynamic> adminUsers =
-                                    snapshot.value as Map<dynamic, dynamic>;
-                                // Loop through the snapshot's children (admin users)
-                                adminUsers.forEach((key, userData) async {
-                                  if (userData['Profile']['email'] ==
-                                      emailController.text) {
-                                    setState(() {
-                                      uid = key;
-                                      // get the original point from database
-                                      currentPoint =
-                                          userData['Profile']['point'];
-                                    });
-                                    // Accumulate the points become newPoint
-                                    int newPoint = currentPoint +
-                                        int.parse(pointController.text);
-                                    DatabaseReference userRef = FirebaseDatabase
-                                        .instance
-                                        .ref('users/$uid/Profile');
-                                    // update the newPoint into user Account
-                                    await userRef
-                                        .update({'point': '$newPoint'});
-
-                                    // Identify the current user (staff/admin)
-                                    User? user =
-                                        FirebaseAuth.instance.currentUser;
-                                    String executor = user!.uid;
-
-                                    // Prepare to post data to record this add point action
-                                    final loyaltyPointData = {
-                                      'user_id': uid,
-                                      'email': emailController.text,
-                                      'serv_id': servIDController.text,
-                                      'point': newPoint,
-                                      'executor': executor,
-                                    };
-
-                                    final newKey = FirebaseDatabase.instance
-                                        .ref()
-                                        .child('addLoyaltyRecord')
-                                        .push()
-                                        .key;
-
-                                    if (newKey != null) {
-                                      // Use the newKey to create a new node with the loyaltyPointData
-                                      FirebaseDatabase.instance
-                                          .ref()
-                                          .child('addLoyaltyRecord')
-                                          .child(newKey)
-                                          .set(loyaltyPointData)
-                                          .then((value) {
-                                        // Data is successfully stored in the database
-                                        print(
-                                            'Loyalty point data added successfully.');
-                                        showMessageDialog(
-                                            context,
-                                            "Points Added",
-                                            "You have added $newPoint points into this account successfully!");
-                                        Clear();
-                                      }).catchError((error) {
-                                        // Handle any errors that occur during the process
-                                        print(
-                                            'Error adding loyalty point data: $error');
-                                      });
-                                    }
-                                  }
-                                });
-                              }
-                            });
-                          } else {
-                            // point empty
-                            showMessageDialog(context, "Point Is Missing",
-                                "Please make sure you have entered the points.");
-                          }
-                        } else {
-                          // serv empty
-                          showMessageDialog(context, "ID Is Missing",
-                              "Please make sure you have entered the relevant service's or reservation's ID.");
-                        }
-                      } else {
-                        // email empty
-                        showMessageDialog(context, "Email Is Missing",
-                            "Please make sure you have entered the customer's E-mail.");
-                      }
+                      _updateUserPoints();
                     },
                   )
                 ],
@@ -373,5 +271,111 @@ class _LoyaltyManagementState extends State<LoyaltyManagement> {
     emailController.clear();
     servIDController.clear();
     pointController.clear();
+  }
+
+  void _updateUserPoints() {
+    // Check if all textfields are filled
+    if (emailController.text.isNotEmpty) {
+      if (servIDController.text.isNotEmpty) {
+        if (pointController.text.isNotEmpty) {
+          DatabaseReference ref =
+              FirebaseDatabase.instance.ref().child('users');
+
+          String uid = '';
+          int currentPoint = 0;
+
+          // Listen for the value event
+          ref.onValue.listen((DatabaseEvent event) {
+            // Access the DataSnapshot from the event
+            DataSnapshot snapshot = event.snapshot;
+            // Check if the snapshot's value is not null and is of type Map<dynamic, dynamic>
+            if (snapshot.value != null) {
+              // Convert the value to a Map<dynamic, dynamic>
+              Map adminUsers = snapshot.value as Map;
+              // Loop through the snapshot's children (admin users)
+              // print('stage = $adminUsers'); // Checking purpose
+              adminUsers.forEach((key, userData) {
+                var profileData = userData['Profile'];
+                if (profileData != null &&
+                    profileData['email'] == emailController.text) {
+                  // print(key); // Checking purpose
+                  uid = key;
+                  currentPoint = profileData['point'] as int;
+                  // print('current point = $currentPoint'); // Checking purpose
+
+                  // Accumulate the points become newPoint
+                  int newPoint = currentPoint + int.parse(pointController.text);
+
+                  // print("NewPoint =  $newPoint");
+
+                  DatabaseReference userRef = FirebaseDatabase.instance
+                      .ref('users/$uid')
+                      .child('Profile');
+                  // Update the newPoint into the user's account
+                  userRef.update({'point': newPoint}).then((value) {
+                    print("Point updated successfully!");
+                  }).catchError((error) {
+                    print("Error updating point: $error");
+                  });
+                  Clear();
+
+                  // Identify the current user (staff/admin)
+                  User? user = FirebaseAuth.instance.currentUser;
+                  String executor = user!.uid;
+
+                  // Prepare to post data to record this add point action
+                  final loyaltyPointData = {
+                    'user_id': uid,
+                    'email': emailController.text,
+                    'serv_id': servIDController.text,
+                    'point': newPoint,
+                    'executor': executor,
+                  };
+
+                  final newKey = FirebaseDatabase.instance
+                      .ref()
+                      .child('addLoyaltyRecord')
+                      .push()
+                      .key;
+
+                  if (newKey != null) {
+                    // Use the newKey to create a new node with the loyaltyPointData
+                    FirebaseDatabase.instance
+                        .ref()
+                        .child('addLoyaltyRecord')
+                        .child(newKey)
+                        .set(loyaltyPointData)
+                        .then((value) {
+                      // Data is successfully stored in the database
+                      print('Loyalty point data added successfully.');
+                      showMessageDialog(context, "Points Added",
+                          "You have added points into this account successfully!");
+                      Clear();
+                    }).catchError((error) {
+                      // Handle any errors that occur during the process
+                      showMessageDialog(context, "Fail to Add",
+                          "You failed to add points to this account.");
+                      print('Error adding loyalty point data: $error');
+                    });
+                  }
+                }
+              });
+            }
+          });
+        } else {
+          // point empty
+          showMessageDialog(context, "Point Is Missing",
+              "Please make sure you have entered the points.");
+        }
+      } else {
+        // serv empty
+        showMessageDialog(context, "ID Is Missing",
+            "Please make sure you have entered the relevant service's or reservation's ID.");
+      }
+    } else {
+      // email empty
+      showMessageDialog(context, "Email Is Missing",
+          "Please make sure you have entered the customer's E-mail.");
+    }
   }
 }

@@ -14,17 +14,16 @@ class AdminBottomNavBar extends StatelessWidget {
   Widget build(BuildContext context) {
     if (role == 'staff') {
       return BottomNavigationBar(
-
           // Set the currentIndex to a desired value
           currentIndex: activePage,
           items: const [
             BottomNavigationBarItem(
               icon: Icon(Icons.description_outlined),
-              label: 'Reservation',
+              label: 'Manage Reservation',
             ),
             BottomNavigationBarItem(
               icon: Icon(Icons.stars_rounded),
-              label: 'Loyalty',
+              label: 'Manage Loyalty',
             ),
           ],
           selectedItemColor: AppColors.petBoarding,
