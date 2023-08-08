@@ -1,3 +1,5 @@
+import 'dart:io';
+
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_database/firebase_database.dart';
 import 'package:flutter/material.dart';
@@ -8,10 +10,10 @@ import 'package:ohmypet/widgets/info_text.dart';
 
 class ViewPetPage extends StatefulWidget {
   static const routeName = '/viewPet';
-  final String petName;
+  final String petId;
   const ViewPetPage({
     super.key,
-    required this.petName,
+    required this.petId,
   });
 
   @override
@@ -30,6 +32,7 @@ class _ViewPetPageState extends State<ViewPetPage> {
   String petSize = '';
   String petBreed = '';
   String petBirthday = '';
+  String imageUrl = '';
 
   @override
   void initState() {
@@ -43,64 +46,37 @@ class _ViewPetPageState extends State<ViewPetPage> {
           .child(uid)
           .child('Pet');
     }
-    getPetByName(widget.petName);
+    getPetById(widget.petId);
   }
 
   // Get a specific pet by name
-  void getPetByName(String petName) {
-    dbPetRef.onValue.listen((DatabaseEvent event) {
-      DataSnapshot snapshot = event.snapshot;
-      Map<dynamic, dynamic>? data = snapshot.value as Map<dynamic, dynamic>?;
-      if (data != null) {
-        // petDataList.clear(); // Clear the list before adding new data
-        data.forEach((key, value) {
-          Map<dynamic, dynamic> petData =
-              Map.from(value['data']); // Access the inner map
-          petData['key'] = key;
-          refreshItems(petData);
-        });
-      }
-    });
-  }
+  Future<void> getPetById(String petID) async {
+    final snapshot = await dbPetRef.child(petID).get();
+    if (snapshot.exists) {
+      Map<dynamic, dynamic> petData = snapshot.value as Map<dynamic, dynamic>;
+      if (petData.isNotEmpty) {
+        String name = petData['name'];
+        String gender = petData['gender'];
+        String breed = petData['breed'];
+        String size = petData['size'];
+        String birthday = petData['birthday'];
+        String type = petData['type'];
+        String image = petData['imageUrl'];
 
-  void refreshItems(Map pet) {
-    setState(() {
-      // Simulate a data refresh by adding a new item to the list
-      petDataList.add(pet);
-      print(petDataList);
-    });
-    // Find the first pet with the matching name in the petDataList
-    List<Map<String, dynamic>> matchingPets = [];
-
-    // Find all pets with the matching name in the petDataList
-    for (var pet in petDataList) {
-      if (pet['name'] == widget.petName) {
-        matchingPets.add(Map<String, dynamic>.from(pet));
-      }
-    }
-    if (matchingPets.isNotEmpty) {
-      // Get data from the matching pets
-      for (var pet in matchingPets) {
-        String name = pet['name'];
-        String gender = pet['gender'];
-        String breed = pet['breed'];
-        String size = pet['size'];
-        String birthday = pet['birthday'];
-        String type = pet['type'];
-
-        // Do something with the pet data (you can use the data as needed)
         setState(() {
           petName = name;
-          petBreed = breed;
-          petType = type;
-          petSize = size;
           petGender = gender;
+          petBreed = breed;
+          petSize = size;
           petBirthday = birthday;
+          petType = type;
+          imageUrl = image;
         });
+      } else {
+        print("Loading error, unnecessary if else.");
       }
     } else {
-      // No pet with the specified name found
-      print('No pet with name $petName found.');
+      print("Pet not found.");
     }
   }
 
@@ -112,7 +88,7 @@ class _ViewPetPageState extends State<ViewPetPage> {
         children: [
           // Header
           CustomHeader(
-            pageTitle: widget.petName,
+            pageTitle: petName,
           ),
 
           Stack(
@@ -125,20 +101,32 @@ class _ViewPetPageState extends State<ViewPetPage> {
               Container(
                 child: Column(
                   children: [
-                    InkWell(
-                      child: Container(
+                    if (imageUrl.isEmpty)
+                      Container(
                         margin: const EdgeInsets.symmetric(vertical: 30),
                         height: 140,
                         decoration: BoxDecoration(
                             shape: BoxShape.circle,
                             image: DecorationImage(
-                                fit: BoxFit.contain,
+                                fit: BoxFit.cover,
                                 image: petType == 'Dog'
                                     ? const AssetImage("assets/images/dog.jpeg")
                                     : const AssetImage(
                                         "assets/images/cat.jpg"))),
+                      )
+                    else
+                      Container(
+                        margin: const EdgeInsets.symmetric(vertical: 30),
+                        height: 140,
+                        width: 140,
+                        decoration: BoxDecoration(
+                          shape: BoxShape.circle,
+                          image: DecorationImage(
+                            fit: BoxFit.cover,
+                            image: FileImage(File(imageUrl)),
+                          ),
+                        ),
                       ),
-                    ),
                     Container(
                       padding: const EdgeInsets.symmetric(horizontal: 30),
                       child: Row(
@@ -158,7 +146,7 @@ class _ViewPetPageState extends State<ViewPetPage> {
                                   context,
                                   MaterialPageRoute(
                                       builder: (context) => EditPetProfile(
-                                            petName: petName,
+                                            petId: widget.petId,
                                           )));
                             },
                             child: const Icon(

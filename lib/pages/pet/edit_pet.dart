@@ -1,17 +1,21 @@
+import 'dart:io';
+
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_database/firebase_database.dart';
 import 'package:flutter/material.dart';
+import 'package:image_picker/image_picker.dart';
 import 'package:intl/intl.dart';
 import 'package:ohmypet/utils/colors.dart';
 import 'package:ohmypet/utils/dimensions.dart';
+import 'package:path_provider/path_provider.dart';
 
 import '../../widgets/big_text.dart';
 import '../../widgets/header.dart';
 
 class EditPetProfile extends StatefulWidget {
   static const routeName = '/editPet';
-  final String petName;
-  const EditPetProfile({super.key, required this.petName});
+  final String petId;
+  const EditPetProfile({super.key, required this.petId});
 
   @override
   State<EditPetProfile> createState() => _EditPetProfileState();
@@ -49,6 +53,7 @@ class _EditPetProfileState extends State<EditPetProfile> {
   String petSize = '';
   String petBreed = '';
   String petBirthday = '';
+  String imageUrl = '';
 
   String selectedSize = '';
 
@@ -59,13 +64,276 @@ class _EditPetProfileState extends State<EditPetProfile> {
     'Poodle',
     'Bulldog',
     'Silky Terrier',
-    'Yolkshy Terrier'
+    'Yorkshire Terrier',
+    'Affenpinscher',
+    'Afghan Hound',
+    'Airedale Terrier',
+    'Akita',
+    'Alaskan Klee Kai',
+    'Alaskan Malamute',
+    'American Bulldog',
+    'American Cocker Spaniel',
+    'American Eskimo Dog',
+    'American Foxhound',
+    'American Pit Bull Terrier',
+    'American Staffordshire Terrier',
+    'Anatolian Shepherd Dog',
+    'Australian Cattle Dog',
+    'Australian Shepherd',
+    'Australian Terrier',
+    'Basenji',
+    'Basset Hound',
+    'Beagle',
+    'Bearded Collie',
+    'Beauceron',
+    'Bedlington Terrier',
+    'Belgian Malinois',
+    'Belgian Sheepdog',
+    'Belgian Tervuren',
+    'Bernese Mountain Dog',
+    'Bichon Frise',
+    'Black and Tan Coonhound',
+    'Bloodhound',
+    'Border Collie',
+    'Border Terrier',
+    'Borzoi',
+    'Boston Terrier',
+    'Bouvier des Flandres',
+    'Boxer',
+    'Briard',
+    'Brittany',
+    'Brussels Griffon',
+    'Bull Terrier',
+    'Bulldog (English)',
+    'Bulldog (French)',
+    'Bullmastiff',
+    'Cairn Terrier',
+    'Canaan Dog',
+    'Cane Corso',
+    'Cardigan Welsh Corgi',
+    'Cavalier King Charles Spaniel',
+    'Chesapeake Bay Retriever',
+    'Chihuahua',
+    'Chinese Crested',
+    'Chinese Shar-Pei',
+    'Chow Chow',
+    'Clumber Spaniel',
+    'Cockapoo',
+    'Cocker Spaniel',
+    'Collie',
+    'Coonhound',
+    'Corgi',
+    'Coton de Tulear',
+    'Curly-Coated Retriever',
+    'Dachshund',
+    'Dalmatian',
+    'Dandie Dinmont Terrier',
+    'Doberman Pinscher',
+    'Dogue de Bordeaux',
+    'Dutch Shepherd',
+    'English Bulldog',
+    'English Cocker Spaniel',
+    'English Foxhound',
+    'English Setter',
+    'English Springer Spaniel',
+    'English Toy Spaniel',
+    'Entlebucher Mountain Dog',
+    'Eskimo Dog',
+    'Field Spaniel',
+    'Finnish Lapphund',
+    'Finnish Spitz',
+    'Flat-Coated Retriever',
+    'French Bulldog',
+    'German Pinscher',
+    'German Shepherd Dog',
+    'German Shorthaired Pointer',
+    'German Wirehaired Pointer',
+    'Giant Schnauzer',
+    'Glen of Imaal Terrier',
+    'Goldador',
+    'Golden Retriever',
+    'Goldendoodle',
+    'Gordon Setter',
+    'Great Dane',
+    'Great Pyrenees',
+    'Greater Swiss Mountain Dog',
+    'Greyhound',
+    'Harrier',
+    'Havanese',
+    'Irish Setter',
+    'Irish Terrier',
+    'Irish Water Spaniel',
+    'Irish Wolfhound',
+    'Italian Greyhound',
+    'Jack Russell Terrier',
+    'Japanese Chin',
+    'Japanese Spitz',
+    'Keeshond',
+    'Kerry Blue Terrier',
+    'King Charles Spaniel',
+    'Klee Kai',
+    'Komondor',
+    'Kuvasz',
+    'Labradoodle',
+    'Lakeland Terrier',
+    'Lhasa Apso',
+    'Lowchen',
+    'Maltese',
+    'Manchester Terrier',
+    'Mastiff',
+    'Miniature Bull Terrier',
+    'Miniature Pinscher',
+    'Miniature Schnauzer',
+    'Neapolitan Mastiff',
+    'Newfoundland',
+    'Norfolk Terrier',
+    'Norwegian Elkhound',
+    'Norwich Terrier',
+    'Old English Sheepdog',
+    'Otterhound',
+    'Papillon',
+    'Pekingese',
+    'Pembroke Welsh Corgi',
+    'Petit Basset Griffon Vendeen',
+    'Pharaoh Hound',
+    'Plott',
+    'Pocket Beagle',
+    'Pointer',
+    'Pomeranian',
+    'Poodle',
+    'Portuguese Water Dog',
+    'Pug',
+    'Puli',
+    'Pumi',
+    'Rat Terrier',
+    'Redbone Coonhound',
+    'Rhodesian Ridgeback',
+    'Rottweiler',
+    'Saint Bernard',
+    'Saluki',
+    'Samoyed',
+    'Schipperke',
+    'Scottish Deerhound',
+    'Scottish Terrier',
+    'Sealyham Terrier',
+    'Shetland Sheepdog',
+    'Shiba Inu',
+    'Shih Tzu',
+    'Siberian Husky',
+    'Silky Terrier',
+    'Skye Terrier',
+    'Sloughi',
+    'Small Munsterlander Pointer',
+    'Soft-Coated Wheaten Terrier',
+    'Spanish Water Dog',
+    'Spinone Italiano',
+    'Staffordshire Bull Terrier',
+    'Standard Schnauzer',
+    'Sussex Spaniel',
+    'Swedish Vallhund',
+    'Tibetan Mastiff',
+    'Tibetan Spaniel',
+    'Tibetan Terrier',
+    'Toy Fox Terrier',
+    'Vizsla',
+    'Weimaraner',
+    'Welsh Springer Spaniel',
+    'West Highland White Terrier',
+    'Whippet',
+    'Wire Fox Terrier',
+    'Wirehaired Pointing Griffon',
+    'Xoloitzcuintli',
+    'Yorkshire Terrier',
   ];
+
   final List<String> catBreeds = [
     'Siamese',
     'Persian',
     'Maine Coon',
-    'British Shorthair'
+    'British Shorthair',
+    'Abyssinian',
+    'Sphynx',
+    'Ragdoll',
+    'Bengal',
+    'Scottish Fold',
+    'Birman',
+    'Russian Blue',
+    'Oriental Shorthair',
+    'Siberian',
+    'American Shorthair',
+    'Turkish Van',
+    'Devon Rex',
+    'Norwegian Forest',
+    'Cornish Rex',
+    'Himalayan',
+    'Tonkinese',
+    'Burmese',
+    'Exotic Shorthair',
+    'Chartreux',
+    'Balinese',
+    'Egyptian Mau',
+    'Manx',
+    'Japanese Bobtail',
+    'Turkish Angora',
+    'Selkirk Rex',
+    'Singapura',
+    'Havana Brown',
+    'Somali',
+    'Pixiebob',
+    'Peterbald',
+    'LaPerm',
+    'American Bobtail',
+    'Burmilla',
+    'European Shorthair',
+    'Chausie',
+    'American Curl',
+    'Korat',
+    'Munchkin',
+    'Cymric',
+    'Toyger',
+    'Kurilian Bobtail',
+    'Highlander',
+    'Sokoke',
+    'Khao Manee',
+    'Cheetoh',
+    'Ukrainian Levkoy',
+    'Serengeti',
+    'Ojos Azules',
+    'Kinkalow',
+    'Asian',
+    'Arabian Mau',
+    'Australian Mist',
+    'Asian Semi-longhair',
+    'Brazilian Shorthair',
+    'California Spangled',
+    'Chantilly-Tiffany',
+    'Colorpoint Shorthair',
+    'Cyprus',
+    'Dragon Li',
+    'European Burmese',
+    'German Rex',
+    'Khaomanee',
+    'Kuril Islands Bobtail',
+    'Lykoi',
+    'Minskin',
+    'Nebelung',
+    'Ocicat',
+    'Oregon Rex',
+    'Pixie-bob',
+    'Russian Black White',
+    'Savannah',
+    'Scottish Fold Longhair',
+    'Siberian Forest Cat',
+    'Snowshoe',
+    'Suphalak',
+    'Thai',
+    'Thailand Cat',
+    'Tiffany',
+    'Tonkinese Solid',
+    'Traditional Siamese Cat',
+    'Ural Rex',
+    'Wila Krungthep',
+    'York Chocolate Cat',
   ];
 
   void _onGenderSelected(String gender) {
@@ -73,6 +341,10 @@ class _EditPetProfileState extends State<EditPetProfile> {
       selectedGender = gender;
     });
   }
+
+  File? _chosenImage;
+  final ImagePicker _picker = ImagePicker();
+  String storeImagePath = '';
 
   @override
   void initState() {
@@ -86,7 +358,7 @@ class _EditPetProfileState extends State<EditPetProfile> {
           .child(uid)
           .child('Pet');
     }
-    getPetByName(widget.petName);
+    getPetById(widget.petId);
     setPetProfile();
   }
 
@@ -96,90 +368,89 @@ class _EditPetProfileState extends State<EditPetProfile> {
   }
 
   // Get a specific pet by name
-  void getPetByName(String petName) {
-    dbPetRef.onValue.listen((DatabaseEvent event) {
-      DataSnapshot snapshot = event.snapshot;
-      Map<dynamic, dynamic>? data = snapshot.value as Map<dynamic, dynamic>?;
-      if (data != null) {
-        // petDataList.clear(); // Clear the list before adding new data
-        data.forEach((key, value) {
-          Map<dynamic, dynamic> petData =
-              Map.from(value['data']); // Access the inner map
-          petData['key'] = key;
-          addPetData(petData);
-        });
-      }
-    });
-  }
+  Future<void> getPetById(String petID) async {
+    final snapshot = await dbPetRef.child(petID).get();
+    if (snapshot.exists) {
+      Map<dynamic, dynamic> petData = snapshot.value as Map<dynamic, dynamic>;
+      if (petData.isNotEmpty) {
+        String name = petData['name'];
+        String gender = petData['gender'];
+        String breed = petData['breed'];
+        String size = petData['size'];
+        String birthday = petData['birthday'];
+        String type = petData['type'];
+        String image = petData['imageUrl'];
 
-  void addPetData(Map pet) {
-    // Simulate a data refresh by adding a new item to the list
-    petDataList.add(pet);
-
-    List<Map<String, dynamic>> matchingPets = [];
-
-    for (var pet in petDataList) {
-      if (pet['name'] == widget.petName) {
-        matchingPets.add(Map<String, dynamic>.from(pet));
-      }
-    }
-    if (matchingPets.isNotEmpty) {
-      // Get data from the matching pets
-      for (var pet in matchingPets) {
-        String name = pet['name'];
-        String gender = pet['gender'];
-        String breed = pet['breed'];
-        String size = pet['size'];
-        String birthday = pet['birthday'];
-        String type = pet['type'];
-
-        // Do something with the pet data
         setState(() {
           petName = name;
-          petBreed = breed;
-          petType = type;
-          petSize = size;
           petGender = gender;
+          petBreed = breed;
+          petSize = size;
           petBirthday = birthday;
+          petType = type;
+          imageUrl = image;
+          if (imageUrl.isNotEmpty) _chosenImage = File(imageUrl);
         });
+        setPetProfile();
+      } else {
+        print("Loading error, unnecessary if else.");
       }
     } else {
-      // No pet with the specified name found
-      print('No pet with name $petName found.');
+      print("Pet not found.");
     }
-    setPetProfile();
   }
 
   // Shows option when user clicked on profile image
   void _profilePicEdit() {
     showModalBottomSheet(
       context: context,
-      builder: (context) {
-        return SizedBox(
-          height: 130, // Set the height of the bottom sheet
-          child: Column(
-            children: [
-              ListTile(
-                leading: const Icon(Icons.photo_library),
-                title: const Text('Choose from Album'),
-                onTap: () {
-                  // Handle 'Choose from Album' option
-                  Navigator.pop(context); // Close the bottom sheet
-                },
-              ),
-              ListTile(
-                leading: const Icon(Icons.camera_alt),
-                title: const Text('Take Photo'),
-                onTap: () {
-                  // Handle 'Take Photo' option
-                  Navigator.pop(context); // Close the bottom sheet
-                },
-              ),
-            ],
-          ),
+      builder: (BuildContext context) {
+        return Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            ListTile(
+              leading: const Icon(Icons.photo_library),
+              title: const Text('Choose from gallery'),
+              onTap: () {
+                // Call the image picker function here
+                openImagePicker();
+
+                Navigator.pop(context);
+              },
+            ),
+          ],
         );
       },
     );
+  }
+
+  // Implementing image picker
+  Future<void> openImagePicker() async {
+    final XFile? pickedImage =
+        await _picker.pickImage(source: ImageSource.gallery);
+    if (pickedImage != null) {
+      setState(() {
+        _chosenImage = File(pickedImage.path);
+      });
+    }
+  }
+
+  Future<void> saveImageLocally(File imageFile) async {
+    // Get the path to the application's documents directory
+    final appDocDir = await getApplicationDocumentsDirectory();
+
+    // Get the original filename of the image
+    String originalFilename = imageFile.path.split('/').last;
+
+    // Define a new file in the documents directory with the original filename
+    final savedImage = File('${appDocDir.path}/$originalFilename');
+
+    // Copy the chosen image to the new file
+    await imageFile.copy(savedImage.path);
+
+    storeImagePath = savedImage.path;
+
+    print('Image saved locally: ${savedImage.path}');
   }
 
   void _onSizeSelected() {
@@ -239,80 +510,18 @@ class _EditPetProfileState extends State<EditPetProfile> {
     });
   }
 
-  void updatePetByName(String name, Map<String, dynamic> updatedData) {
-    // Query to filter pets by name
-    Query petQuery = dbPetRef.orderByChild('data/name').equalTo(widget.petName);
-    // Real-time event listener to get the pet's key
-    petQuery.onValue.listen((event) {
-      DataSnapshot snapshot = event.snapshot;
-      if (snapshot.value != null) {
-        Map<dynamic, dynamic> petData = snapshot.value as Map<dynamic, dynamic>;
-
-        // Since there may be multiple pets with the same name, we loop through the results
-        petData.forEach((key, value) {
-          // Use the key to update the specific pet
-          DatabaseReference petRef = dbPetRef.child(key).child('data');
-          petRef.update(updatedData).then((_) {
-            print('Pet updated successfully!');
-
-            dispose();
-          }).catchError((error) {
-            print('Error updating pet: $error');
-          });
-        });
-      } else {
-        print('No pet with name $name found.');
-      }
-    }, onError: (error) {
-      print('Error fetching pet data: $error');
-    });
-  }
-
   void removePet(String name) {
-    // Query to filter pets by name
-    Query petQuery = dbPetRef.orderByChild('data/name').equalTo(widget.petName);
+    // Construct the reference to the specific pet's data using the petKey directly
+    DatabaseReference petRef = dbPetRef.child(widget.petId);
 
-    // Real-time event listener to get the pet's key
-    petQuery.onValue.listen((event) {
-      DataSnapshot snapshot = event.snapshot;
-      if (snapshot.value != null) {
-        Map<dynamic, dynamic> petData = snapshot.value as Map<dynamic, dynamic>;
-
-        // Iterate through the Map to find the pet with the specified name
-        String petKey = "";
-        petData.forEach((key, value) {
-          if (value['data']['name'] == widget.petName) {
-            petKey = key;
-            return;
-          }
-        });
-
-        // If the pet key is found, remove the pet
-        if (petKey.isNotEmpty) {
-          // Construct the reference to the specific pet's data
-          DatabaseReference petRef = dbPetRef.child(petKey);
-
-          // Call the remove() method on the reference to delete the pet
-          petRef.remove().then((_) {
-            print(
-                "Pet with name $petName and key $petKey removed successfully.");
-            showLoadingDialog(context)
-                .then((value) => Navigator.popAndPushNamed(context, '/home'));
-          }).catchError((error) {
-            print(
-                "Error removing pet with name $petName and key $petKey: $error");
-          });
-        } else {
-          // No pet with the specified name found
-          print("No pet with name $petName found.");
-        }
-      } else {
-        // No pets found
-        print("No pets found.");
-      }
-    }, onError: (error) {
-      // Error retrieving data from the database
-      print("Error fetching pet data: $error");
+    // Call the remove() method on the reference to delete the pet
+    petRef.remove().then((_) {
+      print(
+          "Pet with name ${widget.petId} and key ${widget.petId} removed successfully.");
+      removeSuccessDialog(context);
+    }).catchError((error) {
+      print(
+          "Error removing pet with name ${widget.petId} and key ${widget.petId}: $error");
     });
   }
 
@@ -366,21 +575,45 @@ class _EditPetProfileState extends State<EditPetProfile> {
                 children: [
                   // Image
                   InkWell(
-                    onTap: () {
-                      _profilePicEdit();
-                    },
-                    child: Container(
-                      height: 130,
-                      decoration: BoxDecoration(
-                          shape: BoxShape.circle,
-                          image: DecorationImage(
-                              fit: BoxFit.contain,
-                              image: dogSelected
-                                  ? const AssetImage("assets/images/dog.jpeg")
-                                  : const AssetImage("assets/images/cat.jpg"))),
+                    onTap: () => _profilePicEdit(),
+                    child: Column(
+                      children: [
+                        Container(
+                          width: 130,
+                          height: 130,
+                          decoration: BoxDecoration(
+                            color: Colors.grey[300],
+                            borderRadius: BorderRadius.circular(
+                                75), // Half of the width or height to make it circular
+                          ),
+                          child: _chosenImage != null
+                              ? Container(
+                                  decoration: BoxDecoration(
+                                    borderRadius: BorderRadius.circular(
+                                        75), // To make the image inside circular
+                                    image: DecorationImage(
+                                      image: FileImage(_chosenImage!),
+                                      fit: BoxFit.cover,
+                                    ),
+                                  ),
+                                )
+                              : Icon(Icons.add_photo_alternate,
+                                  size: 40, color: Colors.grey),
+                        ),
+                        const SizedBox(
+                          height: 5,
+                        ),
+                        const Text(
+                          "Upload Image",
+                          style: TextStyle(
+                            color: Colors.blue,
+                            fontSize: 16,
+                            fontWeight: FontWeight.w300,
+                          ),
+                        ),
+                      ],
                     ),
                   ),
-
                   // Name and Gender
                   Container(
                     margin: const EdgeInsets.only(top: 15),
@@ -536,7 +769,7 @@ class _EditPetProfileState extends State<EditPetProfile> {
                               value: value,
                               child: Text(
                                 value,
-                                style: const TextStyle(fontSize: 18),
+                                style: const TextStyle(fontSize: 16),
                               ),
                             );
                           }).toList(),
@@ -580,7 +813,7 @@ class _EditPetProfileState extends State<EditPetProfile> {
                                     value: value,
                                     child: Text(
                                       value,
-                                      style: const TextStyle(fontSize: 18),
+                                      style: const TextStyle(fontSize: 16),
                                     ),
                                   );
                                 }).toList()
@@ -590,7 +823,7 @@ class _EditPetProfileState extends State<EditPetProfile> {
                                     value: value,
                                     child: Text(
                                       value,
-                                      style: const TextStyle(fontSize: 18),
+                                      style: const TextStyle(fontSize: 16),
                                     ),
                                   );
                                 }).toList(),
@@ -918,7 +1151,7 @@ class _EditPetProfileState extends State<EditPetProfile> {
 
                       // Save
                       InkWell(
-                        onTap: () {
+                        onTap: () async {
                           bool isAllFilled = true;
 
                           // Perform text field validation
@@ -928,12 +1161,16 @@ class _EditPetProfileState extends State<EditPetProfile> {
                           }
 
                           if (isAllFilled) {
+                            if (_chosenImage != null) {
+                              await saveImageLocally(_chosenImage!);
+                            }
                             bool name = _nameController.text != petName;
                             bool gender = selectedGender != petGender;
                             bool type = dropdownValue1 != petType;
                             bool breed = dropdownValue2 != petBreed;
                             bool size = selectedSize != petSize;
                             bool birthday = dateInput.text != petBirthday;
+                            bool image = imageUrl != storeImagePath;
 
                             Map<String, String> updatedData = {
                               if (name) 'name': _nameController.text,
@@ -942,12 +1179,13 @@ class _EditPetProfileState extends State<EditPetProfile> {
                               if (breed) 'breed': dropdownValue2,
                               if (size) 'size': selectedSize,
                               if (birthday) 'birthday': dateInput.text,
+                              if (image) 'imageUrl': storeImagePath,
                             };
 
-                            updatePetByName(widget.petName, updatedData);
-                            showLoadingDialog(context).then((value) =>
-                                Navigator.popAndPushNamed(context, '/home'));
-                            dispose();
+                            final petRef = dbPetRef.child(widget.petId);
+                            petRef
+                                .update(updatedData)
+                                .then((value) => showSuccessDialog(context));
                           } else {
                             showUnsuccessfulDialog(context);
                           }
@@ -1034,8 +1272,7 @@ class _EditPetProfileState extends State<EditPetProfile> {
           ),
           content: SizedBox(
             height: 50,
-            child: Text(
-                'Are you sure you want to remove ${widget.petName.toUpperCase()} ?'),
+            child: Text('Are you sure you want to remove your pet ?'),
           ),
           contentTextStyle: const TextStyle(
             color: AppColors.catBasicRed,
@@ -1068,7 +1305,7 @@ class _EditPetProfileState extends State<EditPetProfile> {
       },
     ).then((value) {
       if (value != null && value) {
-        removePet(widget.petName);
+        removePet(widget.petId);
       } else {}
     });
   }

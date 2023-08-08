@@ -1,10 +1,14 @@
+import 'dart:io';
+
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_database/firebase_database.dart';
 import 'package:flutter/material.dart';
+import 'package:image_picker/image_picker.dart';
 import 'package:intl/intl.dart';
 import 'package:ohmypet/utils/colors.dart';
 import 'package:ohmypet/utils/dimensions.dart';
 import 'package:ohmypet/widgets/title_text.dart';
+import 'package:path_provider/path_provider.dart';
 
 import '../../widgets/big_text.dart';
 import '../../widgets/header.dart';
@@ -39,13 +43,276 @@ class _AddPetProfileState extends State<AddPetProfile> {
     'Poodle',
     'Bulldog',
     'Silky Terrier',
-    'Yolkshy Terrier'
+    'Yorkshire Terrier',
+    'Affenpinscher',
+    'Afghan Hound',
+    'Airedale Terrier',
+    'Akita',
+    'Alaskan Klee Kai',
+    'Alaskan Malamute',
+    'American Bulldog',
+    'American Cocker Spaniel',
+    'American Eskimo Dog',
+    'American Foxhound',
+    'American Pit Bull Terrier',
+    'American Staffordshire Terrier',
+    'Anatolian Shepherd Dog',
+    'Australian Cattle Dog',
+    'Australian Shepherd',
+    'Australian Terrier',
+    'Basenji',
+    'Basset Hound',
+    'Beagle',
+    'Bearded Collie',
+    'Beauceron',
+    'Bedlington Terrier',
+    'Belgian Malinois',
+    'Belgian Sheepdog',
+    'Belgian Tervuren',
+    'Bernese Mountain Dog',
+    'Bichon Frise',
+    'Black and Tan Coonhound',
+    'Bloodhound',
+    'Border Collie',
+    'Border Terrier',
+    'Borzoi',
+    'Boston Terrier',
+    'Bouvier des Flandres',
+    'Boxer',
+    'Briard',
+    'Brittany',
+    'Brussels Griffon',
+    'Bull Terrier',
+    'Bulldog (English)',
+    'Bulldog (French)',
+    'Bullmastiff',
+    'Cairn Terrier',
+    'Canaan Dog',
+    'Cane Corso',
+    'Cardigan Welsh Corgi',
+    'Cavalier King Charles Spaniel',
+    'Chesapeake Bay Retriever',
+    'Chihuahua',
+    'Chinese Crested',
+    'Chinese Shar-Pei',
+    'Chow Chow',
+    'Clumber Spaniel',
+    'Cockapoo',
+    'Cocker Spaniel',
+    'Collie',
+    'Coonhound',
+    'Corgi',
+    'Coton de Tulear',
+    'Curly-Coated Retriever',
+    'Dachshund',
+    'Dalmatian',
+    'Dandie Dinmont Terrier',
+    'Doberman Pinscher',
+    'Dogue de Bordeaux',
+    'Dutch Shepherd',
+    'English Bulldog',
+    'English Cocker Spaniel',
+    'English Foxhound',
+    'English Setter',
+    'English Springer Spaniel',
+    'English Toy Spaniel',
+    'Entlebucher Mountain Dog',
+    'Eskimo Dog',
+    'Field Spaniel',
+    'Finnish Lapphund',
+    'Finnish Spitz',
+    'Flat-Coated Retriever',
+    'French Bulldog',
+    'German Pinscher',
+    'German Shepherd Dog',
+    'German Shorthaired Pointer',
+    'German Wirehaired Pointer',
+    'Giant Schnauzer',
+    'Glen of Imaal Terrier',
+    'Goldador',
+    'Golden Retriever',
+    'Goldendoodle',
+    'Gordon Setter',
+    'Great Dane',
+    'Great Pyrenees',
+    'Greater Swiss Mountain Dog',
+    'Greyhound',
+    'Harrier',
+    'Havanese',
+    'Irish Setter',
+    'Irish Terrier',
+    'Irish Water Spaniel',
+    'Irish Wolfhound',
+    'Italian Greyhound',
+    'Jack Russell Terrier',
+    'Japanese Chin',
+    'Japanese Spitz',
+    'Keeshond',
+    'Kerry Blue Terrier',
+    'King Charles Spaniel',
+    'Klee Kai',
+    'Komondor',
+    'Kuvasz',
+    'Labradoodle',
+    'Lakeland Terrier',
+    'Lhasa Apso',
+    'Lowchen',
+    'Maltese',
+    'Manchester Terrier',
+    'Mastiff',
+    'Miniature Bull Terrier',
+    'Miniature Pinscher',
+    'Miniature Schnauzer',
+    'Neapolitan Mastiff',
+    'Newfoundland',
+    'Norfolk Terrier',
+    'Norwegian Elkhound',
+    'Norwich Terrier',
+    'Old English Sheepdog',
+    'Otterhound',
+    'Papillon',
+    'Pekingese',
+    'Pembroke Welsh Corgi',
+    'Petit Basset Griffon Vendeen',
+    'Pharaoh Hound',
+    'Plott',
+    'Pocket Beagle',
+    'Pointer',
+    'Pomeranian',
+    'Poodle',
+    'Portuguese Water Dog',
+    'Pug',
+    'Puli',
+    'Pumi',
+    'Rat Terrier',
+    'Redbone Coonhound',
+    'Rhodesian Ridgeback',
+    'Rottweiler',
+    'Saint Bernard',
+    'Saluki',
+    'Samoyed',
+    'Schipperke',
+    'Scottish Deerhound',
+    'Scottish Terrier',
+    'Sealyham Terrier',
+    'Shetland Sheepdog',
+    'Shiba Inu',
+    'Shih Tzu',
+    'Siberian Husky',
+    'Silky Terrier',
+    'Skye Terrier',
+    'Sloughi',
+    'Small Munsterlander Pointer',
+    'Soft-Coated Wheaten Terrier',
+    'Spanish Water Dog',
+    'Spinone Italiano',
+    'Staffordshire Bull Terrier',
+    'Standard Schnauzer',
+    'Sussex Spaniel',
+    'Swedish Vallhund',
+    'Tibetan Mastiff',
+    'Tibetan Spaniel',
+    'Tibetan Terrier',
+    'Toy Fox Terrier',
+    'Vizsla',
+    'Weimaraner',
+    'Welsh Springer Spaniel',
+    'West Highland White Terrier',
+    'Whippet',
+    'Wire Fox Terrier',
+    'Wirehaired Pointing Griffon',
+    'Xoloitzcuintli',
+    'Yorkshire Terrier',
   ];
+
   final List<String> catBreeds = [
     'Siamese',
     'Persian',
     'Maine Coon',
-    'British Shorthair'
+    'British Shorthair',
+    'Abyssinian',
+    'Sphynx',
+    'Ragdoll',
+    'Bengal',
+    'Scottish Fold',
+    'Birman',
+    'Russian Blue',
+    'Oriental Shorthair',
+    'Siberian',
+    'American Shorthair',
+    'Turkish Van',
+    'Devon Rex',
+    'Norwegian Forest',
+    'Cornish Rex',
+    'Himalayan',
+    'Tonkinese',
+    'Burmese',
+    'Exotic Shorthair',
+    'Chartreux',
+    'Balinese',
+    'Egyptian Mau',
+    'Manx',
+    'Japanese Bobtail',
+    'Turkish Angora',
+    'Selkirk Rex',
+    'Singapura',
+    'Havana Brown',
+    'Somali',
+    'Pixiebob',
+    'Peterbald',
+    'LaPerm',
+    'American Bobtail',
+    'Burmilla',
+    'European Shorthair',
+    'Chausie',
+    'American Curl',
+    'Korat',
+    'Munchkin',
+    'Cymric',
+    'Toyger',
+    'Kurilian Bobtail',
+    'Highlander',
+    'Sokoke',
+    'Khao Manee',
+    'Cheetoh',
+    'Ukrainian Levkoy',
+    'Serengeti',
+    'Ojos Azules',
+    'Kinkalow',
+    'Asian',
+    'Arabian Mau',
+    'Australian Mist',
+    'Asian Semi-longhair',
+    'Brazilian Shorthair',
+    'California Spangled',
+    'Chantilly-Tiffany',
+    'Colorpoint Shorthair',
+    'Cyprus',
+    'Dragon Li',
+    'European Burmese',
+    'German Rex',
+    'Khaomanee',
+    'Kuril Islands Bobtail',
+    'Lykoi',
+    'Minskin',
+    'Nebelung',
+    'Ocicat',
+    'Oregon Rex',
+    'Pixie-bob',
+    'Russian Black White',
+    'Savannah',
+    'Scottish Fold Longhair',
+    'Siberian Forest Cat',
+    'Snowshoe',
+    'Suphalak',
+    'Thai',
+    'Thailand Cat',
+    'Tiffany',
+    'Tonkinese Solid',
+    'Traditional Siamese Cat',
+    'Ural Rex',
+    'Wila Krungthep',
+    'York Chocolate Cat',
   ];
 
   // Date Picker
@@ -55,6 +322,10 @@ class _AddPetProfileState extends State<AddPetProfile> {
   String selectedPetType = '';
   String selectedBreed = '';
   String selectedSize = '';
+
+  File? _chosenImage;
+  final ImagePicker _picker = ImagePicker();
+  String storeImagePath = '';
 
   @override
   void initState() {
@@ -71,15 +342,15 @@ class _AddPetProfileState extends State<AddPetProfile> {
     User? user = FirebaseAuth.instance.currentUser;
     if (user != null) {
       String uid = user.uid;
-      DatabaseReference userRef = FirebaseDatabase.instance
+      DatabaseReference petRef = FirebaseDatabase.instance
           .ref()
           .child('users')
           .child(uid)
           .child('Pet');
 
       // Save the data under the user's UID
-      String? newPetKey = userRef.push().key;
-      userRef.child(newPetKey!).set({'data': pets}).then((_) {
+      String? newPetKey = petRef.push().key;
+      petRef.child(newPetKey!).set(pets).then((_) {
         print('Data saved successfully!');
       }).catchError((error) {
         print('Error saving data: $error');
@@ -125,6 +396,58 @@ class _AddPetProfileState extends State<AddPetProfile> {
     }
   }
 
+  void _showBottomSheet(BuildContext context) {
+    showModalBottomSheet(
+      context: context,
+      builder: (BuildContext context) {
+        return Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            ListTile(
+              leading: const Icon(Icons.photo_library),
+              title: const Text('Choose from gallery'),
+              onTap: () {
+                // Call the image picker function here
+                openImagePicker();
+
+                Navigator.pop(context);
+              },
+            ),
+          ],
+        );
+      },
+    );
+  }
+
+  // Implementing image picker
+  Future<void> openImagePicker() async {
+    final XFile? pickedImage =
+        await _picker.pickImage(source: ImageSource.gallery);
+    if (pickedImage != null) {
+      setState(() {
+        _chosenImage = File(pickedImage.path);
+      });
+    }
+  }
+
+  Future<void> saveImageLocally(File imageFile) async {
+    // Get the path to the application's documents directory
+    final appDocDir = await getApplicationDocumentsDirectory();
+
+    // Get the original filename of the image
+    String originalFilename = imageFile.path.split('/').last;
+
+    // Define a new file in the documents directory with the original filename
+    final savedImage = File('${appDocDir.path}/$originalFilename');
+
+    // Copy the chosen image to the new file
+    await imageFile.copy(savedImage.path);
+
+    storeImagePath = savedImage.path;
+
+    print('Image saved locally: ${savedImage.path}');
+  }
+
   @override
   Widget build(BuildContext context) {
     String dropdownValue = 'Dog';
@@ -146,6 +469,47 @@ class _AddPetProfileState extends State<AddPetProfile> {
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
+                  InkWell(
+                    onTap: () => _showBottomSheet(context),
+                    child: Column(
+                      children: [
+                        Container(
+                          width: 150,
+                          height: 150,
+                          decoration: BoxDecoration(
+                            color: Colors.grey[300],
+                            borderRadius: BorderRadius.circular(
+                                75), // Half of the width or height to make it circular
+                          ),
+                          child: _chosenImage != null
+                              ? Container(
+                                  decoration: BoxDecoration(
+                                    borderRadius: BorderRadius.circular(
+                                        75), // To make the image inside circular
+                                    image: DecorationImage(
+                                      image: FileImage(_chosenImage!),
+                                      fit: BoxFit.cover,
+                                    ),
+                                  ),
+                                )
+                              : Icon(Icons.add_photo_alternate,
+                                  size: 40, color: Colors.grey),
+                        ),
+                        const SizedBox(
+                          height: 5,
+                        ),
+                        const Text(
+                          "Upload Image",
+                          style: TextStyle(
+                            color: Colors.blue,
+                            fontSize: 16,
+                            fontWeight: FontWeight.w300,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+
                   // Name
                   Container(
                     margin: const EdgeInsets.only(top: 15),
@@ -299,7 +663,7 @@ class _AddPetProfileState extends State<AddPetProfile> {
                               value: value,
                               child: Text(
                                 value,
-                                style: const TextStyle(fontSize: 20),
+                                style: const TextStyle(fontSize: 16),
                               ),
                             );
                           }).toList(),
@@ -339,7 +703,7 @@ class _AddPetProfileState extends State<AddPetProfile> {
                                     value: value,
                                     child: Text(
                                       value,
-                                      style: const TextStyle(fontSize: 20),
+                                      style: const TextStyle(fontSize: 16),
                                     ),
                                   );
                                 }).toList()
@@ -349,7 +713,7 @@ class _AddPetProfileState extends State<AddPetProfile> {
                                     value: value,
                                     child: Text(
                                       value,
-                                      style: const TextStyle(fontSize: 20),
+                                      style: const TextStyle(fontSize: 16),
                                     ),
                                   );
                                 }).toList(),
@@ -644,9 +1008,9 @@ class _AddPetProfileState extends State<AddPetProfile> {
                     height: 10,
                   ),
 
-                  // Next Button
+                  // Save Button
                   InkWell(
-                    onTap: () {
+                    onTap: () async {
                       bool isAllFilled = true;
 
                       // Perform text field validations
@@ -660,13 +1024,18 @@ class _AddPetProfileState extends State<AddPetProfile> {
                       }
 
                       if (isAllFilled) {
+                        if (_chosenImage != null) {
+                          await saveImageLocally(_chosenImage!);
+                        }
+
                         Map<String, String> pets = {
                           'name': petNameController.text,
                           'gender': selectedGender,
                           'type': selectedPetType,
                           'breed': selectedBreed,
                           'size': selectedSize,
-                          'birthday': dateInput.text
+                          'birthday': dateInput.text,
+                          'imageUrl': storeImagePath,
                         };
                         saveData(pets);
                         showSuccessDialog(context);

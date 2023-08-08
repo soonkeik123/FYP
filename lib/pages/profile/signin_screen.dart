@@ -1,6 +1,7 @@
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_database/firebase_database.dart';
 import 'package:flutter/material.dart';
+import 'package:ohmypet/pages/admin/staff_manage.dart';
 import 'package:ohmypet/pages/profile/signup_screen.dart';
 import 'package:ohmypet/utils/colors.dart';
 import 'package:ohmypet/widgets/reusable_widget.dart';
@@ -18,6 +19,16 @@ class SignInScreen extends StatefulWidget {
 class _SignInScreenState extends State<SignInScreen> {
   final TextEditingController _emailTextController = TextEditingController();
   final TextEditingController _passwordTextController = TextEditingController();
+
+  void showSuccessSnackBar() {
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(
+        content: Text('Login Successful, Welcome Back!'),
+        backgroundColor: Colors.green,
+        duration: Duration(seconds: 4),
+      ),
+    );
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -52,42 +63,71 @@ class _SignInScreenState extends State<SignInScreen> {
                   height: 20,
                 ),
                 signInSignUpButton(context, true, () {
-                  FirebaseAuth.instance
-                      .signInWithEmailAndPassword(
-                          email: _emailTextController.text,
-                          password: _passwordTextController.text)
-                      .then((value) async {
-                    String uid = value.user?.uid ??
-                        ''; // Get the user's UID from the FirebaseUser object
-                    DatabaseReference profileRef = FirebaseDatabase.instance
-                        .ref()
-                        .child('users')
-                        .child(uid)
-                        .child('Profile');
+                  bool isAllFilled = true;
+                  if (_emailTextController.text.isEmpty ||
+                      _passwordTextController.text.isEmpty) {
+                    isAllFilled = false;
+                  }
 
-                    // Retrieve the user's profile data
-                    final snapshot = await profileRef.child('role').get();
-                    if (snapshot.exists) {
-                      if (snapshot.value.toString() == 'user') {
-                        Navigator.pushReplacementNamed(context, '/home');
-                      } else if (snapshot.value.toString() == 'staff' ||
-                          snapshot.value == 'admin') {
-                        Navigator.pushReplacement(
-                          context,
-                          MaterialPageRoute(
-                              builder: (context) => ReservationManagement(
-                                    role: snapshot.value.toString(),
-                                  )),
-                        );
+                  if (isAllFilled) {
+                    FirebaseAuth.instance
+                        .signInWithEmailAndPassword(
+                            email: _emailTextController.text,
+                            password: _passwordTextController.text)
+                        .then((value) async {
+                      String uid = value.user?.uid ??
+                          ''; // Get the user's UID from the FirebaseUser object
+                      DatabaseReference profileRef = FirebaseDatabase.instance
+                          .ref()
+                          .child('users')
+                          .child(uid)
+                          .child('Profile');
+
+                      DatabaseReference staffRef = FirebaseDatabase.instance
+                          .ref('staffs/$uid')
+                          .child('Profile/role');
+
+                      // Retrieve the user's profile data
+                      final snapshot = await profileRef.child('role').get();
+                      final staffSnapshot = await staffRef.get();
+                      print(staffSnapshot.value);
+                      if (snapshot.exists || staffSnapshot.exists) {
+                        if (snapshot.value.toString() == 'user') {
+                          Navigator.pushReplacementNamed(context, '/home');
+                          showSuccessSnackBar(); // Show the success snackbar when login successfully
+                        }
+                        if (staffSnapshot.value.toString() == 'staff') {
+                          Navigator.pushReplacement(
+                            context,
+                            MaterialPageRoute(
+                                builder: (context) => ReservationManagement(
+                                      role: 'staff',
+                                    )),
+                          );
+                          showSuccessSnackBar(); // Show the success snackbar when login successfully
+                        }
+                        if (staffSnapshot.value.toString() == 'admin') {
+                          Navigator.pushReplacement(
+                            context,
+                            MaterialPageRoute(
+                                builder: (context) => ReservationManagement(
+                                      role: 'admin',
+                                    )),
+                          );
+                          showSuccessSnackBar(); // Show the success snackbar when login successfully
+                        }
+                      } else {
+                        print('No user data available.');
                       }
-
-                      print(snapshot.value);
-                    } else {
-                      print('No data available.');
-                    }
-                  }).onError((error, stackTrace) {
-                    print("Error ${error.toString()}");
-                  });
+                    }).onError((error, stackTrace) {
+                      print("Error ${error.toString()}");
+                      showMessageDialog(context, "Login Failed",
+                          "Invalid email or password. Please try again.");
+                    });
+                  } else {
+                    showMessageDialog(context, "Login Failed",
+                        "Please fill up all the data field.");
+                  }
                 }),
                 signUpOption()
               ],

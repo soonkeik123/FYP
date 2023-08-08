@@ -63,7 +63,7 @@ class _StaffManagementState extends State<StaffManagement> {
     try {
       // Get a reference to the 'users' node in the Realtime Database
       DatabaseReference adminRef =
-          FirebaseDatabase.instance.ref().child('users');
+          FirebaseDatabase.instance.ref().child('staffs');
 
       // Listen for the value event
       adminRef.onValue.listen((DatabaseEvent event) {
@@ -73,19 +73,19 @@ class _StaffManagementState extends State<StaffManagement> {
         // Check if the snapshot's value is not null and is of type Map<dynamic, dynamic>
         if (snapshot.value != null) {
           // Convert the value to a Map<dynamic, dynamic>
-          Map<dynamic, dynamic> adminUsers =
+          Map<dynamic, dynamic> adminStaffs =
               snapshot.value as Map<dynamic, dynamic>;
           staffData.clear();
           // print(adminUsers); // Checking purpose
           // Loop through the snapshot's children (admin users)
-          adminUsers.forEach((key, userData) {
-            final userProfile = userData['Profile'];
-            if (userProfile['role'] == 'admin' ||
-                userProfile['role'] == 'staff') {
-              staffData.add(userProfile);
+          adminStaffs.forEach((key, staffsData) {
+            final staffProfile = staffsData['Profile'];
+            if (staffProfile['role'] == 'admin' ||
+                staffProfile['role'] == 'staff') {
+              staffData.add(staffProfile);
             }
             if (key == currentAdminID) {
-              currentAdminName = userProfile['full_name'];
+              currentAdminName = staffProfile['full_name'];
             }
           });
           refreshPage();
@@ -198,16 +198,14 @@ class _StaffManagementState extends State<StaffManagement> {
                             DatabaseReference profileRef = FirebaseDatabase
                                 .instance
                                 .ref()
-                                .child('users')
+                                .child('staffs')
                                 .child(uid)
                                 .child('Profile');
 
                             Map<String, dynamic> profileData = {
                               'full_name': nameController.text,
-                              'nickname': '',
                               'email': emailController.text,
                               'phone': '6${phoneController.text}',
-                              'point': 0,
                               'role': newRole,
                             };
 
@@ -246,7 +244,7 @@ class _StaffManagementState extends State<StaffManagement> {
     String uid = '';
 
     // Query the 'Profile' node to get admin users
-    Query adminQuery = adminRef.child('users');
+    Query adminQuery = adminRef.child('staffs');
 
     // Listen for the value event
     adminQuery.onValue.listen((DatabaseEvent event) {
@@ -255,21 +253,21 @@ class _StaffManagementState extends State<StaffManagement> {
       // Check if the snapshot's value is not null and is of type Map<dynamic, dynamic>
       if (snapshot.value != null) {
         // Convert the value to a Map<dynamic, dynamic>
-        Map<dynamic, dynamic> adminUsers =
+        Map<dynamic, dynamic> adminStaffs =
             snapshot.value as Map<dynamic, dynamic>;
         // Loop through the snapshot's children (admin users)
-        adminUsers.forEach((key, userData) async {
-          if (userData['Profile']['full_name'] == name) {
+        adminStaffs.forEach((key, staffsData) async {
+          if (staffsData['Profile']['full_name'] == name) {
             setState(() {
               uid = key;
             });
-            final snapshot = await adminRef.child('users/$uid').get();
+            final snapshot = await adminRef.child('staffs/$uid').get();
 
             if (snapshot.exists) {
-              Map<dynamic, dynamic> originData = snapshot.value as Map;
-
-              if (userData != null && userData.containsKey('Profile')) {
-                Map<dynamic, dynamic> profileData = userData['Profile'] as Map;
+              if (staffsData != null) {
+                Map<dynamic, dynamic> profileData =
+                    staffsData['Profile'] as Map;
+                // Record the original data to compare if changed
                 staffName = profileData['full_name'] ?? '';
                 staffPhone = profileData['phone'] ?? '';
                 staffEmail = profileData['email'] ?? '';
@@ -340,9 +338,7 @@ class _StaffManagementState extends State<StaffManagement> {
                         bool email = (staffEmail != editEmailController.text);
 
                         DatabaseReference profileRef = FirebaseDatabase.instance
-                            .ref()
-                            .child('users')
-                            .child(uid)
+                            .ref('staffs/$uid')
                             .child('Profile');
 
                         Map<String, dynamic> staffData = {

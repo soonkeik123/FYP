@@ -4,7 +4,6 @@ import 'package:dots_indicator/dots_indicator.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_database/firebase_database.dart';
 import 'package:flutter/material.dart';
-import 'package:ohmypet/pages/pet/edit_pet.dart';
 import 'package:ohmypet/pages/pet/view_pet.dart';
 import 'package:ohmypet/utils/colors.dart';
 import 'package:ohmypet/utils/dimensions.dart';
@@ -12,6 +11,7 @@ import 'package:ohmypet/widgets/big_text.dart';
 import 'package:ohmypet/widgets/small_text.dart';
 
 import '../admin/package_manage.dart';
+import '../pet/edit_pet.dart';
 
 class HomePageBody extends StatefulWidget {
   const HomePageBody({super.key});
@@ -121,23 +121,12 @@ class _HomePageBodyState extends State<HomePageBody> {
         petDataList.clear(); // Clear the list before adding new data
         data.forEach((key, value) {
           Map<dynamic, dynamic> petData =
-              Map.from(value['data']); // Access the inner map
+              Map.from(value); // Access the inner map
           petData['key'] = key;
           refreshItems(petData);
         });
       }
     });
-    // dbPetRef.onValue.listen((event) {
-    //   // The event snapshot contains the data
-    //   DataSnapshot snapshot = event.snapshot;
-    //   if (snapshot.value != null) {
-    //     // Handle the data as needed
-    //     // print('Data: ${snapshot.value}');
-    //   } else {
-    //     // Handle the case when data is null or does not exist
-    //     // print('No data available.');
-    //   }
-    // });
 
     return Stack(
       children: [
@@ -554,7 +543,7 @@ class _HomePageBodyState extends State<HomePageBody> {
                       context,
                       MaterialPageRoute(
                           builder: (context) => ViewPetPage(
-                                petName: pet['name'],
+                                petId: pet['key'],
                               )));
                 },
                 child: Text(
@@ -578,7 +567,7 @@ class _HomePageBodyState extends State<HomePageBody> {
                           context,
                           MaterialPageRoute(
                               builder: (context) => EditPetProfile(
-                                    petName: pet['name'],
+                                    petId: pet['key'],
                                   )));
                     },
                     style: ButtonStyle(
@@ -633,7 +622,7 @@ class _HomePageBodyState extends State<HomePageBody> {
                     context,
                     MaterialPageRoute(
                         builder: (context) => ViewPetPage(
-                              petName: pet['name'],
+                              petId: pet['key'],
                             ))),
                 child: Container(
                   child: Image.asset(

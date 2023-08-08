@@ -1,9 +1,14 @@
+import 'dart:io';
+
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_database/firebase_database.dart';
 import 'package:flutter/material.dart';
+import 'package:image_picker/image_picker.dart';
+import 'package:ohmypet/pages/admin/staff_manage.dart';
 import 'package:ohmypet/utils/colors.dart';
 import 'package:ohmypet/utils/dimensions.dart';
 import 'package:ohmypet/widgets/header.dart';
+import 'package:path_provider/path_provider.dart';
 
 import '../../widgets/bottom_navigation_bar.dart';
 import '../../widgets/title_text.dart';
@@ -25,6 +30,11 @@ class _EditProfilePageState extends State<EditProfilePage> {
   String userNickname = "";
   String userPhone = "";
   String userEmail = "";
+
+  File? _chosenImage;
+  final ImagePicker _picker = ImagePicker();
+  String storeImagePath = '';
+  String imageUrl = '';
 
   TextEditingController fullNameController = TextEditingController();
   TextEditingController nicknameController = TextEditingController();
@@ -57,6 +67,7 @@ class _EditProfilePageState extends State<EditProfilePage> {
       String nickname = userData['nickname'];
       String email = userData['email'];
       String phone = userData['phone'];
+      String image = userData['image'];
 
       setState(() {
         userName = name;
@@ -70,10 +81,66 @@ class _EditProfilePageState extends State<EditProfilePage> {
 
         userPhone = phone;
         phoneController.text = phone;
+
+        imageUrl = image;
+        if (imageUrl.isNotEmpty) _chosenImage = File(imageUrl);
       });
     } else {
       print('No data available.');
     }
+  }
+
+  // Shows option when user clicked on profile image
+  void _profilePicEdit() {
+    showModalBottomSheet(
+      context: context,
+      builder: (BuildContext context) {
+        return Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            ListTile(
+              leading: const Icon(Icons.photo_library),
+              title: const Text('Choose from gallery'),
+              onTap: () {
+                // Call the image picker function here
+                openImagePicker();
+
+                Navigator.pop(context);
+              },
+            ),
+          ],
+        );
+      },
+    );
+  }
+
+  // Implementing image picker
+  Future<void> openImagePicker() async {
+    final XFile? pickedImage =
+        await _picker.pickImage(source: ImageSource.gallery);
+    if (pickedImage != null) {
+      setState(() {
+        _chosenImage = File(pickedImage.path);
+      });
+    }
+  }
+
+  Future<void> saveImageLocally(File imageFile) async {
+    // Get the path to the application's documents directory
+    final appDocDir = await getApplicationDocumentsDirectory();
+
+    // Get the original filename of the image
+    String originalFilename = imageFile.path.split('/').last;
+
+    // Define a new file in the documents directory with the original filename
+    final savedImage = File('${appDocDir.path}/$originalFilename');
+
+    // Copy the chosen image to the new file
+    await imageFile.copy(savedImage.path);
+
+    storeImagePath = savedImage.path;
+
+    print('Image saved locally: ${savedImage.path}');
   }
 
   @override
@@ -94,15 +161,49 @@ class _EditProfilePageState extends State<EditProfilePage> {
                 child: Column(
                   children: [
                     // Profile picture
-                    Container(
-                      margin: const EdgeInsets.symmetric(vertical: 20),
-                      height: 130,
-                      width: 130,
-                      decoration: const BoxDecoration(
-                          shape: BoxShape.circle,
-                          image: DecorationImage(
-                              image: AssetImage("assets/images/1.jpg"),
-                              fit: BoxFit.cover)),
+                    InkWell(
+                      onTap: () => _profilePicEdit(),
+                      child: Column(
+                        children: [
+                          Container(
+                            margin: EdgeInsets.only(top: 20),
+                            width: 130,
+                            height: 130,
+                            decoration: BoxDecoration(
+                              color: Colors.grey[300],
+                              borderRadius: BorderRadius.circular(
+                                  75), // Half of the width or height to make it circular
+                            ),
+                            child: _chosenImage != null
+                                ? Container(
+                                    decoration: BoxDecoration(
+                                      borderRadius: BorderRadius.circular(
+                                          75), // To make the image inside circular
+                                      image: DecorationImage(
+                                        image: FileImage(_chosenImage!),
+                                        fit: BoxFit.cover,
+                                      ),
+                                    ),
+                                  )
+                                : Icon(Icons.person_add_alt_1_outlined,
+                                    size: 40, color: Colors.grey),
+                          ),
+                          const SizedBox(
+                            height: 5,
+                          ),
+                          const Text(
+                            "Upload Picture",
+                            style: TextStyle(
+                              color: Colors.blue,
+                              fontSize: 16,
+                              fontWeight: FontWeight.w300,
+                            ),
+                          ),
+                          const SizedBox(
+                            height: 10,
+                          ),
+                        ],
+                      ),
                     ),
 
                     // Personal Information
@@ -354,6 +455,8 @@ class _EditProfilePageState extends State<EditProfilePage> {
   Future<void> updateUserData(Map<String, String> updatedData) async {
     await profileRef.update(updatedData);
     print("Success");
+    showMessageDialog(context, "Update Successful",
+        "You have updated your profile information!");
     Navigator.popAndPushNamed(context, '/profile');
   }
 
@@ -404,17 +507,22 @@ class _EditProfilePageState extends State<EditProfilePage> {
       },
     ).then((value) async {
       if (value != null && value) {
+        if (_chosenImage != null) {
+          await saveImageLocally(_chosenImage!);
+        }
         bool fullname = fullNameController.text != userName;
         bool nickname = nicknameController.text != userNickname;
         bool phone = phoneController.text != userPhone;
         bool email = emailController.text != userEmail;
         bool password = _passwordController.text.isNotEmpty;
+        bool image = imageUrl != storeImagePath;
 
         Map<String, String> updatedData = {
           if (fullname) 'full_name': fullNameController.text,
           if (nickname) 'nickname': nicknameController.text,
           if (phone) 'phone': phoneController.text,
           if (email) 'email': emailController.text,
+          if (image) 'image': storeImagePath,
         };
         try {
           User? user = FirebaseAuth.instance.currentUser;

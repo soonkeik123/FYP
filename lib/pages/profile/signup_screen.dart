@@ -1,6 +1,7 @@
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_database/firebase_database.dart';
 import 'package:flutter/material.dart';
+import 'package:ohmypet/pages/admin/staff_manage.dart';
 import 'package:ohmypet/pages/home/main_home_page.dart';
 import 'package:ohmypet/widgets/reusable_widget.dart';
 
@@ -19,6 +20,9 @@ class _SignUpScreenState extends State<SignUpScreen> {
   final TextEditingController _emailTextController = TextEditingController();
   final TextEditingController _passwordTextController = TextEditingController();
   final TextEditingController _phoneTextController = TextEditingController();
+
+  final emailRegex = RegExp(r'^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$');
+  final phoneRegex = RegExp(r'^60\d{9,10}$');
 
   @override
   Widget build(BuildContext context) {
@@ -69,50 +73,91 @@ class _SignUpScreenState extends State<SignUpScreen> {
                 height: 20,
               ),
               signInSignUpButton(context, false, () {
-                FirebaseAuth.instance
-                    .createUserWithEmailAndPassword(
-                        email: _emailTextController.text,
-                        password: _passwordTextController.text)
-                    .then((value) async {
-                  User? user = FirebaseAuth.instance.currentUser;
-                  if (user != null) {
-                    String uid = user.uid;
-                    // Now you have the UID of the current user
+                bool isAllFilled = true;
 
-                    DatabaseReference profileRef = FirebaseDatabase.instance
-                        .ref()
-                        .child('users')
-                        .child(uid)
-                        .child('Profile');
+                if (_userNameTextController.text.isEmpty ||
+                    _emailTextController.text.isEmpty ||
+                    _passwordTextController.text.isEmpty ||
+                    _phoneTextController.text.isEmpty) {
+                  isAllFilled = false;
+                }
 
-                    Map<String, dynamic> profileData = {
-                      'full_name': _userNameTextController.text,
-                      'nickname': '',
-                      'email': _emailTextController.text,
-                      'phone': '6${_phoneTextController.text}',
-                      'point': 0,
-                      'role': 'user',
-                    };
+                if (isAllFilled) {
+                  if (emailRegex.hasMatch(_emailTextController.text)) {
+                    if (phoneRegex.hasMatch(_phoneTextController.text)) {
+                      if (_passwordTextController.text.length >= 6) {
+                        FirebaseAuth.instance
+                            .createUserWithEmailAndPassword(
+                                email: _emailTextController.text,
+                                password: _passwordTextController.text)
+                            .then((value) async {
+                          User? user = FirebaseAuth.instance.currentUser;
+                          if (user != null) {
+                            String uid = user.uid;
+                            // Now you have the UID of the current user
 
-                    profileRef.set(profileData).then((_) {
-                      print('Data saved successfully!');
-                    }).catchError((error) {
-                      print('Error saving data: $error');
-                    });
+                            DatabaseReference profileRef = FirebaseDatabase
+                                .instance
+                                .ref()
+                                .child('users')
+                                .child(uid)
+                                .child('Profile');
+
+                            Map<String, dynamic> profileData = {
+                              'full_name': _userNameTextController.text,
+                              'nickname': '',
+                              'email': _emailTextController.text,
+                              'phone': _phoneTextController.text,
+                              'point': 0,
+                              'role': 'user',
+                            };
+
+                            profileRef.set(profileData).then((_) {
+                              print('Data saved successfully!');
+                              showSuccessSnackBar(); // Show the success snackbar when data is saved successfully
+                            }).catchError((error) {
+                              print('Error saving data: $error');
+                            });
+                          }
+
+                          print("Created New Account");
+                          Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                  builder: (context) => const MainHomePage()));
+                        }).onError((error, stackTrace) {
+                          print("Error ${error.toString()}");
+                        });
+                      } else {
+                        showMessageDialog(context, "Register Failed",
+                            "The password must have at least 6 digits.");
+                      }
+                    } else {
+                      showMessageDialog(context, "Register Failed",
+                          "Please make sure that phone number is start of '60' and only contains 11 to 12 digits.");
+                    }
+                  } else {
+                    showMessageDialog(context, "Register Failed",
+                        "Please make sure that you're using the correct Email format.");
                   }
-
-                  print("Created New Account");
-                  Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                          builder: (context) => const MainHomePage()));
-                }).onError((error, stackTrace) {
-                  print("Error ${error.toString()}");
-                });
+                } else {
+                  showMessageDialog(context, "Register Failed",
+                      "Please make sure that you have filled up all the data field.");
+                }
               })
             ],
           ),
         ),
+      ),
+    );
+  }
+
+  void showSuccessSnackBar() {
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(
+        content: Text('Register Successful, Welcome!'),
+        backgroundColor: Colors.green,
+        duration: Duration(seconds: 4),
       ),
     );
   }

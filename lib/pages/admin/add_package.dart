@@ -23,7 +23,6 @@ class _AddPackagePageState extends State<AddPackagePage> {
   String storeImagePath = '';
 
   final TextEditingController _titleController = TextEditingController();
-  final TextEditingController _imageUController = TextEditingController();
   final TextEditingController _descriptionController = TextEditingController();
   final TextEditingController _priceController = TextEditingController();
 
@@ -185,7 +184,8 @@ class _AddPackagePageState extends State<AddPackagePage> {
                           // Textfield for package title
                           TextField(
                             controller: _priceController,
-                            keyboardType: const TextInputType.numberWithOptions(),
+                            keyboardType:
+                                const TextInputType.numberWithOptions(),
                             decoration: InputDecoration(
                               border: OutlineInputBorder(
                                 borderSide: const BorderSide(

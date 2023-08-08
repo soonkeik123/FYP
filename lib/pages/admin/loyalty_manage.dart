@@ -35,7 +35,7 @@ class _LoyaltyManagementState extends State<LoyaltyManagement> {
       String sid = staff.uid;
       profileRef = FirebaseDatabase.instance
           .ref()
-          .child('users')
+          .child('staffs')
           .child(sid)
           .child('Profile');
       getStaffByID(sid);
@@ -317,7 +317,6 @@ class _LoyaltyManagementState extends State<LoyaltyManagement> {
                   }).catchError((error) {
                     print("Error updating point: $error");
                   });
-                  Clear();
 
                   // Identify the current user (staff/admin)
                   User? user = FirebaseAuth.instance.currentUser;
@@ -328,10 +327,10 @@ class _LoyaltyManagementState extends State<LoyaltyManagement> {
                     'user_id': uid,
                     'email': emailController.text,
                     'serv_id': servIDController.text,
-                    'point': newPoint,
+                    'point': pointController.text,
                     'executor': executor,
                   };
-
+                  Clear();
                   final newKey = FirebaseDatabase.instance
                       .ref()
                       .child('addLoyaltyRecord')

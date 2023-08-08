@@ -1,3 +1,5 @@
+import 'dart:io';
+
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_database/firebase_database.dart';
 import 'package:flutter/material.dart';
@@ -24,6 +26,7 @@ class _MainProfilePageState extends State<MainProfilePage> {
   String userNickname = "";
   String userPhone = "";
   String userEmail = "";
+  String imageUrl = '';
   int loyaltyPoint = 0;
 
   @override
@@ -52,6 +55,7 @@ class _MainProfilePageState extends State<MainProfilePage> {
       String nickname = userData['nickname'];
       String email = userData['email'];
       String phone = userData['phone'];
+      String image = userData['image'];
       int point = userData['point'] as int;
 
       setState(() {
@@ -60,6 +64,7 @@ class _MainProfilePageState extends State<MainProfilePage> {
         userEmail = email;
         userPhone = phone;
         loyaltyPoint = point;
+        imageUrl = image;
       });
     } else {
       print('No data available.');
@@ -90,15 +95,33 @@ class _MainProfilePageState extends State<MainProfilePage> {
                       mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                       children: [
                         // Profile picture
-                        Container(
-                          height: 120,
-                          width: 120,
-                          decoration: const BoxDecoration(
+                        if (imageUrl.isEmpty)
+                          Container(
+                            margin: EdgeInsets.only(left: 7),
+                            height: 130,
+                            width: 130,
+                            decoration: BoxDecoration(
+                              shape: BoxShape.circle,
+                              color: Colors.grey[300],
+                            ),
+                            child: Center(
+                              child: Icon(Icons.person_add_alt_1_outlined,
+                                  size: 40, color: Colors.grey),
+                            ),
+                          )
+                        else
+                          Container(
+                            margin: const EdgeInsets.only(left: 7),
+                            height: 130,
+                            width: 130,
+                            decoration: BoxDecoration(
                               shape: BoxShape.circle,
                               image: DecorationImage(
-                                  image: AssetImage("assets/images/1.jpg"),
-                                  fit: BoxFit.cover)),
-                        ),
+                                fit: BoxFit.cover,
+                                image: FileImage(File(imageUrl)),
+                              ),
+                            ),
+                          ),
                         // Profile info
                         Column(
                           mainAxisAlignment: MainAxisAlignment.center,
