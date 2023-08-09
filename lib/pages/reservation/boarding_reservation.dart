@@ -103,17 +103,17 @@ class _BoardingReservationState extends State<BoardingReservation> {
           if (!_isDisposed) {
             // Check if the widget is still mounted before updating the state
 
-            petList.add(value['data']);
+            petList.add(value);
             if (isDog) {
-              if (value['data']['type'] == 'Dog') {
+              if (value['type'] == 'Dog') {
                 setState(() {
-                  petNames.add(value['data']['name']);
+                  petNames.add(value['name']);
                 });
               }
             } else {
-              if (value['data']['type'] == 'Cat') {
+              if (value['type'] == 'Cat') {
                 setState(() {
-                  petNames.add(value['data']['name']);
+                  petNames.add(value['name']);
                 });
               }
             }
@@ -289,16 +289,12 @@ class _BoardingReservationState extends State<BoardingReservation> {
                                   //     .add(const Duration(days: 1)),
                                   onApplyClick: (start, end) {
                                     setState(() {
-                                      endDate = (end)
-                                          .toString()
-                                          .split(' ')[0];
-                                      startDate = (start)
-                                          .toString()
-                                          .split(' ')[0];
+                                      endDate = (end).toString().split(' ')[0];
+                                      startDate =
+                                          (start).toString().split(' ')[0];
                                       dateInput.text = "$startDate to $endDate";
-                                      numberOfDays = (end)
-                                          .difference(start)
-                                          .inDays;
+                                      numberOfDays =
+                                          (end).difference(start).inDays;
                                       print(
                                           "Number of days between start and end: $numberOfDays");
                                     });
@@ -435,9 +431,8 @@ class _BoardingReservationState extends State<BoardingReservation> {
                                       (GoogleMapController controller) {
                                     _mapController = controller;
                                   },
-                                  markers: _marker != null
-                                      ? <Marker>{_marker!}
-                                      : {},
+                                  markers:
+                                      _marker != null ? <Marker>{_marker!} : {},
                                   onCameraMove: (CameraPosition position) {
                                     updateMarkerPosition(position);
                                   },
@@ -606,8 +601,8 @@ class _BoardingReservationState extends State<BoardingReservation> {
         Map<dynamic, dynamic> petData = snapshot.value as Map<dynamic, dynamic>;
         // Iterate through the pet data to get pet names
         petData.forEach((key, value) {
-          if (value['data']['name'] == newValue) {
-            petSize = value['data']['size'];
+          if (value['name'] == newValue) {
+            petSize = value['size'];
 
             if (petSize == "Small" || petSize == "Medium") {
               if (roomSelected == "D1" || roomSelected == "C1") {

@@ -102,15 +102,6 @@ class _GroomReservationPageState extends State<GroomReservationPage> {
     super.dispose();
   }
 
-  // Future<void> _moveToLocation(String address) async {
-  //   List<Location> locations = await locationFromAddress(address);
-  //   if (locations.isNotEmpty) {
-  //     Location location = locations.first;
-  //     LatLng latLng = LatLng(location.latitude!, location.longitude!);
-  //     _mapController?.animateCamera(CameraUpdate.newLatLng(latLng));
-  //   }
-  // }
-
   void getAllPet() {
     dbPetRef.onValue.listen((event) {
       DataSnapshot snapshot = event.snapshot;
@@ -122,17 +113,17 @@ class _GroomReservationPageState extends State<GroomReservationPage> {
           if (!_isDisposed) {
             // Check if the widget is still mounted before updating the state
 
-            petList.add(value['data']);
+            petList.add(value);
             if (isDog) {
-              if (value['data']['type'] == 'Dog') {
+              if (value['type'] == 'Dog') {
                 setState(() {
-                  petNames.add(value['data']['name']);
+                  petNames.add(value['name']);
                 });
               }
             } else {
-              if (value['data']['type'] == 'Cat') {
+              if (value['type'] == 'Cat') {
                 setState(() {
-                  petNames.add(value['data']['name']);
+                  petNames.add(value['name']);
                 });
               }
             }
@@ -406,9 +397,8 @@ class _GroomReservationPageState extends State<GroomReservationPage> {
                                 onMapCreated: (GoogleMapController controller) {
                                   _mapController = controller;
                                 },
-                                markers: _marker != null
-                                    ? <Marker>{_marker!}
-                                    : {},
+                                markers:
+                                    _marker != null ? <Marker>{_marker!} : {},
                                 onCameraMove: (CameraPosition position) {
                                   updateMarkerPosition(position);
                                 },
@@ -575,8 +565,8 @@ class _GroomReservationPageState extends State<GroomReservationPage> {
         Map<dynamic, dynamic> petData = snapshot.value as Map<dynamic, dynamic>;
         // Iterate through the pet data to get pet names
         petData.forEach((key, value) {
-          if (value['data']['name'] == newValue) {
-            petSize = value['data']['size'];
+          if (value['name'] == newValue) {
+            petSize = value['size'];
 
             if (serviceName == "Cat Basic Grooming" ||
                 serviceName == "Dog Basic Grooming") {

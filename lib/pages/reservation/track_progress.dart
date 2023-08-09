@@ -1,6 +1,10 @@
+import 'dart:async';
+
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_database/firebase_database.dart';
 import 'package:flutter/material.dart';
+import 'package:geocoding/geocoding.dart';
+import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:ohmypet/utils/colors.dart';
 import 'package:ohmypet/widgets/header.dart';
 
@@ -52,16 +56,13 @@ class _TrackProgressPageState extends State<TrackProgressPage>
   bool isFullGroom = false;
   bool changePic = true;
 
-  // final Completer<GoogleMapController> _controller =
-  //     Completer<GoogleMapController>();
-
-  // static const CameraPosition _kGooglePlex = CameraPosition(
-  //   target: LatLng(37.42796133580664, -122.085749655962),
-  //   zoom: 14.4746,
-  // );
+  CameraPosition? _cameraPosition;
+  Completer<GoogleMapController> _googleMapController = Completer();
+  LatLng? destinationLatLng;
 
   @override
   void initState() {
+    _init();
     controller = AnimationController(
       vsync: this,
       upperBound: 1.0,
@@ -85,6 +86,26 @@ class _TrackProgressPageState extends State<TrackProgressPage>
     super.initState();
   }
 
+  _init() {
+    _cameraPosition = CameraPosition(
+        target: LatLng(1.5338304733168895, 103.68183000980095), zoom: 15);
+  }
+
+  moveToPosition(LatLng latLng) async {
+    GoogleMapController mapController = await _googleMapController.future;
+    mapController.animateCamera(CameraUpdate.newCameraPosition(
+      CameraPosition(target: latLng, zoom: 15),
+    ));
+  }
+
+  Future<void> _loadDestinationCoordinates() async {
+    try {
+      destinationLatLng = await getLatLngFromAddress(address);
+    } catch (e) {
+      print('Error loading destination coordinates: $e');
+    }
+  }
+
   // Get data
   Future<void> fetchReservationData() async {
     final snapshot = await reservRef.get();
@@ -106,6 +127,7 @@ class _TrackProgressPageState extends State<TrackProgressPage>
         pointRedeem = reservationData['free_service'];
         petName = reservationData['pet'];
       });
+      _loadDestinationCoordinates(); //set address LatLng
       final nameSnapshot = await FirebaseDatabase.instance
           .ref('users/$customerId/Profile')
           .child('full_name')
@@ -129,9 +151,9 @@ class _TrackProgressPageState extends State<TrackProgressPage>
       DataSnapshot snapshot = event.snapshot;
       Map petData = snapshot.value as Map;
       petData.forEach((key, value) {
-        if (value['data']['name'] == petName) {
+        if (value['name'] == petName) {
           setState(() {
-            selectedPet = value['data'];
+            selectedPet = value;
           });
         }
       });
@@ -183,6 +205,21 @@ class _TrackProgressPageState extends State<TrackProgressPage>
     }
     return "";
   }
+
+  Future<LatLng> getLatLngFromAddress(String address) async {
+    List<Location> locations = await locationFromAddress(address);
+
+    if (locations.isNotEmpty) {
+      double latitude = locations[0].latitude;
+      double longitude = locations[0].longitude;
+      return LatLng(latitude, longitude);
+    } else {
+      throw Exception('No location found for the given address.');
+    }
+  }
+
+  StreamSubscription<DatabaseEvent>?
+      positionListener; // Declare the listener reference
 
   @override
   Widget build(BuildContext context) {
@@ -299,6 +336,55 @@ class _TrackProgressPageState extends State<TrackProgressPage>
                         Container(
                           height: 410,
                           color: Colors.lightBlueAccent,
+                          child: Stack(
+                            children: [
+                              GoogleMap(
+                                  initialCameraPosition: _cameraPosition!,
+                                  mapType: MapType.normal,
+                                  markers: destinationLatLng != null
+                                      ? {
+                                          Marker(
+                                            markerId:
+                                                MarkerId('destinationMarker'),
+                                            position: destinationLatLng!,
+                                          ),
+                                        }
+                                      : {},
+                                  scrollGesturesEnabled: false,
+                                  onMapCreated:
+                                      (GoogleMapController controller) {
+                                    // now we need a variable to get the controiller of google map
+                                    if (!_googleMapController.isCompleted) {
+                                      _googleMapController.complete(controller);
+
+                                      if (stage == 1 || stage == 2) {
+                                        positionListener =
+                                            reservRef.onValue.listen((event) {
+                                          if (event.snapshot.value != null) {
+                                            Map reservationData =
+                                                event.snapshot.value as Map;
+                                            double currentLatitude =
+                                                reservationData['latitude'];
+                                            double currentLongitude =
+                                                reservationData['longitude'];
+
+                                            moveToPosition(LatLng(
+                                                currentLatitude,
+                                                currentLongitude));
+                                          }
+                                        });
+                                      } else {
+                                        reservRef.onDisconnect();
+                                        positionListener?.cancel();
+                                      }
+                                    }
+                                  }),
+                              Positioned.fill(
+                                  child: Align(
+                                      alignment: Alignment.center,
+                                      child: _getMarker())),
+                            ],
+                          ),
                         ),
                         Align(
                           alignment: Alignment.bottomCenter,
@@ -684,6 +770,45 @@ class _TrackProgressPageState extends State<TrackProgressPage>
                         Container(
                           height: 410,
                           color: Colors.lightBlueAccent,
+                          child: Stack(
+                            children: [
+                              GoogleMap(
+                                  initialCameraPosition: _cameraPosition!,
+                                  mapType: MapType.normal,
+                                  scrollGesturesEnabled: false,
+                                  onMapCreated:
+                                      (GoogleMapController controller) {
+                                    // now we need a variable to get the controiller of google map
+                                    if (!_googleMapController.isCompleted) {
+                                      _googleMapController.complete(controller);
+                                      if (stage == 7) {
+                                        positionListener =
+                                            reservRef.onValue.listen((event) {
+                                          if (event.snapshot.value != null) {
+                                            Map reservationData =
+                                                event.snapshot.value as Map;
+                                            double currentLatitude =
+                                                reservationData['latitude'];
+                                            double currentLongitude =
+                                                reservationData['longitude'];
+
+                                            moveToPosition(LatLng(
+                                                currentLatitude,
+                                                currentLongitude));
+                                          }
+                                        });
+                                      } else {
+                                        positionListener?.cancel();
+                                        reservRef.onDisconnect();
+                                      }
+                                    }
+                                  }),
+                              Positioned.fill(
+                                  child: Align(
+                                      alignment: Alignment.center,
+                                      child: _getMarker())),
+                            ],
+                          ),
                         ),
                         Align(
                           alignment: Alignment.bottomCenter,
@@ -935,6 +1060,25 @@ class _TrackProgressPageState extends State<TrackProgressPage>
       } else {}
     });
   }
+
+  Widget _getMarker() {
+    return Container(
+      width: 40,
+      height: 40,
+      padding: EdgeInsets.all(2),
+      decoration: BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.circular(100),
+          boxShadow: [
+            BoxShadow(
+                color: Colors.grey,
+                offset: Offset(0, 3),
+                spreadRadius: 4,
+                blurRadius: 6)
+          ]),
+      child: ClipOval(child: Image.asset("assets/images/app-icon.png")),
+    );
+  }
 }
 
 class ReservationDetail extends StatefulWidget {
@@ -1045,9 +1189,9 @@ class _ReservationDetailState extends State<ReservationDetail> {
       DataSnapshot snapshot = event.snapshot;
       Map petData = snapshot.value as Map;
       petData.forEach((key, value) {
-        if (value['data']['name'] == petName) {
+        if (value['name'] == petName) {
           setState(() {
-            selectedPet = value['data'];
+            selectedPet = value;
           });
         }
       });

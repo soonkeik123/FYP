@@ -41,6 +41,7 @@ class _ReservationManagementState extends State<ReservationManagement> {
       if (data != null) {
         // List<Map<String, dynamic>> filterReservations = [];
         ongoingReservations.clear(); // Clear the list before adding new data
+        allReservations.clear();
         data.forEach((key, value) {
           Map<String, dynamic> reservationData =
               Map.from(value); // Access the inner map

@@ -16,7 +16,7 @@ class CustomHeader extends StatelessWidget {
         pageTitle == "RESERVATION") {
       return Container(
         decoration: const BoxDecoration(color: Colors.white, boxShadow: [
-          BoxShadow(color: Colors.black26, blurRadius: 7, offset: Offset(0, 1))
+          BoxShadow(color: Colors.black26, blurRadius: 7, offset: Offset(0, -2))
         ]),
         // Here can set the height
         height: 90,

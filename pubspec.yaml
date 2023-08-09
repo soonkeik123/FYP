@@ -37,8 +37,8 @@ dependencies:
   intl: ^0.17.0
   google_maps_flutter: ^2.1.2
   geocoding: ^2.0.4
-  geolocator: ^8.2.0
-  location: ^4.3.0
+  geolocator: ^9.0.2
+  location: ^4.4.0
   flutter_spinkit: ^5.0.0
   flutter_google_places: ^0.3.0
   shared_preferences: ^2.0.15 #store token key into the actual device

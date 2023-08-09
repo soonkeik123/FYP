@@ -21,7 +21,7 @@ class AdminHeader extends StatelessWidget {
                 color: Colors.black38,
                 spreadRadius: 1,
                 blurRadius: 5,
-                offset: Offset(0, 1))
+                offset: Offset(0, -2))
           ]),
           // Here can set the height
           height: 90,
