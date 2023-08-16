@@ -1,6 +1,10 @@
+import 'dart:convert';
+
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_database/firebase_database.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_stripe/flutter_stripe.dart';
+import 'package:http/http.dart' as http;
 import 'package:ohmypet/utils/colors.dart';
 import 'package:ohmypet/utils/dimensions.dart';
 import 'package:ohmypet/widgets/big_text.dart';
@@ -65,6 +69,9 @@ class _OrderConfirmationPageState extends State<OrderConfirmationPage> {
   late bool freeService;
   // Pet size for define price
   late String petSize;
+
+  // For payment
+  Map<String, dynamic>? paymentIntent;
 
   @override
   void initState() {
@@ -304,91 +311,9 @@ class _OrderConfirmationPageState extends State<OrderConfirmationPage> {
                         child: InkWell(
                           onTap: () {
                             isFreeService();
-                            User? user = FirebaseAuth.instance.currentUser;
-                            if (user != null) {
-                              String uid = user.uid;
-                              // Now you have the UID of the current user
+                            // makePayment();
 
-                              // For storing the reservation to database
-                              DatabaseReference reservationRef =
-                                  FirebaseDatabase.instance
-                                      .ref()
-                                      .child('reservations');
-                              // For update the user loyalty point
-                              DatabaseReference profileLoyaltyRef =
-                                  FirebaseDatabase.instance
-                                      .ref()
-                                      .child('users')
-                                      .child(uid)
-                                      .child('Profile')
-                                      .child('point');
-
-                              Map<String, dynamic> reservationData = {
-                                'user_id': uid,
-                                'pet': petSelected,
-                                'service': serviceSelected,
-                                'date': dateSelected,
-                                'time': timeSelected,
-                                'room': roomSelected,
-                                'taxi': taxiChecked,
-                                'address': addressInput,
-                                'package': packageSelected,
-                                'free_service': freeService,
-                                'price': priceGet,
-                                'payment_id': '',
-                                'status': 'Incoming',
-                                'stage': 0,
-                              };
-
-                              // Create a new unique key for reservation
-                              DatabaseReference newReservationRef =
-                                  reservationRef.push();
-
-                              // Set the reservation data at the new unique key
-                              newReservationRef
-                                  .set(reservationData)
-                                  .then((_) async {
-                                // Reservation data is successfully stored in the database
-                                print('Reservation data stored successfully');
-
-                                // Add and update the user's loyalty point
-                                // Get the current points value
-                                final DataSnapshot snapshot =
-                                    await profileLoyaltyRef.get();
-                                if (snapshot.exists) {
-                                  final data = snapshot.value;
-
-                                  int newPoint = 0;
-
-                                  if (freeService &&
-                                      (serviceSelected ==
-                                              'Cat Basic Grooming' ||
-                                          serviceSelected ==
-                                              'Dog Basic Grooming')) {
-                                    newPoint = int.parse(data.toString()) - 600;
-                                  } else if (freeService &&
-                                      (serviceSelected == 'Cat Full Grooming' ||
-                                          serviceSelected ==
-                                              'Dog Full Grooming')) {
-                                    newPoint = int.parse(data.toString()) - 800;
-                                  } else {
-                                    newPoint = int.parse(data.toString()) +
-                                        priceGet.toInt();
-                                  }
-
-                                  await profileLoyaltyRef
-                                      .set(newPoint)
-                                      .then((value) {
-                                    showSuccessfulDialog(context);
-                                    Navigator.popAndPushNamed(
-                                        context, '/reservation');
-                                  });
-                                }
-                              }).catchError((error) {
-                                // Handle the error if data storage fails
-                                print('Error storing reservation data: $error');
-                              });
-                            }
+                            saveReservation();
                           },
                           child: Container(
                             alignment: Alignment.center,
@@ -456,4 +381,167 @@ class _OrderConfirmationPageState extends State<OrderConfirmationPage> {
       },
     );
   }
+
+  void saveReservation() {
+    User? user = FirebaseAuth.instance.currentUser;
+    if (user != null) {
+      String uid = user.uid;
+      // Now you have the UID of the current user
+
+      // For storing the reservation to database
+      DatabaseReference reservationRef =
+          FirebaseDatabase.instance.ref().child('reservations');
+      // For update the user loyalty point
+      DatabaseReference profileLoyaltyRef = FirebaseDatabase.instance
+          .ref()
+          .child('users')
+          .child(uid)
+          .child('Profile')
+          .child('point');
+
+      Map<String, dynamic> reservationData = {
+        'user_id': uid,
+        'pet': petSelected,
+        'service': serviceSelected,
+        'date': dateSelected,
+        'time': timeSelected,
+        'room': roomSelected,
+        'taxi': taxiChecked,
+        'address': addressInput,
+        'package': packageSelected,
+        'free_service': freeService,
+        'price': priceGet,
+        'payment_id': '',
+        'status': 'Incoming',
+        'stage': 0,
+      };
+
+      // Create a new unique key for reservation
+      DatabaseReference newReservationRef = reservationRef.push();
+
+      // Set the reservation data at the new unique key
+      newReservationRef.set(reservationData).then((_) async {
+        // Reservation data is successfully stored in the database
+        print('Reservation data stored successfully');
+
+        // Add and update the user's loyalty point
+        // Get the current points value
+        final DataSnapshot snapshot = await profileLoyaltyRef.get();
+        if (snapshot.exists) {
+          final data = snapshot.value;
+
+          int newPoint = 0;
+
+          if (freeService &&
+              (serviceSelected == 'Cat Basic Grooming' ||
+                  serviceSelected == 'Dog Basic Grooming')) {
+            newPoint = int.parse(data.toString()) - 600;
+          } else if (freeService &&
+              (serviceSelected == 'Cat Full Grooming' ||
+                  serviceSelected == 'Dog Full Grooming')) {
+            newPoint = int.parse(data.toString()) - 800;
+          } else {
+            newPoint = int.parse(data.toString()) + priceGet.toInt();
+          }
+
+          await profileLoyaltyRef.set(newPoint).then((value) {
+            showSuccessfulDialog(context);
+            Navigator.popAndPushNamed(context, '/reservation');
+          });
+        }
+      }).catchError((error) {
+        // Handle the error if data storage fails
+        print('Error storing reservation data: $error');
+      });
+    }
+  }
+
+  Future<void> makePayment() async {
+    try {
+      // Step 1 payment Intent
+      // paymentIntent = await createPaymentIntent();
+
+      Map<String, dynamic> body = {
+        'amount': '$priceGet',
+        'currency': "myr", // Use lowercase currency code
+      };
+      print("Entered 1");
+
+      http.Response response = await http.post(
+        Uri.parse('https://api.stripe.com/v1/payment_intents'),
+        headers: {
+          'Authorization':
+              'Bearer sk_test_51KCROYBpG2vlvIA72kR4rxGdyvvs4oIweofdMBGfQPif4vEbk96zVMPpFMYiAW2bLhhLzO4ZfEzDWlY9lj0rImTF00TNtokPyu',
+          'Content-type': 'application/x-www-form-urlencoded'
+        },
+        body: body,
+      );
+
+      paymentIntent = json.decode(response.body);
+      print("Entered 2");
+      // Step 2 initialize payment sheet
+
+      await Stripe.instance
+          .initPaymentSheet(
+        paymentSheetParameters: SetupPaymentSheetParameters(
+          paymentIntentClientSecret: paymentIntent!['ClientSecret'],
+          style: ThemeMode.light,
+          merchantDisplayName: "OhMyPet",
+          googlePay: PaymentSheetGooglePay(
+            merchantCountryCode: "MY",
+            currencyCode: "MYR",
+          ),
+        ),
+      )
+          .then((value) {
+        print("entered 3");
+        displayPaymentSheet();
+      });
+      // After initializing payment sheet, display it to the user
+    } catch (e) {
+      print(e);
+    }
+  }
+
+  void displayPaymentSheet() async {
+    try {
+      print("Display");
+      PaymentSheetPaymentOption? result =
+          await Stripe.instance.presentPaymentSheet();
+      print(result);
+    } catch (e) {
+      print(e);
+    }
+  }
+
+  // createPaymentIntent() async {
+  //   try {
+  //     print("return");
+  //     return json.decode(response.body);
+  //   } catch (error) {
+  //     throw Exception(error);
+  //   }
+  // }
+
+  // Step 2 Initialize payment sheet
+
+  // await Stripe.instance
+  //     .initPaymentSheet(
+  //         paymentSheetParameters: SetupPaymentSheetParameters(
+  //       paymentIntentClientSecret: paymentIntent!['client_secret'],
+  //       style: ThemeMode.light, // white color background
+  //       merchantDisplayName: 'Oh My Pet',
+  //     ))
+  //     .then((value) => {});
+
+  // // Step 3 Display payment sheet
+
+  // try {
+  //   await Stripe.instance.presentPaymentSheet().then((value) => {
+  //         // Success state
+  //         print("Payment success"),
+  //       });
+  // } catch (error) {
+  //   throw Exception(error);
+  // }
 }

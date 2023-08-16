@@ -24,12 +24,13 @@ import 'package:ohmypet/pages/service/dog_groom_info.dart';
 import 'package:ohmypet/pages/service/main_services_page.dart';
 import 'package:ohmypet/pages/service/pet_vaccination.dart';
 
+import '.env';
+
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await Firebase.initializeApp();
-  Stripe.publishableKey = "";
-  // stripePublishableKey;
-  // await Stripe.instance.applySettings();
+  Stripe.publishableKey = stripePublishableKey;
+  await Stripe.instance.applySettings();
   runApp(const MyApp());
 }
 

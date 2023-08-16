@@ -3,7 +3,6 @@ import 'package:ohmypet/pages/service/pet_vaccination.dart';
 import 'package:ohmypet/utils/dimensions.dart';
 import 'package:ohmypet/widgets/header.dart';
 
-import '../../widgets/big_text.dart';
 import '../../widgets/bottom_navigation_bar.dart';
 
 class MainServicePage extends StatefulWidget {
@@ -57,7 +56,7 @@ class _MainServicePageState extends State<MainServicePage> {
       'imageURL': 'assets/images/petBoarding.png',
     },
     {
-      'title': 'Pet Vaccine',
+      'title': 'Pet Vaccine\n(Inquiry)',
       'color': '0xFFE65100',
       'imageURL': 'assets/images/petVaccine.png',
     },
@@ -112,11 +111,14 @@ class _MainServicePageState extends State<MainServicePage> {
                             const SizedBox(
                               height: 8,
                             ),
-                            BigText(
-                              text: gridData[index]['title'],
-                              size: Dimensions.font16,
-                              color: Color(int.parse(gridData[index]['color'])),
-                              maxLine: 2,
+                            Text(
+                              gridData[index]['title'],
+                              textAlign: TextAlign.center,
+                              style: TextStyle(
+                                fontSize: Dimensions.font16,
+                                color:
+                                    Color(int.parse(gridData[index]['color'])),
+                              ),
                             ),
                           ],
                         ),

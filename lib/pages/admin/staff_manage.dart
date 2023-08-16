@@ -38,7 +38,7 @@ class _StaffManagementState extends State<StaffManagement> {
 
   @override
   void initState() {
-    adminRef = FirebaseDatabase.instance.ref().child('users');
+    adminRef = FirebaseDatabase.instance.ref().child('staffs');
 
     User? user = FirebaseAuth.instance.currentUser;
     if (user != null) {
@@ -107,7 +107,7 @@ class _StaffManagementState extends State<StaffManagement> {
       builder: (BuildContext context) {
         return AlertDialog(
           title: const Text('Confirm Delete'),
-          content: const Text('Are you sure you want to delete this item?'),
+          content: const Text('Are you sure you want to delete this staff?'),
           actions: <Widget>[
             TextButton(
               child: const Text('Cancel'),
@@ -631,8 +631,7 @@ class _StaffManagementState extends State<StaffManagement> {
         // Loop through the snapshot's children (admin users)
         adminUsers.forEach((key, userData) {
           if (userData['Profile']['full_name'] == adminRemove) {
-            FirebaseDatabase.instance.ref('users/$key').remove();
-
+            FirebaseDatabase.instance.ref('staffs/$key').remove();
             // Unable to remove user from Authentication easily
           }
         });

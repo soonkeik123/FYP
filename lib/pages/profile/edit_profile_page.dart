@@ -67,7 +67,7 @@ class _EditProfilePageState extends State<EditProfilePage> {
       String nickname = userData['nickname'];
       String email = userData['email'];
       String phone = userData['phone'];
-      String image = userData['image'];
+      String image = userData['image'] ?? '';
 
       setState(() {
         userName = name;

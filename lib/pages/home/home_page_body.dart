@@ -73,7 +73,7 @@ class _HomePageBodyState extends State<HomePageBody> {
       'imageURL': 'assets/images/petBoarding.png',
     },
     {
-      'title': 'Pet Vaccine',
+      'title': 'Pet Vaccine\n(Inquiry)',
       'color': '0xFFE65100',
       'imageURL': 'assets/images/petVaccine.png',
     },
@@ -328,6 +328,7 @@ class _HomePageBodyState extends State<HomePageBody> {
                                 alignment: Alignment.center,
                                 child: Text(
                                   serviceData[index]['title'],
+                                  textAlign: TextAlign.center,
                                   style: TextStyle(
                                       fontSize: 14,
                                       fontWeight: FontWeight.w400,
