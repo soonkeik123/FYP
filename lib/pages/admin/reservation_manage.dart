@@ -246,10 +246,6 @@ class OrderItemWidget extends StatelessWidget {
                 blurRadius: 2,
                 spreadRadius: 1)
           ],
-          // color: Color(int.parse(serviceColor())).withOpacity(0.2),
-          // border: Border.all(
-          //     color: Color(int.parse(serviceColor())).withOpacity(0.5),
-          //     width: 1.6),
           borderRadius: BorderRadius.circular(5),
         ),
         child: Column(

@@ -4,6 +4,7 @@ import 'package:firebase_database/firebase_database.dart';
 import 'package:flutter/material.dart';
 import 'package:geocoding/geocoding.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
+import 'package:ohmypet/pages/admin/staff_manage.dart';
 import 'package:ohmypet/pages/reservation/select_room.dart';
 import 'package:ohmypet/utils/colors.dart';
 import 'package:ohmypet/utils/dimensions.dart';
@@ -477,21 +478,28 @@ class _BoardingReservationState extends State<BoardingReservation> {
                           selectedName = dropdownValue;
                           calculatePrice(dropdownValue);
                         }
-                        Navigator.push(
-                            context,
-                            MaterialPageRoute(
-                                builder: (context) => OrderConfirmationPage(
-                                      pet: selectedName,
-                                      service: _serviceTypeController.text,
-                                      date: dateInput.text,
-                                      time: '',
-                                      room: roomSelected,
-                                      taxi: isChecked,
-                                      price: priceCalculated,
-                                      address: _addressController.text,
-                                      package: '',
-                                      pointRedeem: false,
-                                    )));
+                        if (dateInput.text.isEmpty ||
+                            selectedName == "" ||
+                            roomSelected.isEmpty) {
+                          showMessageDialog(context, "Empty Field Found",
+                              "Please fill up the form before proceed to next reservation confirm stage.");
+                        } else {
+                          Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                  builder: (context) => OrderConfirmationPage(
+                                        pet: selectedName,
+                                        service: _serviceTypeController.text,
+                                        date: dateInput.text,
+                                        time: '',
+                                        room: roomSelected,
+                                        taxi: isChecked,
+                                        price: priceCalculated,
+                                        address: _addressController.text,
+                                        package: '',
+                                        pointRedeem: false,
+                                      )));
+                        }
                       },
                       child: Container(
                         margin: const EdgeInsets.symmetric(horizontal: 60),

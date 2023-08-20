@@ -316,7 +316,8 @@ class _LoyaltyManagementState extends State<LoyaltyManagement> {
     // Check if all textfields are filled
     if (emailController.text.isNotEmpty) {
       if (servIDController.text.isNotEmpty) {
-        if (pointController.text.isNotEmpty) {
+        if (pointController.text.isNotEmpty &&
+            (int.parse(pointController.text) > 0)) {
           if (referenceController.text.isNotEmpty) {
             DatabaseReference ref =
                 FirebaseDatabase.instance.ref().child('users');
@@ -405,9 +406,13 @@ class _LoyaltyManagementState extends State<LoyaltyManagement> {
             });
           } else {
             // point empty
-            showMessageDialog(context, "Point Is Missing",
-                "Please make sure you have entered the points.");
+            showMessageDialog(context, "Reference Is Missing",
+                "Please make sure you have entered the reason of cancellation.");
           }
+        } else {
+          // point empty
+          showMessageDialog(context, "Point Is Missing/Negative",
+              "Please make sure you have entered a positive number of points.");
         }
       } else {
         // serv empty

@@ -21,6 +21,7 @@ class HomePageBody extends StatefulWidget {
 }
 
 class _HomePageBodyState extends State<HomePageBody> {
+  bool isLoading = true;
   final List<Map> petDataList = [];
   // Create a reference to Firebase database
   late DatabaseReference dbPetRef;
@@ -102,7 +103,7 @@ class _HomePageBodyState extends State<HomePageBody> {
           .child('Pet');
     }
 
-    getAllPackage();
+    // getAllPackage();
   }
 
   @override
@@ -128,305 +129,322 @@ class _HomePageBodyState extends State<HomePageBody> {
       }
     });
 
-    return Stack(
-      children: [
-        Container(
-          color: AppColors.themeColor,
-          height: 120,
-        ),
-        Container(
-          margin: const EdgeInsets.only(top: 15),
-          child: Column(
-            children: [
-              // slider section
-              petDataList.isNotEmpty
-                  ? SizedBox(
-                      height: Dimensions.pageView + 15,
-                      child: PageView.builder(
-                          controller: pageController,
-                          itemCount: petDataList.length,
-                          itemBuilder: (context, position) {
-                            return _buildPageItem(position,
-                                pet: petDataList[position]);
-                          }),
-                    )
-                  : SizedBox(
-                      height: Dimensions.pageView + 15,
-                      child: Stack(
-                        children: [
-                          Container(
-                            height: Dimensions.pageViewTextContainer,
-                            width: double.maxFinite,
-                            padding: const EdgeInsets.all(15),
-                            margin: EdgeInsets.only(
-                                left: Dimensions.width30,
-                                right: Dimensions.width30,
-                                bottom: Dimensions.height30),
-                            decoration: BoxDecoration(
-                                borderRadius:
-                                    BorderRadius.circular(Dimensions.radius20),
-                                color: AppColors.mainColor,
-                                boxShadow: const [
-                                  BoxShadow(
-                                    color: Color(0xFFe8e8e8),
-                                    blurRadius: 5.0,
-                                    offset: Offset(0, 5),
-                                  ),
-                                ]),
-                            child: Column(
-                              children: [
-                                Text(
-                                  "Add Your Pets Here",
-                                  style: TextStyle(
-                                    color: Colors.white,
-                                    fontWeight: FontWeight.w500,
-                                    fontSize: Dimensions.font20,
-                                  ),
-                                ),
-                                const SizedBox(
-                                  height: 15,
-                                ),
-                                TextButton(
-                                    onPressed: () {
-                                      Navigator.pushNamed(context, '/addPet');
-                                    },
-                                    style: ButtonStyle(
-                                      backgroundColor:
-                                          MaterialStateProperty.all<Color>(
-                                              Colors.white),
-                                      shape: MaterialStateProperty.all<
-                                          RoundedRectangleBorder>(
-                                        RoundedRectangleBorder(
-                                          borderRadius:
-                                              BorderRadius.circular(5),
-                                        ),
-                                      ),
-                                      padding: MaterialStateProperty.all<
-                                          EdgeInsetsGeometry>(
-                                        const EdgeInsets.symmetric(
-                                            horizontal: 16, vertical: 8),
-                                      ),
-                                    ),
-                                    child: const Text(
-                                      "Add Pet",
-                                      style:
-                                          TextStyle(color: AppColors.mainColor),
-                                    )),
-                              ],
-                            ),
-                          ),
-                          Align(
-                            alignment: Alignment.bottomCenter,
-                            child: SizedBox(
-                              height: 140,
-                              child: InkWell(
-                                onTap: () =>
-                                    Navigator.pushNamed(context, '/addPet'),
-                                child: Container(
-                                  child: Image.asset(
-                                    "assets/images/cute-image-2.png",
-                                    fit: BoxFit.fill,
-                                  ),
-                                ),
-                              ),
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-              // dots
-              DotsIndicator(
-                // Dots Indicator
-                dotsCount: petDataList.isNotEmpty ? petDataList.length : 1,
-                position: _currPageValue,
-                decorator: DotsDecorator(
-                  activeColor: AppColors.mainColor,
-                  size: const Size.square(9.0),
-                  activeSize: const Size(18.0, 9.0),
-                  activeShape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(5.0)),
-                ),
-              ),
-
-              SizedBox(
-                height: Dimensions.height30,
-              ),
-
-              // Services Text
-              Container(
-                margin: EdgeInsets.only(left: Dimensions.width30),
-                child:
-                    Row(crossAxisAlignment: CrossAxisAlignment.end, children: [
-                  BigText(text: "Services"),
-                  SizedBox(
-                    width: Dimensions.width10,
-                  ),
-                  Container(
-                    padding: const EdgeInsets.only(bottom: 3),
-                    child: BigText(
-                      text: ".",
-                      color: Colors.black26,
-                    ),
-                  ),
-                  SizedBox(
-                    width: Dimensions.width10,
-                  ),
-                  Container(
-                    padding: const EdgeInsets.only(bottom: 2),
-                    child: SmallText(text: "Comprehensive Care"),
-                  ),
-                ]),
-              ),
-
-              SizedBox(
-                height: Dimensions.height20,
-              ),
-
-              // List View of Variety Services
-              Container(
-                alignment: Alignment.center,
-                margin: EdgeInsets.only(
-                    left: Dimensions.width20, right: Dimensions.width20),
-                height: 170,
-                child: ListView.builder(
-                  scrollDirection: Axis.horizontal,
-                  itemCount: serviceData.length,
-                  itemBuilder: (context, index) {
-                    return Padding(
-                      padding: const EdgeInsets.all(6.0),
-                      child: InkWell(
-                        // Item generated
-                        child: Container(
-                          height: 140,
-                          width: 140,
-                          alignment: Alignment.center,
-                          decoration: BoxDecoration(
-                            borderRadius:
-                                BorderRadius.circular(Dimensions.radius20),
-                            border: Border.all(
-                                color: Color(
-                                    int.parse(serviceData[index]['color'])),
-                                width: 1.5),
-                          ),
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.center,
+    return FutureBuilder(
+      future: getAllPackage(),
+      builder: (context, snapshot) {
+        return Stack(
+          children: [
+            Container(
+              color: AppColors.themeColor,
+              height: 120,
+            ),
+            Container(
+              margin: const EdgeInsets.only(top: 15),
+              child: Column(
+                children: [
+                  // slider section
+                  petDataList.isNotEmpty
+                      ? SizedBox(
+                          height: Dimensions.pageView + 15,
+                          child: PageView.builder(
+                              controller: pageController,
+                              itemCount: petDataList.length,
+                              itemBuilder: (context, position) {
+                                return _buildPageItem(position,
+                                    pet: petDataList[position]);
+                              }),
+                        )
+                      : SizedBox(
+                          height: Dimensions.pageView + 15,
+                          child: Stack(
                             children: [
                               Container(
-                                width: 100,
-                                height: 100,
+                                height: Dimensions.pageViewTextContainer,
+                                width: double.maxFinite,
+                                padding: const EdgeInsets.all(15),
+                                margin: EdgeInsets.only(
+                                    left: Dimensions.width30,
+                                    right: Dimensions.width30,
+                                    bottom: Dimensions.height30),
                                 decoration: BoxDecoration(
-                                    shape: BoxShape.circle,
-                                    image: DecorationImage(
-                                      image: AssetImage(
-                                          serviceData[index]['imageURL']),
-                                    )),
+                                    borderRadius: BorderRadius.circular(
+                                        Dimensions.radius20),
+                                    color: AppColors.mainColor,
+                                    boxShadow: const [
+                                      BoxShadow(
+                                        color: Color(0xFFe8e8e8),
+                                        blurRadius: 5.0,
+                                        offset: Offset(0, 5),
+                                      ),
+                                    ]),
+                                child: Column(
+                                  children: [
+                                    Text(
+                                      "Add Your Pets Here",
+                                      style: TextStyle(
+                                        color: Colors.white,
+                                        fontWeight: FontWeight.w500,
+                                        fontSize: Dimensions.font20,
+                                      ),
+                                    ),
+                                    const SizedBox(
+                                      height: 15,
+                                    ),
+                                    TextButton(
+                                        onPressed: () {
+                                          Navigator.pushNamed(
+                                              context, '/addPet');
+                                        },
+                                        style: ButtonStyle(
+                                          backgroundColor:
+                                              MaterialStateProperty.all<Color>(
+                                                  Colors.white),
+                                          shape: MaterialStateProperty.all<
+                                              RoundedRectangleBorder>(
+                                            RoundedRectangleBorder(
+                                              borderRadius:
+                                                  BorderRadius.circular(5),
+                                            ),
+                                          ),
+                                          padding: MaterialStateProperty.all<
+                                              EdgeInsetsGeometry>(
+                                            const EdgeInsets.symmetric(
+                                                horizontal: 16, vertical: 8),
+                                          ),
+                                        ),
+                                        child: const Text(
+                                          "Add Pet",
+                                          style: TextStyle(
+                                              color: AppColors.mainColor),
+                                        )),
+                                  ],
+                                ),
                               ),
-                              const SizedBox(height: 8),
-                              Container(
-                                width: 130,
-                                // margin: EdgeInsets.symmetric(horizontal: 25),
-                                alignment: Alignment.center,
-                                child: Text(
-                                  serviceData[index]['title'],
-                                  textAlign: TextAlign.center,
-                                  style: TextStyle(
-                                      fontSize: 14,
-                                      fontWeight: FontWeight.w400,
-                                      color: Color(int.parse(
-                                          serviceData[index]['color']))),
+                              Align(
+                                alignment: Alignment.bottomCenter,
+                                child: SizedBox(
+                                  height: 140,
+                                  child: InkWell(
+                                    onTap: () =>
+                                        Navigator.pushNamed(context, '/addPet'),
+                                    child: Container(
+                                      child: Image.asset(
+                                        "assets/images/cute-image-2.png",
+                                        fit: BoxFit.fill,
+                                      ),
+                                    ),
+                                  ),
                                 ),
                               ),
                             ],
                           ),
                         ),
-                        onTap: () {
-                          if (index == 0) {
-                            Navigator.pushNamed(context, '/catBasicGroomInfo');
-                          } else if (index == 1) {
-                            Navigator.pushNamed(context, '/dogBasicGroomInfo');
-                          } else if (index == 2) {
-                            Navigator.pushNamed(context, '/catFullGroomInfo');
-                          } else if (index == 3) {
-                            Navigator.pushNamed(context, '/dogFullGroomInfo');
-                          } else if (index == 4) {
-                            Navigator.pushNamed(context, '/catBoardingInfo');
-                          } else if (index == 5) {
-                            Navigator.pushNamed(context, '/dogBoardingInfo');
-                          } else if (index == 6) {
-                            Navigator.pushNamed(context, '/petVaccineInfo');
-                          }
-                        },
-                      ),
-                    );
-                  },
-                ),
-              ),
-
-              SizedBox(
-                height: Dimensions.height30,
-              ),
-
-              // Package text
-              Container(
-                margin: EdgeInsets.only(left: Dimensions.width30),
-                child:
-                    Row(crossAxisAlignment: CrossAxisAlignment.end, children: [
-                  BigText(text: "Package"),
-                  SizedBox(
-                    width: Dimensions.width10,
-                  ),
-                  Container(
-                    padding: const EdgeInsets.only(bottom: 3),
-                    child: BigText(
-                      text: ".",
-                      color: Colors.black26,
+                  // dots
+                  DotsIndicator(
+                    // Dots Indicator
+                    dotsCount: petDataList.isNotEmpty ? petDataList.length : 1,
+                    position: _currPageValue,
+                    decorator: DotsDecorator(
+                      activeColor: AppColors.mainColor,
+                      size: const Size.square(9.0),
+                      activeSize: const Size(18.0, 9.0),
+                      activeShape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(5.0)),
                     ),
                   ),
+
                   SizedBox(
-                    width: Dimensions.width10,
+                    height: Dimensions.height30,
                   ),
+
+                  // Services Text
                   Container(
-                    padding: const EdgeInsets.only(bottom: 2),
-                    child: SmallText(text: "Service Combination"),
+                    margin: EdgeInsets.only(left: Dimensions.width30),
+                    child: Row(
+                        crossAxisAlignment: CrossAxisAlignment.end,
+                        children: [
+                          BigText(text: "Services"),
+                          SizedBox(
+                            width: Dimensions.width10,
+                          ),
+                          Container(
+                            padding: const EdgeInsets.only(bottom: 3),
+                            child: BigText(
+                              text: ".",
+                              color: Colors.black26,
+                            ),
+                          ),
+                          SizedBox(
+                            width: Dimensions.width10,
+                          ),
+                          Container(
+                            padding: const EdgeInsets.only(bottom: 2),
+                            child: SmallText(text: "Comprehensive Care"),
+                          ),
+                        ]),
                   ),
-                ]),
-              ),
 
-              // List of service and images
-              Container(
-                margin: const EdgeInsets.only(left: 10, right: 10, bottom: 20),
-                height: 430,
-                child: GridView.builder(
-                  physics: const AlwaysScrollableScrollPhysics(),
-                  shrinkWrap: true,
-                  itemCount: packages.length,
-                  gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-                    childAspectRatio: (130 / 160),
-                    crossAxisCount: 2, // Number of columns
-                    crossAxisSpacing: 10.0,
-                    mainAxisSpacing: 14.0,
+                  SizedBox(
+                    height: Dimensions.height20,
                   ),
-                  itemBuilder: (context, index) {
-                    final GlobalKey itemKey = GlobalKey();
-                    itemKeys.add(itemKey);
 
-                    return GestureDetector(
-                      onTap: () => _showPackageDetail(context, index, itemKey),
-                      child: PackageItem(
-                        key: itemKey,
-                        title: packages[index]['title'],
-                        imageUrl: packages[index]['imageUrl'],
-                        description: packages[index]['description'],
-                        price: double.parse(packages[index]['price']),
+                  // List View of Variety Services
+                  Container(
+                    alignment: Alignment.center,
+                    margin: EdgeInsets.only(
+                        left: Dimensions.width20, right: Dimensions.width20),
+                    height: 170,
+                    child: ListView.builder(
+                      scrollDirection: Axis.horizontal,
+                      itemCount: serviceData.length,
+                      itemBuilder: (context, index) {
+                        return Padding(
+                          padding: const EdgeInsets.all(6.0),
+                          child: InkWell(
+                            // Item generated
+                            child: Container(
+                              height: 140,
+                              width: 140,
+                              alignment: Alignment.center,
+                              decoration: BoxDecoration(
+                                borderRadius:
+                                    BorderRadius.circular(Dimensions.radius20),
+                                border: Border.all(
+                                    color: Color(
+                                        int.parse(serviceData[index]['color'])),
+                                    width: 1.5),
+                              ),
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.center,
+                                children: [
+                                  Container(
+                                    width: 100,
+                                    height: 100,
+                                    decoration: BoxDecoration(
+                                        shape: BoxShape.circle,
+                                        image: DecorationImage(
+                                          image: AssetImage(
+                                              serviceData[index]['imageURL']),
+                                        )),
+                                  ),
+                                  const SizedBox(height: 8),
+                                  Container(
+                                    width: 130,
+                                    // margin: EdgeInsets.symmetric(horizontal: 25),
+                                    alignment: Alignment.center,
+                                    child: Text(
+                                      serviceData[index]['title'],
+                                      textAlign: TextAlign.center,
+                                      style: TextStyle(
+                                          fontSize: 14,
+                                          fontWeight: FontWeight.w400,
+                                          color: Color(int.parse(
+                                              serviceData[index]['color']))),
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
+                            onTap: () {
+                              if (index == 0) {
+                                Navigator.pushNamed(
+                                    context, '/catBasicGroomInfo');
+                              } else if (index == 1) {
+                                Navigator.pushNamed(
+                                    context, '/dogBasicGroomInfo');
+                              } else if (index == 2) {
+                                Navigator.pushNamed(
+                                    context, '/catFullGroomInfo');
+                              } else if (index == 3) {
+                                Navigator.pushNamed(
+                                    context, '/dogFullGroomInfo');
+                              } else if (index == 4) {
+                                Navigator.pushNamed(
+                                    context, '/catBoardingInfo');
+                              } else if (index == 5) {
+                                Navigator.pushNamed(
+                                    context, '/dogBoardingInfo');
+                              } else if (index == 6) {
+                                Navigator.pushNamed(context, '/petVaccineInfo');
+                              }
+                            },
+                          ),
+                        );
+                      },
+                    ),
+                  ),
+
+                  SizedBox(
+                    height: Dimensions.height30,
+                  ),
+
+                  // Package text
+                  Container(
+                    margin: EdgeInsets.only(left: Dimensions.width30),
+                    child: Row(
+                        crossAxisAlignment: CrossAxisAlignment.end,
+                        children: [
+                          BigText(text: "Package"),
+                          SizedBox(
+                            width: Dimensions.width10,
+                          ),
+                          Container(
+                            padding: const EdgeInsets.only(bottom: 3),
+                            child: BigText(
+                              text: ".",
+                              color: Colors.black26,
+                            ),
+                          ),
+                          SizedBox(
+                            width: Dimensions.width10,
+                          ),
+                          Container(
+                            padding: const EdgeInsets.only(bottom: 2),
+                            child: SmallText(text: "Service Combination"),
+                          ),
+                        ]),
+                  ),
+
+                  // List of service and images
+                  Container(
+                    margin:
+                        const EdgeInsets.only(left: 10, right: 10, bottom: 20),
+                    height: 430,
+                    child: GridView.builder(
+                      physics: const AlwaysScrollableScrollPhysics(),
+                      shrinkWrap: true,
+                      itemCount: packages.length,
+                      gridDelegate:
+                          const SliverGridDelegateWithFixedCrossAxisCount(
+                        childAspectRatio: (130 / 160),
+                        crossAxisCount: 2, // Number of columns
+                        crossAxisSpacing: 10.0,
+                        mainAxisSpacing: 14.0,
                       ),
-                    );
-                  },
-                ),
+                      itemBuilder: (context, index) {
+                        final GlobalKey itemKey = GlobalKey();
+                        itemKeys.add(itemKey);
+
+                        return GestureDetector(
+                          onTap: () =>
+                              _showPackageDetail(context, index, itemKey),
+                          child: PackageItem(
+                            key: itemKey,
+                            title: packages[index]['title'],
+                            imageUrl: packages[index]['imageUrl'],
+                            description: packages[index]['description'],
+                            price: double.parse(packages[index]['price']),
+                          ),
+                        );
+                      },
+                    ),
+                  ),
+                ],
               ),
-            ],
-          ),
-        ),
-      ],
+            ),
+          ],
+        );
+      },
     );
   }
 

@@ -213,9 +213,15 @@ class _ViewPetPageState extends State<ViewPetPage> {
                                     ),
                                   ),
                                 ),
-                                InfoText(
-                                  text: petBreed,
-                                  normal: false,
+                                Container(
+                                  width: 160,
+                                  child: Text(
+                                    petBreed,
+                                    style: TextStyle(
+                                        fontFamily: 'Roboto',
+                                        fontSize: 20,
+                                        fontWeight: FontWeight.w300),
+                                  ),
                                 ),
                               ],
                             ),

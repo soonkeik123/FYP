@@ -6,6 +6,7 @@ import 'package:ohmypet/pages/home/main_home_page.dart';
 import 'package:ohmypet/widgets/reusable_widget.dart';
 
 import '../../utils/colors.dart';
+import '../../widgets/loading_animation.dart';
 
 class SignUpScreen extends StatefulWidget {
   static const routeName = '/signUp';
@@ -62,8 +63,8 @@ class _SignUpScreenState extends State<SignUpScreen> {
               const SizedBox(
                 height: 20,
               ),
-              reusableTextField("Enter Phone Number", Icons.phone_outlined,
-                  false, _phoneTextController),
+              reusableTextField("Enter Phone e.g. 60123456789",
+                  Icons.phone_outlined, false, _phoneTextController),
               const SizedBox(
                 height: 20,
               ),
@@ -86,6 +87,9 @@ class _SignUpScreenState extends State<SignUpScreen> {
                   if (emailRegex.hasMatch(_emailTextController.text)) {
                     if (phoneRegex.hasMatch(_phoneTextController.text)) {
                       if (_passwordTextController.text.length >= 6) {
+                        // Show loading dialog
+                        LoadingAnimation.showSignUp(context);
+
                         FirebaseAuth.instance
                             .createUserWithEmailAndPassword(
                                 email: _emailTextController.text,
@@ -114,17 +118,24 @@ class _SignUpScreenState extends State<SignUpScreen> {
 
                             profileRef.set(profileData).then((_) {
                               print('Data saved successfully!');
-                              showSuccessSnackBar(); // Show the success snackbar when data is saved successfully
+                              // Simulate loading for 2 seconds
+                              Future.delayed(Duration(seconds: 2), () {
+                                // Close the loading dialog
+                                Navigator.pop(context);
+                                Navigator.pushReplacement(
+                                    context,
+                                    MaterialPageRoute(
+                                        builder: (context) =>
+                                            const MainHomePage()));
+
+                                showSuccessSnackBar(); // Show the success snackbar when data is saved successfully
+                              });
                             }).catchError((error) {
                               print('Error saving data: $error');
                             });
                           }
 
                           print("Created New Account");
-                          Navigator.push(
-                              context,
-                              MaterialPageRoute(
-                                  builder: (context) => const MainHomePage()));
                         }).onError((error, stackTrace) {
                           print("Error ${error.toString()}");
                         });
@@ -134,7 +145,7 @@ class _SignUpScreenState extends State<SignUpScreen> {
                       }
                     } else {
                       showMessageDialog(context, "Register Failed",
-                          "Please make sure that phone number is start of '60' and only contains 11 to 12 digits.");
+                          "Please make sure that phone number is start of '60' and only contains 11 to 12 digits. Example: 60123456789");
                     }
                   } else {
                     showMessageDialog(context, "Register Failed",
@@ -151,6 +162,8 @@ class _SignUpScreenState extends State<SignUpScreen> {
       ),
     );
   }
+
+  bool showProgressIndicator = false;
 
   void showSuccessSnackBar() {
     ScaffoldMessenger.of(context).showSnackBar(

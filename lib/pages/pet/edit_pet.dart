@@ -3,6 +3,7 @@ import 'dart:io';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_database/firebase_database.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_typeahead/flutter_typeahead.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:intl/intl.dart';
 import 'package:ohmypet/utils/colors.dart';
@@ -31,11 +32,14 @@ class _EditPetProfileState extends State<EditPetProfile> {
   final TextEditingController _nameController = TextEditingController();
   // Date Picker
   TextEditingController dateInput = TextEditingController();
+  // Pet Type
+  final TextEditingController petTypeController = TextEditingController();
+  // Pet Breed
+  final TextEditingController petBreedController = TextEditingController();
   // Gender
   String selectedGender = '';
   // Pet type
-  String dropdownValue1 = '';
-  String dropdownValue2 = '';
+  String dropdownValue = '';
 
   // Pet Type
   final List<String> petTypes = ['Dog', 'Cat'];
@@ -59,12 +63,6 @@ class _EditPetProfileState extends State<EditPetProfile> {
 
   // Dog Breed
   final List<String> dogBreeds = [
-    'Labrador',
-    'Golden Retriever',
-    'Poodle',
-    'Bulldog',
-    'Silky Terrier',
-    'Yorkshire Terrier',
     'Affenpinscher',
     'Afghan Hound',
     'Airedale Terrier',
@@ -109,9 +107,6 @@ class _EditPetProfileState extends State<EditPetProfile> {
     'Bullmastiff',
     'Cairn Terrier',
     'Canaan Dog',
-    'Cane Corso',
-    'Cardigan Welsh Corgi',
-    'Cavalier King Charles Spaniel',
     'Chesapeake Bay Retriever',
     'Chihuahua',
     'Chinese Crested',
@@ -175,6 +170,7 @@ class _EditPetProfileState extends State<EditPetProfile> {
     'Komondor',
     'Kuvasz',
     'Labradoodle',
+    'Labrador',
     'Lakeland Terrier',
     'Lhasa Apso',
     'Lowchen',
@@ -237,100 +233,90 @@ class _EditPetProfileState extends State<EditPetProfile> {
     'Toy Fox Terrier',
     'Vizsla',
     'Weimaraner',
-    'Welsh Springer Spaniel',
-    'West Highland White Terrier',
-    'Whippet',
-    'Wire Fox Terrier',
-    'Wirehaired Pointing Griffon',
-    'Xoloitzcuintli',
-    'Yorkshire Terrier',
   ];
 
   final List<String> catBreeds = [
-    'Siamese',
-    'Persian',
-    'Maine Coon',
-    'British Shorthair',
     'Abyssinian',
-    'Sphynx',
-    'Ragdoll',
-    'Bengal',
-    'Scottish Fold',
-    'Birman',
-    'Russian Blue',
-    'Oriental Shorthair',
-    'Siberian',
-    'American Shorthair',
-    'Turkish Van',
-    'Devon Rex',
-    'Norwegian Forest',
-    'Cornish Rex',
-    'Himalayan',
-    'Tonkinese',
-    'Burmese',
-    'Exotic Shorthair',
-    'Chartreux',
-    'Balinese',
-    'Egyptian Mau',
-    'Manx',
-    'Japanese Bobtail',
-    'Turkish Angora',
-    'Selkirk Rex',
-    'Singapura',
-    'Havana Brown',
-    'Somali',
-    'Pixiebob',
-    'Peterbald',
-    'LaPerm',
     'American Bobtail',
-    'Burmilla',
-    'European Shorthair',
-    'Chausie',
     'American Curl',
-    'Korat',
-    'Munchkin',
-    'Cymric',
-    'Toyger',
-    'Kurilian Bobtail',
-    'Highlander',
-    'Sokoke',
-    'Khao Manee',
-    'Cheetoh',
-    'Ukrainian Levkoy',
-    'Serengeti',
-    'Ojos Azules',
-    'Kinkalow',
-    'Asian',
+    'American Shorthair',
     'Arabian Mau',
-    'Australian Mist',
+    'Asian',
     'Asian Semi-longhair',
+    'Australian Mist',
+    'Balinese',
+    'Bengal',
+    'Birman',
     'Brazilian Shorthair',
+    'British Shorthair',
+    'Burmese',
+    'Burmilla',
     'California Spangled',
     'Chantilly-Tiffany',
+    'Chartreux',
+    'Chausie',
+    'Cheetoh',
     'Colorpoint Shorthair',
-    'Cyprus',
+    'Cornish Rex',
+    'Cymric',
+    'Devon Rex',
     'Dragon Li',
+    'Egyptian Mau',
     'European Burmese',
-    'German Rex',
+    'European Shorthair',
+    'Exotic Shorthair',
+    'Havana Brown',
+    'Highlander',
+    'Himalayan',
+    'Japanese Bobtail',
     'Khaomanee',
+    'Kinkalow',
+    'Korat',
+    'Kurilian Bobtail',
     'Kuril Islands Bobtail',
+    'LaPerm',
     'Lykoi',
+    'Maine Coon',
+    'Manx',
     'Minskin',
+    'Munchkin',
     'Nebelung',
+    'Norwegian Forest',
     'Ocicat',
+    'Ojos Azules',
+    'Oriental Shorthair',
     'Oregon Rex',
+    'Peterbald',
     'Pixie-bob',
+    'Pixiebob',
+    'Persian',
+    'Ragdoll',
+    'Russian Angora',
     'Russian Black White',
+    'Russian Blue',
+    'Russian White',
     'Savannah',
+    'Scottish Fold',
     'Scottish Fold Longhair',
+    'Scottish Shorthair',
+    'Selkirk Rex',
+    'Serengeti',
+    'Siamese',
+    'Siberian',
     'Siberian Forest Cat',
+    'Singapura',
     'Snowshoe',
+    'Sphynx',
     'Suphalak',
     'Thai',
     'Thailand Cat',
     'Tiffany',
+    'Tonkinese',
     'Tonkinese Solid',
-    'Traditional Siamese Cat',
+    'Traditional Siamese',
+    'Turkish Angora',
+    'Turkish Van',
+    'Ukrainian Levkoy',
     'Ural Rex',
     'Wila Krungthep',
     'York Chocolate Cat',
@@ -470,9 +456,9 @@ class _EditPetProfileState extends State<EditPetProfile> {
       setState(() {
         selectedSize = "Giant";
       });
-    } else if (!(size1 && size2 && size3 && size4)) {
+    } else {
       setState(() {
-        selectedSize = '';
+        selectedSize = ''; // No size is selected
       });
     }
   }
@@ -484,15 +470,16 @@ class _EditPetProfileState extends State<EditPetProfile> {
       _nameController.text = petName;
       // Gender
       selectedGender = petGender;
-      // Pet Type
-      dropdownValue1 = petType;
-      if (dropdownValue1 == 'Dog') {
+      // Pet Typev
+      if (petType == 'Dog') {
         dogSelected = true;
       } else {
         dogSelected = false;
       }
+      // Pet Type
+      petTypeController.text = petType;
       // Pet Breed
-      dropdownValue2 = petBreed;
+      petBreedController.text = petBreed;
       // Size
       if (petSize == 'Small') {
         size1 = !size1;
@@ -505,6 +492,7 @@ class _EditPetProfileState extends State<EditPetProfile> {
       } else {
         print("No Size");
       }
+      _onSizeSelected();
       // Birthday
       dateInput.text = petBirthday;
     });
@@ -729,50 +717,29 @@ class _EditPetProfileState extends State<EditPetProfile> {
                     child: Column(
                       children: [
                         // Pet Type
-                        DropdownButtonFormField(
-                          decoration: InputDecoration(
-                            labelText: 'Pet Type *',
-                            labelStyle: const TextStyle(
-                              color: Colors.black54,
-                              fontSize: 14,
-                            ),
-                            enabledBorder: OutlineInputBorder(
+                        Container(
+                          padding: const EdgeInsets.only(bottom: 10),
+                          height: 55,
+                          decoration: BoxDecoration(
                               borderRadius: BorderRadius.circular(15),
-                              borderSide: const BorderSide(
-                                  color: AppColors.mainColor, width: 1),
-                            ),
-                            focusedBorder: OutlineInputBorder(
-                              borderRadius: BorderRadius.circular(15),
-                              borderSide: const BorderSide(
-                                  color: AppColors.mainColor, width: 1),
-                            ),
-                            filled: false,
+                              color: Colors.white,
+                              border: Border.all(color: AppColors.mainColor)),
+                          child: TextField(
+                            style: const TextStyle(fontSize: 18),
+                            controller: petTypeController,
+                            decoration: InputDecoration(
+                                enabled: false,
+                                labelText: "Pet Type *",
+                                border: OutlineInputBorder(
+                                  borderRadius: BorderRadius.circular(20),
+                                  borderSide: BorderSide.none,
+                                ),
+                                labelStyle: const TextStyle(
+                                  color: Colors.black54,
+                                  backgroundColor: Colors.white,
+                                  fontSize: 14,
+                                )),
                           ),
-                          dropdownColor: Colors.white,
-                          value: dropdownValue1,
-                          onChanged: (String? newValue) {
-                            setState(() {
-                              dropdownValue1 = newValue!;
-                              if (dogSelected && newValue == "Dog") {
-                              } else if (!dogSelected && newValue == "Dog") {
-                                dogSelected = true;
-                                dropdownValue2 = dogBreeds.first;
-                              } else if (dogSelected && newValue == "Cat") {
-                                dogSelected = false;
-                                dropdownValue2 = catBreeds.first;
-                              }
-                            });
-                          },
-                          items: petTypes
-                              .map<DropdownMenuItem<String>>((String value) {
-                            return DropdownMenuItem<String>(
-                              value: value,
-                              child: Text(
-                                value,
-                                style: const TextStyle(fontSize: 16),
-                              ),
-                            );
-                          }).toList(),
                         ),
 
                         const SizedBox(
@@ -780,53 +747,47 @@ class _EditPetProfileState extends State<EditPetProfile> {
                         ),
 
                         // Pet Breed
-                        DropdownButtonFormField(
-                          decoration: InputDecoration(
-                            labelText: 'Pet Breed *',
-                            labelStyle: const TextStyle(
-                              color: Colors.black54,
-                              fontSize: 14,
+                        TypeAheadFormField<String?>(
+                          textFieldConfiguration: TextFieldConfiguration(
+                            controller: petBreedController,
+                            decoration: InputDecoration(
+                              enabledBorder: OutlineInputBorder(
+                                borderRadius: BorderRadius.circular(15),
+                                borderSide: const BorderSide(
+                                  color: AppColors.mainColor,
+                                  width: 1,
+                                ),
+                              ),
+                              focusedBorder: OutlineInputBorder(
+                                borderRadius: BorderRadius.circular(15),
+                                borderSide: const BorderSide(
+                                  color: AppColors.mainColor,
+                                  width: 1,
+                                ),
+                              ),
+                              filled: false,
+                              labelText: 'Pet Breed *',
                             ),
-                            enabledBorder: OutlineInputBorder(
-                              borderRadius: BorderRadius.circular(15),
-                              borderSide: const BorderSide(
-                                  color: AppColors.mainColor, width: 1),
-                            ),
-                            focusedBorder: OutlineInputBorder(
-                              borderRadius: BorderRadius.circular(15),
-                              borderSide: const BorderSide(
-                                  color: AppColors.mainColor, width: 1),
-                            ),
-                            filled: false,
                           ),
-                          dropdownColor: Colors.white,
-                          value: dogSelected ? dropdownValue2 : dropdownValue2,
-                          onChanged: (String? newValue) {
-                            setState(() {
-                              dropdownValue2 = newValue!;
-                            });
+                          suggestionsCallback: (pattern) {
+                            return dogSelected
+                                ? dogBreeds
+                                    .where((breed) => breed
+                                        .toLowerCase()
+                                        .contains(pattern.toLowerCase()))
+                                    .toList()
+                                : catBreeds
+                                    .where((breed) => breed
+                                        .toLowerCase()
+                                        .contains(pattern.toLowerCase()))
+                                    .toList();
                           },
-                          items: dogSelected
-                              ? dogBreeds.map<DropdownMenuItem<String>>(
-                                  (String value) {
-                                  return DropdownMenuItem<String>(
-                                    value: value,
-                                    child: Text(
-                                      value,
-                                      style: const TextStyle(fontSize: 16),
-                                    ),
-                                  );
-                                }).toList()
-                              : catBreeds.map<DropdownMenuItem<String>>(
-                                  (String value) {
-                                  return DropdownMenuItem<String>(
-                                    value: value,
-                                    child: Text(
-                                      value,
-                                      style: const TextStyle(fontSize: 16),
-                                    ),
-                                  );
-                                }).toList(),
+                          itemBuilder: (context, suggestion) {
+                            return ListTile(title: Text(suggestion!));
+                          },
+                          onSuggestionSelected: (suggestion) {
+                            petBreedController.text = suggestion!;
+                          },
                         ),
                       ],
                     ),
@@ -1152,11 +1113,15 @@ class _EditPetProfileState extends State<EditPetProfile> {
                       // Save
                       InkWell(
                         onTap: () async {
+                          print(selectedSize);
+                          print(petBreedController.text);
+                          print(_nameController.text);
                           bool isAllFilled = true;
 
                           // Perform text field validation
                           if (_nameController.text.isEmpty ||
-                              selectedSize.isEmpty) {
+                              selectedSize.isEmpty ||
+                              petBreedController.text.isEmpty) {
                             isAllFilled = false;
                           }
 
@@ -1164,10 +1129,11 @@ class _EditPetProfileState extends State<EditPetProfile> {
                             if (_chosenImage != null) {
                               await saveImageLocally(_chosenImage!);
                             }
+
                             bool name = _nameController.text != petName;
                             bool gender = selectedGender != petGender;
-                            bool type = dropdownValue1 != petType;
-                            bool breed = dropdownValue2 != petBreed;
+                            bool type = dropdownValue != petType;
+                            bool breed = petBreedController.text != petBreed;
                             bool size = selectedSize != petSize;
                             bool birthday = dateInput.text != petBirthday;
                             bool image = imageUrl != storeImagePath;
@@ -1175,8 +1141,8 @@ class _EditPetProfileState extends State<EditPetProfile> {
                             Map<String, String> updatedData = {
                               if (name) 'name': _nameController.text,
                               if (gender) 'gender': selectedGender,
-                              if (type) 'type': dropdownValue1,
-                              if (breed) 'breed': dropdownValue2,
+                              if (type) 'type': dropdownValue,
+                              if (breed) 'breed': petBreedController.text,
                               if (size) 'size': selectedSize,
                               if (birthday) 'birthday': dateInput.text,
                               if (image) 'imageUrl': storeImagePath,

@@ -12,6 +12,8 @@ import 'package:ohmypet/widgets/header.dart';
 import 'package:ohmypet/widgets/small_text.dart';
 import 'package:ohmypet/widgets/title_text.dart';
 
+import '../admin/staff_manage.dart';
+
 class GroomReservationPage extends StatefulWidget {
   static const dogBasicGroomReservation = '/dogBasicGroomReservation';
   static const catBasicGroomReservation = '/catBasicGroomReservation';
@@ -277,8 +279,10 @@ class _GroomReservationPageState extends State<GroomReservationPage> {
                       onTap: () async {
                         DateTime? pickedDate = await showDatePicker(
                             context: context,
-                            initialDate: DateTime.now(),
-                            firstDate: DateTime.now(),
+                            initialDate:
+                                DateTime.now().add(const Duration(days: 1)),
+                            firstDate:
+                                DateTime.now().add(const Duration(days: 1)),
                             //DateTime.now() - not to allow to choose before today.
                             lastDate: DateTime(2024));
 
@@ -442,21 +446,26 @@ class _GroomReservationPageState extends State<GroomReservationPage> {
                       if (selectedName == "") {
                         selectedName = dropdownValue1;
                       }
-                      Navigator.push(
-                          context,
-                          MaterialPageRoute(
-                              builder: (context) => OrderConfirmationPage(
-                                    pet: selectedName,
-                                    service: serviceName,
-                                    date: dateInput.text,
-                                    time: dropdownValue2,
-                                    room: '',
-                                    taxi: isChecked,
-                                    price: priceCalculated,
-                                    address: _addressController.text,
-                                    package: '',
-                                    pointRedeem: isFree,
-                                  )));
+                      if (dateInput.text.isEmpty || selectedName == "") {
+                        showMessageDialog(context, "Empty Field Found",
+                            "Please fill up the form before proceed to next reservation confirm stage.");
+                      } else {
+                        Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                                builder: (context) => OrderConfirmationPage(
+                                      pet: selectedName,
+                                      service: serviceName,
+                                      date: dateInput.text,
+                                      time: dropdownValue2,
+                                      room: '',
+                                      taxi: isChecked,
+                                      price: priceCalculated,
+                                      address: _addressController.text,
+                                      package: '',
+                                      pointRedeem: isFree,
+                                    )));
+                      }
                     },
                     child: Container(
                       margin: const EdgeInsets.symmetric(horizontal: 60),

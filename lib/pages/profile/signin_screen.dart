@@ -6,6 +6,7 @@ import 'package:ohmypet/pages/profile/signup_screen.dart';
 import 'package:ohmypet/utils/colors.dart';
 import 'package:ohmypet/widgets/reusable_widget.dart';
 
+import '../../widgets/loading_animation.dart';
 import '../admin/reservation_manage.dart';
 
 class SignInScreen extends StatefulWidget {
@@ -70,6 +71,9 @@ class _SignInScreenState extends State<SignInScreen> {
                   }
 
                   if (isAllFilled) {
+                    // Show loading dialog
+                    LoadingAnimation.showLogin(context);
+
                     FirebaseAuth.instance
                         .signInWithEmailAndPassword(
                             email: _emailTextController.text,
@@ -93,28 +97,41 @@ class _SignInScreenState extends State<SignInScreen> {
                       print(staffSnapshot.value);
                       if (snapshot.exists || staffSnapshot.exists) {
                         if (snapshot.value.toString() == 'user') {
-                          Navigator.pushReplacementNamed(context, '/home');
-                          showSuccessSnackBar(); // Show the success snackbar when login successfully
+                          // Simulate loading for 2 seconds
+                          Future.delayed(Duration(seconds: 2), () {
+                            // Close the loading dialog
+                            Navigator.pop(context);
+                            Navigator.pushReplacementNamed(context, '/home');
+                            showSuccessSnackBar(); // Show the success snackbar when login successfully
+                          });
                         }
                         if (staffSnapshot.value.toString() == 'staff') {
-                          Navigator.pushReplacement(
-                            context,
-                            MaterialPageRoute(
-                                builder: (context) => ReservationManagement(
-                                      role: 'staff',
-                                    )),
-                          );
-                          showSuccessSnackBar(); // Show the success snackbar when login successfully
+                          Future.delayed(Duration(seconds: 2), () {
+                            // Close the loading dialog
+                            Navigator.pop(context);
+                            Navigator.pushReplacement(
+                              context,
+                              MaterialPageRoute(
+                                  builder: (context) => ReservationManagement(
+                                        role: 'staff',
+                                      )),
+                            );
+                            showSuccessSnackBar(); // Show the success snackbar when login successfully
+                          });
                         }
                         if (staffSnapshot.value.toString() == 'admin') {
-                          Navigator.pushReplacement(
-                            context,
-                            MaterialPageRoute(
-                                builder: (context) => ReservationManagement(
-                                      role: 'admin',
-                                    )),
-                          );
-                          showSuccessSnackBar(); // Show the success snackbar when login successfully
+                          Future.delayed(Duration(seconds: 2), () {
+                            // Close the loading dialog
+                            Navigator.pop(context);
+                            Navigator.pushReplacement(
+                              context,
+                              MaterialPageRoute(
+                                  builder: (context) => ReservationManagement(
+                                        role: 'admin',
+                                      )),
+                            );
+                            showSuccessSnackBar(); // Show the success snackbar when login successfully
+                          });
                         }
                       } else {
                         print('No user data available.');
