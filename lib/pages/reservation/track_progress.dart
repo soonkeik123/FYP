@@ -7,6 +7,7 @@ import 'package:geocoding/geocoding.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:ohmypet/utils/colors.dart';
 import 'package:ohmypet/widgets/header.dart';
+import 'package:url_launcher/url_launcher.dart';
 
 import '../../widgets/info_text.dart';
 import '../../widgets/title_text.dart';
@@ -305,19 +306,36 @@ class _TrackProgressPageState extends State<TrackProgressPage>
                               ),
                             ),
                           ),
-                          Container(
-                            height: 40,
-                            width: 130,
-                            alignment: Alignment.center,
-                            decoration: BoxDecoration(
-                              color: AppColors.mainColor.withOpacity(0.8),
-                              borderRadius: BorderRadius.circular(30),
-                            ),
-                            child: const Text(
-                              "Send Message",
-                              style: TextStyle(
-                                  fontWeight: FontWeight.w500,
-                                  color: Colors.white),
+                          InkWell(
+                            onTap: () async {
+                              String phoneNumber = "+60102211208";
+
+                              final Uri uri = Uri.https(
+                                'api.whatsapp.com',
+                                '/send',
+                                {'phone': phoneNumber},
+                              );
+                              // Use the phone number with country code
+                              if (await canLaunch(uri.toString())) {
+                                await launch(uri.toString());
+                              } else {
+                                throw 'Could not launch $uri';
+                              }
+                            },
+                            child: Container(
+                              height: 40,
+                              width: 130,
+                              alignment: Alignment.center,
+                              decoration: BoxDecoration(
+                                color: AppColors.mainColor.withOpacity(0.8),
+                                borderRadius: BorderRadius.circular(30),
+                              ),
+                              child: const Text(
+                                "Send Message",
+                                style: TextStyle(
+                                    fontWeight: FontWeight.w500,
+                                    color: Colors.white),
+                              ),
                             ),
                           )
                         ],
@@ -1122,14 +1140,6 @@ class _ReservationDetailState extends State<ReservationDetail> {
   bool isFullGroom = false;
   bool changePic = true;
 
-  // final Completer<GoogleMapController> _controller =
-  //     Completer<GoogleMapController>();
-
-  // static const CameraPosition _kGooglePlex = CameraPosition(
-  //   target: LatLng(37.42796133580664, -122.085749655962),
-  //   zoom: 14.4746,
-  // );
-
   @override
   void initState() {
     User? user = FirebaseAuth.instance.currentUser;
@@ -1387,7 +1397,7 @@ class _ReservationDetailState extends State<ReservationDetail> {
                             width: 5,
                           ),
                           TitleText(
-                            text: taxiRequired.toString(),
+                            text: taxiRequired ? "Yes" : "No",
                             size: 16,
                           ),
                         ],
@@ -1482,7 +1492,7 @@ class _ReservationDetailState extends State<ReservationDetail> {
                             width: 5,
                           ),
                           TitleText(
-                            text: price.toString(),
+                            text: "RM ${price.toStringAsFixed(2)}",
                             size: 16,
                           ),
                         ],

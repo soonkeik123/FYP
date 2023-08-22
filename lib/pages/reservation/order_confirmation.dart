@@ -298,7 +298,7 @@ class _OrderConfirmationPageState extends State<OrderConfirmationPage> {
                         height: 5,
                       ),
                       Text(
-                        ("RM $priceGet"),
+                        ("RM ${priceGet.toStringAsFixed(2)}"),
                         style: const TextStyle(
                             fontSize: 18, fontWeight: FontWeight.w500),
                       ),

@@ -393,7 +393,7 @@ class _ReservationActionPageState extends State<ReservationActionPage> {
                                     width: 5,
                                   ),
                                   TitleText(
-                                    text: taxiRequired.toString(),
+                                    text: taxiRequired ? "Yes" : "No",
                                     size: 16,
                                   ),
                                 ],
@@ -488,7 +488,7 @@ class _ReservationActionPageState extends State<ReservationActionPage> {
                                     width: 5,
                                   ),
                                   TitleText(
-                                    text: price.toString(),
+                                    text: "RM ${price.toStringAsFixed(2)}",
                                     size: 16,
                                   ),
                                 ],
@@ -785,7 +785,7 @@ class _ReservationActionPageState extends State<ReservationActionPage> {
                   ? Column(
                       children: [
                         Container(
-                          height: MediaQuery.of(context).size.height / 1.3,
+                          height: MediaQuery.of(context).size.height / 1.4,
                           padding: const EdgeInsets.symmetric(horizontal: 25),
                           // color: Colors.amber,
                           alignment: Alignment.center,
@@ -816,7 +816,7 @@ class _ReservationActionPageState extends State<ReservationActionPage> {
                                 ),
                               ),
                               const SizedBox(
-                                height: 60,
+                                height: 50,
                               ),
                               Text(
                                 "The progress now is Grooming! You may pressed the Complete Task button when you've finished the service.",
@@ -828,9 +828,6 @@ class _ReservationActionPageState extends State<ReservationActionPage> {
                               ),
                             ],
                           ),
-                        ),
-                        const SizedBox(
-                          height: 20,
                         ),
                         Padding(
                           padding: EdgeInsets.symmetric(horizontal: 20),
@@ -902,7 +899,7 @@ class _ReservationActionPageState extends State<ReservationActionPage> {
                   ? Column(
                       children: [
                         Container(
-                          height: MediaQuery.of(context).size.height / 1.3,
+                          height: MediaQuery.of(context).size.height / 1.4,
                           padding: const EdgeInsets.symmetric(horizontal: 25),
                           // color: Colors.amber,
                           alignment: Alignment.center,
@@ -1363,9 +1360,17 @@ class _ReservationActionPageState extends State<ReservationActionPage> {
                 leading: const Icon(Icons.directions_car),
                 title: const Text('Pick-up'),
                 onTap: () {
-                  Navigator.pop(context);
-
-                  _checkStageAndRequirementForPickUp();
+                  showConfirmationDialog().then((value) => {
+                        if (value != null && value)
+                          {
+                            Navigator.pop(context),
+                            _checkStageAndRequirementForPickUp(),
+                          }
+                        else
+                          {
+                            Navigator.pop(context),
+                          }
+                      });
                 },
               ),
             if (((stage == 0 && !taxiRequired) || stage == 3) &&
@@ -1377,8 +1382,17 @@ class _ReservationActionPageState extends State<ReservationActionPage> {
                 leading: const Icon(Icons.shower_outlined),
                 title: const Text('Grooming'),
                 onTap: () {
-                  Navigator.pop(context);
-                  _checkStageAndRequirementForGrooming();
+                  showConfirmationDialog().then((value) => {
+                        if (value != null && value)
+                          {
+                            Navigator.pop(context),
+                            _checkStageAndRequirementForGrooming(),
+                          }
+                        else
+                          {
+                            Navigator.pop(context),
+                          }
+                      });
                 },
               ),
             if (((stage == 0 && !taxiRequired) || stage == 3) &&
@@ -1387,8 +1401,17 @@ class _ReservationActionPageState extends State<ReservationActionPage> {
                 leading: const Icon(Icons.hotel_outlined),
                 title: const Text('Boarding'),
                 onTap: () {
-                  Navigator.pop(context);
-                  _checkStageAndRequirementForBoarding();
+                  showConfirmationDialog().then((value) => {
+                        if (value != null && value)
+                          {
+                            Navigator.pop(context),
+                            _checkStageAndRequirementForBoarding(),
+                          }
+                        else
+                          {
+                            Navigator.pop(context),
+                          }
+                      });
                 },
               ),
             if (((stage == 5 && taxiRequired)))
@@ -1396,8 +1419,17 @@ class _ReservationActionPageState extends State<ReservationActionPage> {
                 leading: const Icon(Icons.home_outlined),
                 title: const Text('Deliver Home'),
                 onTap: () {
-                  Navigator.pop(context);
-                  _checkStageAndRequirementForDeliver();
+                  showConfirmationDialog().then((value) => {
+                        if (value != null && value)
+                          {
+                            Navigator.pop(context),
+                            _checkStageAndRequirementForDeliver(),
+                          }
+                        else
+                          {
+                            Navigator.pop(context),
+                          }
+                      });
                 },
               ),
           ],
@@ -1767,6 +1799,54 @@ class _ReservationActionPageState extends State<ReservationActionPage> {
                 blurRadius: 6)
           ]),
       child: ClipOval(child: Image.asset("assets/images/app-icon.png")),
+    );
+  }
+
+  Future showConfirmationDialog() {
+    return showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(
+                10.0), // Set your desired border radius here
+          ),
+          backgroundColor:
+              Colors.white, // Set the background color of the dialog
+          title: const Text('Confirmation'),
+          titleTextStyle: const TextStyle(
+            color:
+                AppColors.mainColor, // Set your desired title text color here
+            fontSize: 20.0,
+            fontWeight: FontWeight.bold,
+          ),
+          content: const SizedBox(
+            height: 50,
+            child: Text('Do you confirm to accept this task?'),
+          ),
+          contentTextStyle: const TextStyle(
+            color:
+                AppColors.mainColor, // Set your desired content text color here
+            fontSize: 17.0,
+          ),
+          actions: <Widget>[
+            TextButton(
+              onPressed: () {
+                Navigator.pop(
+                    context, false); // Return false to indicate cancellation
+              },
+              child: const Text('Cancel'),
+            ),
+            TextButton(
+              onPressed: () {
+                Navigator.pop(
+                    context, true); // Return true to indicate confirmation
+              },
+              child: const Text('Confirm'),
+            ),
+          ],
+        );
+      },
     );
   }
 }

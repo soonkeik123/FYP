@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:firebase_database/firebase_database.dart';
 import 'package:flutter/material.dart';
 import 'package:ohmypet/pages/admin/reservation_action.dart';
@@ -22,7 +24,8 @@ class _ReservationManagementState extends State<ReservationManagement> {
   // Create a reference to Firebase database
   late DatabaseReference reservRef;
 
-  // to differentiate the role of current
+  TextEditingController idController = TextEditingController();
+  List<Map<String, dynamic>> filteredReservations = [];
 
   @override
   void initState() {
@@ -34,21 +37,20 @@ class _ReservationManagementState extends State<ReservationManagement> {
   }
 
   // Get data
+  StreamSubscription<DatabaseEvent>? reservationSubscription;
+
   Future<void> fetchReservations() async {
-    reservRef.onValue.listen((DatabaseEvent event) {
+    reservationSubscription = reservRef.onValue.listen((DatabaseEvent event) {
       DataSnapshot snapshot = event.snapshot;
       Map<dynamic, dynamic>? data = snapshot.value as Map<dynamic, dynamic>?;
       if (data != null) {
-        // List<Map<String, dynamic>> filterReservations = [];
-        ongoingReservations.clear(); // Clear the list before adding new data
+        ongoingReservations.clear();
         allReservations.clear();
         data.forEach((key, value) {
-          Map<String, dynamic> reservationData =
-              Map.from(value); // Access the inner map
+          Map<String, dynamic> reservationData = Map.from(value);
           reservationData['key'] = key;
           allReservations.add(reservationData);
 
-          // Check if the user_id field matches the provided userID
           if (reservationData['status'] == 'Incoming' ||
               reservationData['status'] == 'Processing') {
             setState(() {
@@ -57,6 +59,22 @@ class _ReservationManagementState extends State<ReservationManagement> {
           }
         });
       }
+    });
+  }
+
+  // Call this method when done with listening to events
+  void cancelReservationSubscription() {
+    reservationSubscription?.cancel();
+  }
+
+  void filterReservations(String id) {
+    setState(() {
+      filteredReservations = allReservations
+          .where((reservation) => reservation['key']
+              .toString()
+              .toLowerCase()
+              .contains(id.toLowerCase()))
+          .toList();
     });
   }
 
@@ -151,20 +169,31 @@ class _ReservationManagementState extends State<ReservationManagement> {
                   ],
                 ),
                 showAll
+                    ? Container(
+                        margin: EdgeInsets.symmetric(horizontal: 20),
+                        child: TextField(
+                          controller: idController,
+                          decoration: InputDecoration(labelText: 'Enter ID'),
+                          onChanged: (value) {
+                            filterReservations(value);
+                          },
+                        ),
+                      )
+                    : Container(),
+                showAll
                     ? SizedBox(
                         width: 300,
                         child: ListView.builder(
                           shrinkWrap: true,
                           physics: const NeverScrollableScrollPhysics(),
-                          itemCount: allReservations.length,
+                          itemCount: filteredReservations.length,
                           itemBuilder: (context, index) {
-                            // Display processing orders
                             return OrderItemWidget(
-                              id: allReservations[index]['key'],
-                              status: allReservations[index]["status"],
-                              service: allReservations[index]["service"],
-                              date: allReservations[index]["date"],
-                              time: allReservations[index]["time"],
+                              id: filteredReservations[index]['key'],
+                              status: filteredReservations[index]["status"],
+                              service: filteredReservations[index]["service"],
+                              date: filteredReservations[index]["date"],
+                              time: filteredReservations[index]["time"],
                             );
                           },
                         ),

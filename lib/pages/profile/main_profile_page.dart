@@ -7,6 +7,7 @@ import 'package:ohmypet/pages/profile/loyalty_points.dart';
 import 'package:ohmypet/utils/colors.dart';
 import 'package:ohmypet/utils/dimensions.dart';
 import 'package:ohmypet/widgets/header.dart';
+import 'package:url_launcher/url_launcher.dart';
 
 import '../../widgets/bottom_navigation_bar.dart';
 
@@ -67,12 +68,9 @@ class _MainProfilePageState extends State<MainProfilePage> {
         userPhone = phone;
         loyaltyPoint = point;
         imageUrl = image;
-
-        isLoading = false;
       });
     } else {
       print('No data available.');
-      isLoading = false;
     }
   }
 
@@ -80,322 +78,362 @@ class _MainProfilePageState extends State<MainProfilePage> {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: Colors.white,
-      body: isLoading
-          ? Center(
-              child: CircularProgressIndicator(),
-            )
-          : Column(
-              children: [
-                // Header
-                const CustomHeader(pageTitle: "PROFILE"),
+      body: Column(
+        children: [
+          // Header
+          const CustomHeader(pageTitle: "PROFILE"),
 
-                // showing the body
-                // Profile Picture and Name
-                Expanded(
-                  child: SizedBox(
-                    height: double.maxFinite,
-                    width: double.maxFinite,
-                    child: Column(
+          // showing the body
+          // Profile Picture and Name
+          Expanded(
+            child: SizedBox(
+              height: double.maxFinite,
+              width: double.maxFinite,
+              child: Column(
+                children: [
+                  Container(
+                    height: 130,
+                    margin: const EdgeInsets.only(top: 30, bottom: 20),
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                       children: [
-                        Container(
-                          height: 130,
-                          margin: const EdgeInsets.only(top: 30, bottom: 20),
-                          child: Row(
-                            mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                            children: [
-                              // Profile picture
-                              if (imageUrl.isEmpty)
-                                Container(
-                                  margin: EdgeInsets.only(left: 7),
-                                  height: 130,
-                                  width: 130,
-                                  decoration: BoxDecoration(
-                                    shape: BoxShape.circle,
-                                    color: Colors.grey[300],
-                                  ),
-                                  child: Center(
-                                    child: Icon(Icons.person_add_alt_1_outlined,
-                                        size: 40, color: Colors.grey),
-                                  ),
-                                )
-                              else
-                                Container(
-                                  margin: const EdgeInsets.only(left: 7),
-                                  height: 130,
-                                  width: 130,
-                                  decoration: BoxDecoration(
-                                    shape: BoxShape.circle,
-                                    image: DecorationImage(
-                                      fit: BoxFit.cover,
-                                      image: FileImage(File(imageUrl)),
-                                    ),
-                                  ),
-                                ),
-                              // Profile info
-                              Column(
-                                mainAxisAlignment: MainAxisAlignment.center,
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: [
-                                  Text(
-                                      (userNickname == '')
-                                          ? userName
-                                          : userNickname,
-                                      style: const TextStyle(
-                                          fontSize: 18,
-                                          fontWeight: FontWeight.w500)),
-                                  const SizedBox(
-                                    height: 3,
-                                  ),
-                                  Text("+$userPhone",
-                                      style: const TextStyle(fontSize: 16)),
-                                  Text(userEmail,
-                                      style: const TextStyle(fontSize: 14)),
-                                  // Line
-                                  Container(
-                                    width: 150,
-                                    margin: const EdgeInsets.symmetric(
-                                        vertical: 10),
-                                    decoration: BoxDecoration(
-                                        border: Border.all(
-                                            width: 0.3,
-                                            color:
-                                                Colors.black.withOpacity(0.4))),
-                                  ),
-                                  Text("$loyaltyPoint Points",
-                                      style: const TextStyle(
-                                          fontSize: 20,
-                                          fontWeight: FontWeight.w500)),
-                                ],
-                              )
-                            ],
+                        // Profile picture
+                        if (imageUrl.isEmpty)
+                          Container(
+                            margin: EdgeInsets.only(left: 7),
+                            height: 130,
+                            width: 130,
+                            decoration: BoxDecoration(
+                              shape: BoxShape.circle,
+                              color: Colors.grey[300],
+                            ),
+                            child: Center(
+                              child: Icon(Icons.person_add_alt_1_outlined,
+                                  size: 40, color: Colors.grey),
+                            ),
+                          )
+                        else
+                          Container(
+                            margin: const EdgeInsets.only(left: 7),
+                            height: 130,
+                            width: 130,
+                            decoration: BoxDecoration(
+                              shape: BoxShape.circle,
+                              image: DecorationImage(
+                                fit: BoxFit.cover,
+                                image: FileImage(File(imageUrl)),
+                              ),
+                            ),
                           ),
-                        ),
-                        Row(
-                          mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                        // Profile info
+                        Column(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-                            InkWell(
-                              child: Container(
-                                alignment: Alignment.center,
-                                height: 40,
-                                width: 100,
-                                decoration: BoxDecoration(
-                                    boxShadow: [
-                                      BoxShadow(
-                                        color: Colors.black.withOpacity(0.4),
-                                        spreadRadius: 1,
-                                        blurRadius: 8,
-                                        offset: const Offset(0, 3),
-                                      )
-                                    ],
-                                    color: AppColors.petVaccineOrange,
-                                    borderRadius: BorderRadius.circular(
-                                        Dimensions.radius15)),
-                                child: const Text(
-                                  "Edit Profile",
-                                  style: TextStyle(
-                                      fontSize: 18,
-                                      fontWeight: FontWeight.w500,
-                                      color: Colors.white),
-                                  // color: Colors.white,
-                                ),
-                              ),
-                              onTap: () {
-                                Navigator.pushReplacementNamed(
-                                    context, '/editProfile');
-                              },
+                            Text((userNickname == '') ? userName : userNickname,
+                                style: const TextStyle(
+                                    fontSize: 18, fontWeight: FontWeight.w500)),
+                            const SizedBox(
+                              height: 3,
                             ),
-                            InkWell(
-                              child: Container(
-                                alignment: Alignment.center,
-                                height: 40,
-                                width: 100,
-                                decoration: BoxDecoration(
-                                    boxShadow: [
-                                      BoxShadow(
-                                        color: Colors.black.withOpacity(0.4),
-                                        spreadRadius: 1,
-                                        blurRadius: 8,
-                                        offset: const Offset(0, 3),
-                                      )
-                                    ],
-                                    color: AppColors.catBasicRed,
-                                    borderRadius: BorderRadius.circular(
-                                        Dimensions.radius15)),
-                                child: const Text(
-                                  "Logout",
-                                  style: TextStyle(
-                                      fontSize: 18,
-                                      fontWeight: FontWeight.w500,
-                                      color: Colors.white),
-                                  // color: Colors.white,
-                                ),
-                              ),
-                              onTap: () {
-                                showConfirmLogoutDialog(context);
-                              },
+                            Text("+$userPhone",
+                                style: const TextStyle(fontSize: 16)),
+                            Text(userEmail,
+                                style: const TextStyle(fontSize: 14)),
+                            // Line
+                            Container(
+                              width: 150,
+                              margin: const EdgeInsets.symmetric(vertical: 10),
+                              decoration: BoxDecoration(
+                                  border: Border.all(
+                                      width: 0.3,
+                                      color: Colors.black.withOpacity(0.4))),
                             ),
+                            Text("$loyaltyPoint Points",
+                                style: const TextStyle(
+                                    fontSize: 20, fontWeight: FontWeight.w500)),
                           ],
-                        ),
-                        const SizedBox(
+                        )
+                      ],
+                    ),
+                  ),
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                    children: [
+                      InkWell(
+                        child: Container(
+                          alignment: Alignment.center,
                           height: 40,
-                        ),
-                        // Loyalty Point
-                        InkWell(
-                          onTap: () {
-                            Navigator.push(
-                              context,
-                              MaterialPageRoute(
-                                  builder: (context) =>
-                                      const LoyaltyPointPage()),
-                            );
-                          },
-                          child: Container(
-                            margin: const EdgeInsets.symmetric(
-                              horizontal: 20,
-                            ),
-                            padding: const EdgeInsets.only(bottom: 10),
-                            decoration: const BoxDecoration(
-                              border: Border(
-                                  bottom: BorderSide(
-                                      width: 1, color: Colors.black26)),
-                            ),
-                            child: const Row(
-                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                              children: [
-                                Text(
-                                  "Loyalty Point",
-                                  style: TextStyle(
-                                      color: AppColors.mainColor,
-                                      fontSize: 17,
-                                      fontWeight: FontWeight.w400),
-                                ),
-                                Icon(
-                                  Icons.arrow_forward_ios,
-                                  size: 20,
-                                  color: AppColors.mainColor,
-                                ),
+                          width: 100,
+                          decoration: BoxDecoration(
+                              boxShadow: [
+                                BoxShadow(
+                                  color: Colors.black.withOpacity(0.4),
+                                  spreadRadius: 1,
+                                  blurRadius: 8,
+                                  offset: const Offset(0, 3),
+                                )
                               ],
-                            ),
+                              color: AppColors.petVaccineOrange,
+                              borderRadius:
+                                  BorderRadius.circular(Dimensions.radius15)),
+                          child: const Text(
+                            "Edit Profile",
+                            style: TextStyle(
+                                fontSize: 18,
+                                fontWeight: FontWeight.w500,
+                                color: Colors.white),
+                            // color: Colors.white,
                           ),
                         ),
-                        Container(
-                          margin: const EdgeInsets.symmetric(
-                            horizontal: 20,
-                          ),
-                          padding: const EdgeInsets.only(bottom: 10, top: 10),
-                          decoration: const BoxDecoration(
-                            border: Border(
-                                bottom: BorderSide(
-                                    width: 1, color: Colors.black26)),
-                          ),
-                          child: const Row(
-                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                            children: [
-                              Text(
-                                "FAQ",
-                                style: TextStyle(
-                                    color: AppColors.mainColor,
-                                    fontSize: 17,
-                                    fontWeight: FontWeight.w400),
-                              ),
-                              Icon(
-                                Icons.arrow_forward_ios,
-                                size: 20,
-                                color: AppColors.mainColor,
-                              ),
-                            ],
-                          ),
-                        ),
-                        Container(
-                          margin: const EdgeInsets.symmetric(
-                            horizontal: 20,
-                          ),
-                          padding: const EdgeInsets.only(bottom: 10, top: 10),
-                          decoration: const BoxDecoration(
-                            border: Border(
-                                bottom: BorderSide(
-                                    width: 1, color: Colors.black26)),
-                          ),
-                          child: const Row(
-                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                            children: [
-                              Text(
-                                "Privacy Policy",
-                                style: TextStyle(
-                                    color: AppColors.mainColor,
-                                    fontSize: 17,
-                                    fontWeight: FontWeight.w400),
-                              ),
-                              Icon(
-                                Icons.arrow_forward_ios,
-                                size: 20,
-                                color: AppColors.mainColor,
-                              ),
-                            ],
+                        onTap: () {
+                          Navigator.pushReplacementNamed(
+                              context, '/editProfile');
+                        },
+                      ),
+                      InkWell(
+                        child: Container(
+                          alignment: Alignment.center,
+                          height: 40,
+                          width: 100,
+                          decoration: BoxDecoration(
+                              boxShadow: [
+                                BoxShadow(
+                                  color: Colors.black.withOpacity(0.4),
+                                  spreadRadius: 1,
+                                  blurRadius: 8,
+                                  offset: const Offset(0, 3),
+                                )
+                              ],
+                              color: AppColors.catBasicRed,
+                              borderRadius:
+                                  BorderRadius.circular(Dimensions.radius15)),
+                          child: const Text(
+                            "Logout",
+                            style: TextStyle(
+                                fontSize: 18,
+                                fontWeight: FontWeight.w500,
+                                color: Colors.white),
+                            // color: Colors.white,
                           ),
                         ),
-                        Container(
-                          margin: const EdgeInsets.symmetric(
-                            horizontal: 20,
-                          ),
-                          padding: const EdgeInsets.only(bottom: 10, top: 10),
-                          decoration: const BoxDecoration(
-                            border: Border(
-                                bottom: BorderSide(
-                                    width: 1, color: Colors.black26)),
-                          ),
-                          child: const Row(
-                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                            children: [
-                              Text(
-                                "Terms and Conditions",
-                                style: TextStyle(
-                                    color: AppColors.mainColor,
-                                    fontSize: 17,
-                                    fontWeight: FontWeight.w400),
-                              ),
-                              Icon(
-                                Icons.arrow_forward_ios,
-                                size: 20,
+                        onTap: () {
+                          showConfirmLogoutDialog(context);
+                        },
+                      ),
+                    ],
+                  ),
+                  const SizedBox(
+                    height: 40,
+                  ),
+                  // Loyalty Point
+                  InkWell(
+                    onTap: () {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                            builder: (context) => const LoyaltyPointPage()),
+                      );
+                    },
+                    child: Container(
+                      margin: const EdgeInsets.symmetric(
+                        horizontal: 20,
+                      ),
+                      padding: const EdgeInsets.only(bottom: 10),
+                      decoration: const BoxDecoration(
+                        border: Border(
+                            bottom:
+                                BorderSide(width: 1, color: Colors.black26)),
+                      ),
+                      child: const Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          Text(
+                            "Loyalty Point",
+                            style: TextStyle(
                                 color: AppColors.mainColor,
-                              ),
-                            ],
+                                fontSize: 17,
+                                fontWeight: FontWeight.w400),
                           ),
+                          Icon(
+                            Icons.arrow_forward_ios,
+                            size: 20,
+                            color: AppColors.mainColor,
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+                  Container(
+                    margin: const EdgeInsets.symmetric(
+                      horizontal: 20,
+                    ),
+                    padding: const EdgeInsets.only(bottom: 10, top: 10),
+                    decoration: const BoxDecoration(
+                      border: Border(
+                          bottom: BorderSide(width: 1, color: Colors.black26)),
+                    ),
+                    child: const Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        Text(
+                          "FAQ",
+                          style: TextStyle(
+                              color: AppColors.mainColor,
+                              fontSize: 17,
+                              fontWeight: FontWeight.w400),
                         ),
-                        Container(
-                          margin: const EdgeInsets.symmetric(
-                            horizontal: 20,
-                          ),
-                          padding: const EdgeInsets.only(bottom: 10, top: 10),
-                          decoration: const BoxDecoration(
-                            border: Border(
-                                bottom: BorderSide(
-                                    width: 1, color: Colors.black26)),
-                          ),
-                          child: const Row(
-                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                            children: [
-                              Text(
-                                "About",
-                                style: TextStyle(
-                                    color: AppColors.mainColor,
-                                    fontSize: 17,
-                                    fontWeight: FontWeight.w400),
-                              ),
-                              Icon(
-                                Icons.arrow_forward_ios,
-                                size: 20,
-                                color: AppColors.mainColor,
-                              ),
-                            ],
-                          ),
+                        Icon(
+                          Icons.arrow_forward_ios,
+                          size: 20,
+                          color: AppColors.mainColor,
                         ),
                       ],
                     ),
                   ),
-                ),
-              ],
+                  InkWell(
+                    onTap: () async {
+                      const pdfUrl =
+                          'https://drive.google.com/file/d/1G_XeTUPEACDSIQq1hqjSzBKAFMU8h5oi/view?usp=sharing';
+                      if (await canLaunch(pdfUrl)) {
+                        await launch(pdfUrl);
+                      } else {
+                        throw 'Could not launch $pdfUrl';
+                      }
+                    },
+                    child: Container(
+                      margin: const EdgeInsets.symmetric(
+                        horizontal: 20,
+                      ),
+                      padding: const EdgeInsets.only(bottom: 10, top: 10),
+                      decoration: const BoxDecoration(
+                        border: Border(
+                            bottom:
+                                BorderSide(width: 1, color: Colors.black26)),
+                      ),
+                      child: const Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          Text(
+                            "Privacy Policy",
+                            style: TextStyle(
+                                color: AppColors.mainColor,
+                                fontSize: 17,
+                                fontWeight: FontWeight.w400),
+                          ),
+                          Icon(
+                            Icons.arrow_forward_ios,
+                            size: 20,
+                            color: AppColors.mainColor,
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+                  InkWell(
+                    onTap: () async {
+                      const pdfUrl =
+                          'https://drive.google.com/file/d/1UjZzJzVGBFU09WjdlV4cuSwvb1beJauz/view?usp=sharing';
+                      if (await canLaunch(pdfUrl)) {
+                        await launch(pdfUrl);
+                      } else {
+                        throw 'Could not launch $pdfUrl';
+                      }
+                    },
+                    child: Container(
+                      margin: const EdgeInsets.symmetric(
+                        horizontal: 20,
+                      ),
+                      padding: const EdgeInsets.only(bottom: 10, top: 10),
+                      decoration: const BoxDecoration(
+                        border: Border(
+                            bottom:
+                                BorderSide(width: 1, color: Colors.black26)),
+                      ),
+                      child: const Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          Text(
+                            "Terms and Conditions",
+                            style: TextStyle(
+                                color: AppColors.mainColor,
+                                fontSize: 17,
+                                fontWeight: FontWeight.w400),
+                          ),
+                          Icon(
+                            Icons.arrow_forward_ios,
+                            size: 20,
+                            color: AppColors.mainColor,
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+                  InkWell(
+                    onTap: () async {
+                      String message =
+                          'Hi, I would like to request help from OhMyPet!';
+                      String phoneNumber = "+60102211208";
+
+                      final Uri uri = Uri.https(
+                        'api.whatsapp.com',
+                        '/send',
+                        {'phone': phoneNumber, 'text': (message)},
+                      );
+                      // Use the phone number with country code
+                      if (await canLaunch(uri.toString())) {
+                        await launch(uri.toString());
+                      } else {
+                        throw 'Could not launch $uri';
+                      }
+                    },
+                    child: Container(
+                      margin: const EdgeInsets.symmetric(
+                        horizontal: 20,
+                      ),
+                      padding: const EdgeInsets.only(bottom: 10, top: 10),
+                      decoration: const BoxDecoration(
+                        border: Border(
+                            bottom:
+                                BorderSide(width: 1, color: Colors.black26)),
+                      ),
+                      child: const Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          Row(
+                            children: [
+                              Text(
+                                "Customer Support",
+                                style: TextStyle(
+                                    color: AppColors.mainColor,
+                                    fontSize: 17,
+                                    fontWeight: FontWeight.w400),
+                              ),
+                              SizedBox(
+                                width: 10,
+                              ),
+                              Icon(
+                                Icons.help_outline_outlined,
+                                color: Colors.green,
+                                size: 21,
+                              )
+                            ],
+                          ),
+                          Icon(
+                            Icons.arrow_forward_ios,
+                            size: 20,
+                            color: AppColors.mainColor,
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+                ],
+              ),
             ),
+          ),
+        ],
+      ),
       bottomNavigationBar: const BottomNavBar(
         activePage: 3,
       ),

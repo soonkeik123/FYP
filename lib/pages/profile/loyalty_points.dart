@@ -145,18 +145,21 @@ class _LoyaltyPointPageState extends State<LoyaltyPointPage> {
                     color: AppColors.mainColor,
                     size: 20,
                   )),
-              Container(
-                  alignment: Alignment.centerRight,
-                  margin: const EdgeInsets.only(
-                    right: 20,
-                    top: 30,
-                  ),
-                  padding: EdgeInsets.only(top: 3),
-                  child: BigText(
-                    text: "Redemption History >",
-                    color: Colors.black54,
-                    size: 14,
-                  )),
+              InkWell(
+                onTap: () => Navigator.pushNamed(context, '/redeemHistory'),
+                child: Container(
+                    alignment: Alignment.centerRight,
+                    margin: const EdgeInsets.only(
+                      right: 20,
+                      top: 30,
+                    ),
+                    padding: EdgeInsets.only(top: 3),
+                    child: BigText(
+                      text: "Redemption History >",
+                      color: Colors.black54,
+                      size: 14,
+                    )),
+              ),
             ],
           ),
           // Items

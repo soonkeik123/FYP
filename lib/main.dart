@@ -11,6 +11,7 @@ import 'package:ohmypet/pages/pet/add_pet.dart';
 import 'package:ohmypet/pages/profile/edit_profile_page.dart';
 import 'package:ohmypet/pages/profile/loyalty_points.dart';
 import 'package:ohmypet/pages/profile/main_profile_page.dart';
+import 'package:ohmypet/pages/profile/redemption_history.dart';
 import 'package:ohmypet/pages/profile/signin_screen.dart';
 import 'package:ohmypet/pages/profile/signup_screen.dart';
 import 'package:ohmypet/pages/reservation/boarding_reservation.dart';
@@ -103,6 +104,7 @@ class MyApp extends StatelessWidget {
         MainServicePage.routeName: (context) => const MainServicePage(),
         MainReservationPage.routeName: (context) => const MainReservationPage(),
         MainProfilePage.routeName: (context) => const MainProfilePage(),
+        RedemptionHistory.routeName: (context) => const RedemptionHistory(),
         EditProfilePage.routeName: (context) => const EditProfilePage(),
         LoyaltyPointPage.routeName: (context) => const LoyaltyPointPage(),
         ReservationManagement.staffRoute: (context) =>
