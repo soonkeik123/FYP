@@ -222,6 +222,11 @@ class _PackageManagementState extends State<PackageManagement> {
                     color: Colors.green,
                   ),
                 ),
+                const SizedBox(height: 8),
+                Text(
+                  "Services: ${gridData[index]['grooming']}, ${gridData[index]['boarding']}",
+                  style: TextStyle(fontSize: 16),
+                ),
                 const SizedBox(height: 16),
                 Row(
                   children: [
@@ -236,7 +241,8 @@ class _PackageManagementState extends State<PackageManagement> {
                                       packageID: gridDataID[index])));
                         },
                         style: ElevatedButton.styleFrom(
-                          backgroundColor: Colors.orange, // Set the button color to orange
+                          backgroundColor:
+                              Colors.orange, // Set the button color to orange
                         ),
                         child: const Text('Edit'),
                       ),
@@ -251,7 +257,8 @@ class _PackageManagementState extends State<PackageManagement> {
                               context, gridDataID[index], index);
                         },
                         style: ElevatedButton.styleFrom(
-                          backgroundColor: Colors.red, // Set the button color to red
+                          backgroundColor:
+                              Colors.red, // Set the button color to red
                         ),
                         child: const Text('Remove'),
                       ),
@@ -326,8 +333,9 @@ class _PackageManagementState extends State<PackageManagement> {
       if (value != null && value) {
         packageRef = FirebaseDatabase.instance.ref('packages/$pid');
 
-        packageRef.remove();
-        // gridData.removeAt(index);
+        packageRef.update({
+          'delete': true,
+        }).then((value) => print("Package deleted"));
       } else {}
     });
   }
@@ -353,10 +361,13 @@ class _PackageManagementState extends State<PackageManagement> {
           gridData.clear();
           // Loop through the snapshot's children (admin users)
           packageItem.forEach((key, packageData) {
-            setState(() {
-              gridData.add(packageData);
-              gridDataID.add(key);
-            });
+            // check if the packages are deleted
+            if (!packageData['delete']) {
+              setState(() {
+                gridData.add(packageData);
+                gridDataID.add(key);
+              });
+            }
           });
         }
       });
@@ -409,7 +420,7 @@ class PackageItem extends StatelessWidget {
           const SizedBox(
             height: 2,
           ),
-          Text("Started from RM$price",
+          Text("Started from RM${price.toStringAsFixed(2)}",
               style:
                   const TextStyle(fontSize: 14, fontWeight: FontWeight.w400)),
         ],

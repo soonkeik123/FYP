@@ -26,16 +26,30 @@ class _EditPackagePageState extends State<EditPackagePage> {
   final ImagePicker _picker = ImagePicker();
   String storeImagePath = '';
 
+  final TextEditingController _titleController = TextEditingController();
+  final TextEditingController _descriptionController = TextEditingController();
+  final TextEditingController _priceController = TextEditingController();
+
+  final List<String> groomingItems = [
+    'Cat Basic Grooming',
+    'Dog Basic Grooming',
+    'Cat Full Grooming',
+    'Dog Full Grooming',
+  ];
+  final List<String> boardingItems = ['Cat Boarding', 'Dog Boarding'];
+
+  String service1 = '';
+  String service2 = '';
+
+  // Toggle button for Free transportation
+  bool isFree = false;
+
   @override
   void initState() {
     super.initState();
 
     getSelectedPackageData();
   }
-
-  final TextEditingController _titleController = TextEditingController();
-  final TextEditingController _descriptionController = TextEditingController();
-  final TextEditingController _priceController = TextEditingController();
 
   @override
   Widget build(BuildContext context) {
@@ -195,7 +209,8 @@ class _EditPackagePageState extends State<EditPackagePage> {
                           // Textfield for package title
                           TextField(
                             controller: _priceController,
-                            keyboardType: const TextInputType.numberWithOptions(),
+                            keyboardType:
+                                const TextInputType.numberWithOptions(),
                             decoration: InputDecoration(
                               border: OutlineInputBorder(
                                 borderSide: const BorderSide(
@@ -218,6 +233,128 @@ class _EditPackagePageState extends State<EditPackagePage> {
                           const SizedBox(
                             height: 15,
                           ),
+                        ],
+                      ),
+
+                      // Services Included
+                      Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          const Text(
+                            "Services",
+                            style: TextStyle(
+                                color: AppColors.mainColor,
+                                fontSize: 20,
+                                fontWeight: FontWeight.w300),
+                          ),
+                          const SizedBox(
+                            height: 10,
+                          ),
+                          // dropdown field for first service
+                          DropdownButtonFormField<String>(
+                            value: service1,
+                            onChanged: (newValue) {
+                              setState(() {
+                                service1 = newValue!;
+                              });
+                            },
+                            items: groomingItems
+                                .map<DropdownMenuItem<String>>((String item) {
+                              return DropdownMenuItem<String>(
+                                value: item,
+                                child: Text(item),
+                              );
+                            }).toList(),
+                            decoration: InputDecoration(
+                              border: OutlineInputBorder(
+                                borderSide: BorderSide(
+                                  color: AppColors.mainColor,
+                                  width: 1.0,
+                                ),
+                                borderRadius: BorderRadius.circular(10.0),
+                              ),
+                              enabledBorder: OutlineInputBorder(
+                                borderSide: BorderSide(
+                                  color: AppColors.mainColor,
+                                  width: 1.0,
+                                ),
+                                borderRadius: BorderRadius.circular(10.0),
+                              ),
+                              focusedBorder: OutlineInputBorder(
+                                borderSide: BorderSide(
+                                  color: Colors.green,
+                                  width: 1.0,
+                                ),
+                                borderRadius: BorderRadius.circular(10.0),
+                              ),
+                            ),
+                          ),
+                          const SizedBox(
+                            height: 15,
+                          ),
+                          // dropdown field for second service
+                          DropdownButtonFormField<String>(
+                            value: service2,
+                            onChanged: (newValue) {
+                              setState(() {
+                                service2 = newValue!;
+                              });
+                            },
+                            items: boardingItems
+                                .map<DropdownMenuItem<String>>((String item) {
+                              return DropdownMenuItem<String>(
+                                value: item,
+                                child: Text(item),
+                              );
+                            }).toList(),
+                            decoration: InputDecoration(
+                              border: OutlineInputBorder(
+                                borderSide: BorderSide(
+                                  color: AppColors.mainColor,
+                                  width: 1.0,
+                                ),
+                                borderRadius: BorderRadius.circular(10.0),
+                              ),
+                              enabledBorder: OutlineInputBorder(
+                                borderSide: BorderSide(
+                                  color: AppColors.mainColor,
+                                  width: 1.0,
+                                ),
+                                borderRadius: BorderRadius.circular(10.0),
+                              ),
+                              focusedBorder: OutlineInputBorder(
+                                borderSide: BorderSide(
+                                  color: Colors.green,
+                                  width: 1.0,
+                                ),
+                                borderRadius: BorderRadius.circular(10.0),
+                              ),
+                            ),
+                          ),
+                          const SizedBox(
+                            height: 15,
+                          ),
+
+                          // Taxi Free?
+                          Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                            children: [
+                              const Text(
+                                "Free Transportation",
+                                style: TextStyle(
+                                    color: AppColors.mainColor,
+                                    fontSize: 20,
+                                    fontWeight: FontWeight.w300),
+                              ),
+                              // Toggle button for on/off
+                              ToggleButton(),
+                            ],
+                          ),
+
+                          const SizedBox(
+                            height: 15,
+                          ),
+
                           // Save
                           Container(
                             alignment: Alignment.center,
@@ -233,33 +370,50 @@ class _EditPackagePageState extends State<EditPackagePage> {
                                         "Package info is required. Please make sure you have filled in the information.");
                                   }
                                   if (isAllField) {
-                                    await saveImageLocally(_chosenImage!);
+                                    if (((service1 == "Cat Basic Grooming" ||
+                                                service1 ==
+                                                    "Cat Full Grooming") &&
+                                            (service2 == "Cat Boarding")) ||
+                                        ((service1 == "Dog Basic Grooming" ||
+                                                service1 ==
+                                                    "Dog Full Grooming") &&
+                                            (service2 == "Dog Boarding"))) {
+                                      await saveImageLocally(_chosenImage!);
 
-                                    DatabaseReference packageRef =
-                                        FirebaseDatabase.instance
-                                            .ref()
-                                            .child('packages')
-                                            .child(widget.packageID);
+                                      DatabaseReference packageRef =
+                                          FirebaseDatabase.instance
+                                              .ref()
+                                              .child('packages')
+                                              .child(widget.packageID);
 
-                                    Map<String, dynamic> packageData = {
-                                      'title': _titleController.text,
-                                      'description':
-                                          _descriptionController.text,
-                                      'price': _priceController.text,
-                                      'imageUrl': storeImagePath,
-                                    };
+                                      Map<String, dynamic> packageData = {
+                                        'title': _titleController.text,
+                                        'description':
+                                            _descriptionController.text,
+                                        'price': _priceController.text,
+                                        'imageUrl': storeImagePath,
+                                        'grooming': service1,
+                                        'boarding': service2,
+                                        'free_taxi': isFree,
+                                      };
 
-                                    packageRef.set(packageData).then((_) {
-                                      // Clear data
-                                      Clear();
-                                      print('Package edited successfully!');
-                                      showSuccessDialog(
+                                      packageRef.update(packageData).then((_) {
+                                        // Clear data
+                                        Clear();
+                                        print('Package edited successfully!');
+                                        showSuccessDialog(
+                                            context,
+                                            "EDIT SUCCESSFUL",
+                                            "You have edited an existing package successfully! Let's check it out!");
+                                      }).catchError((error) {
+                                        print('Error saving data: $error');
+                                      });
+                                    } else {
+                                      showMessageDialog(
                                           context,
-                                          "EDIT SUCCESSFUL",
-                                          "You have edited an existing package successfully! Let's check it out!");
-                                    }).catchError((error) {
-                                      print('Error saving data: $error');
-                                    });
+                                          "Failed to Save",
+                                          "You can't select the services with different pet type in a package.");
+                                    }
                                   }
                                 } else {
                                   showMessageDialog(context, "Failed to Save",
@@ -296,6 +450,45 @@ class _EditPackagePageState extends State<EditPackagePage> {
         ],
       ),
     );
+  }
+
+  ToggleButton() {
+    return GestureDetector(
+      onTap: toggleSwitch,
+      child: AnimatedContainer(
+        duration: const Duration(milliseconds: 300),
+        curve: Curves.easeInOut,
+        width: 60.0,
+        height: 32,
+        decoration: BoxDecoration(
+            borderRadius: BorderRadius.circular(15.0),
+            color: isFree ? Colors.green : Colors.grey,
+            border: Border.all(
+                color: isFree ? Colors.green : Colors.grey, width: 1.0)),
+        child: Stack(
+          children: [
+            Positioned(
+              left: isFree ? 30.0 : 0.0,
+              right: isFree ? 0.0 : 30.0,
+              child: Container(
+                width: 30.0,
+                height: 30.0,
+                decoration: BoxDecoration(
+                  shape: BoxShape.circle,
+                  color: Colors.white,
+                ),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  void toggleSwitch() {
+    setState(() {
+      isFree = !isFree;
+    });
   }
 
   void showSuccessDialog(BuildContext context, String title, String message) {
@@ -452,6 +645,9 @@ class _EditPackagePageState extends State<EditPackagePage> {
         _descriptionController.text = existPackage['description'];
         _priceController.text = existPackage['price'];
         _chosenImage = File(existPackage['imageUrl']);
+        service1 = existPackage['grooming'];
+        service2 = existPackage['boarding'];
+        isFree = existPackage['free_taxi'];
       });
     } else {
       print('No data available');

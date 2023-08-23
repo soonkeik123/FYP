@@ -137,6 +137,9 @@ class _SignInScreenState extends State<SignInScreen> {
                         print('No user data available.');
                       }
                     }).onError((error, stackTrace) {
+                      // Close the loading dialog
+                      Navigator.pop(context);
+
                       print("Error ${error.toString()}");
                       showMessageDialog(context, "Login Failed",
                           "Invalid email or password. Please try again.");

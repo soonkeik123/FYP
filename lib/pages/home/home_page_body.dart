@@ -5,6 +5,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_database/firebase_database.dart';
 import 'package:flutter/material.dart';
 import 'package:ohmypet/pages/pet/view_pet.dart';
+import 'package:ohmypet/pages/reservation/package_reservation.dart';
 import 'package:ohmypet/utils/colors.dart';
 import 'package:ohmypet/utils/dimensions.dart';
 import 'package:ohmypet/widgets/big_text.dart';
@@ -465,7 +466,7 @@ class _HomePageBodyState extends State<HomePageBody> {
               children: [
                 Image.file(
                   File(packages[index]['imageUrl']),
-                  height: 250,
+                  height: 200,
                   fit: BoxFit.cover,
                 ),
                 const SizedBox(height: 16),
@@ -485,6 +486,11 @@ class _HomePageBodyState extends State<HomePageBody> {
                 ),
                 const SizedBox(height: 8),
                 Text(
+                  "Services: ${packages[index]['grooming']}, ${packages[index]['boarding']}",
+                  style: TextStyle(fontSize: 16, fontWeight: FontWeight.w500),
+                ),
+                const SizedBox(height: 8),
+                Text(
                   'Price: RM ${packages[index]['price']}',
                   style: const TextStyle(
                     fontSize: 18,
@@ -497,7 +503,23 @@ class _HomePageBodyState extends State<HomePageBody> {
                   onPressed: () {
                     // Handle the button action here (if needed)
                     Navigator.pop(context); // Close the dialog
+                    Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                            builder: (context) => PackageReservation(
+                                packageID: packageID[index])));
                   },
+                  child: const Text('Use Package'),
+                ),
+                ElevatedButton(
+                  onPressed: () {
+                    // Handle the button action here (if needed)
+                    Navigator.pop(context); // Close the dialog
+                  },
+                  style: ElevatedButton.styleFrom(
+                    primary: Colors
+                        .grey.shade500, // Set the background color to grey
+                  ),
                   child: const Text('Close'),
                 ),
               ],
@@ -668,8 +690,10 @@ class _HomePageBodyState extends State<HomePageBody> {
     packageID.clear();
     Map packagesItem = packageSnapshot.value as Map;
     packagesItem.forEach((key, value) {
-      packages.add(value);
-      packageID.add(key);
+      if (!value['delete']) {
+        packages.add(value);
+        packageID.add(key);
+      }
     });
   }
 }

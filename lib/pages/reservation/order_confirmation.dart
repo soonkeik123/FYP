@@ -1,4 +1,5 @@
 import 'dart:convert';
+import 'dart:developer';
 
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_database/firebase_database.dart';
@@ -22,7 +23,7 @@ class OrderConfirmationPage extends StatefulWidget {
   final bool taxi;
   final double price;
   final String address;
-  final String package;
+  final String packageID;
   final bool pointRedeem;
 
   const OrderConfirmationPage({
@@ -34,7 +35,7 @@ class OrderConfirmationPage extends StatefulWidget {
     required this.room,
     required this.taxi,
     required this.address,
-    required this.package,
+    required this.packageID,
     required this.pointRedeem,
     required this.price,
   });
@@ -46,11 +47,13 @@ class OrderConfirmationPage extends StatefulWidget {
 class _OrderConfirmationPageState extends State<OrderConfirmationPage> {
   // Create a reference to Firebase database
   late DatabaseReference dbPetRef;
+  late DatabaseReference dbPackageRef;
 
   // Pet
   late String petSelected;
   // Service
   late String serviceSelected;
+  late List<String> packageService = [];
   // Date
   late String dateSelected;
   // Time
@@ -69,6 +72,8 @@ class _OrderConfirmationPageState extends State<OrderConfirmationPage> {
   late bool freeService;
   // Pet size for define price
   late String petSize;
+  // Payment ID after successful make payment
+  late String paymentID = "";
 
   // For payment
   Map<String, dynamic>? paymentIntent;
@@ -76,6 +81,9 @@ class _OrderConfirmationPageState extends State<OrderConfirmationPage> {
   @override
   void initState() {
     super.initState();
+
+    dbPackageRef =
+        FirebaseDatabase.instance.ref('packages').child(widget.packageID);
 
     // 'Recognize the user' and 'Define the path'
     User? user = FirebaseAuth.instance.currentUser;
@@ -87,6 +95,7 @@ class _OrderConfirmationPageState extends State<OrderConfirmationPage> {
           .child(uid)
           .child('Pet');
     }
+
     // Data declaration
     setOrderData();
   }
@@ -100,7 +109,7 @@ class _OrderConfirmationPageState extends State<OrderConfirmationPage> {
     roomSelected = widget.room;
     taxiChecked = widget.taxi;
     addressInput = widget.address;
-    packageSelected = widget.package;
+    packageSelected = widget.packageID;
     freeService = widget.pointRedeem;
     priceGet = widget.price;
   }
@@ -141,203 +150,227 @@ class _OrderConfirmationPageState extends State<OrderConfirmationPage> {
   @override
   Widget build(BuildContext context) {
     isFreeService();
-    return Scaffold(
-        backgroundColor: AppColors.themeColor,
-        body: Column(
-          children: [
-            // Header
-            const CustomHeader(
-              pageTitle: "Make Reservation",
-            ),
-
-            Expanded(
-              child: Container(
-                decoration: const BoxDecoration(color: Colors.white),
-                alignment: Alignment.centerLeft,
-                height: double.maxFinite, //MediaQuery.of(context).size.height,
-                width: double.maxFinite,
-                margin: const EdgeInsets.symmetric(horizontal: 30),
-                child: Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 35),
-                  child: Column(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      // Pet Selection
-                      TitleText(text: "Pet Selected:"),
-                      const SizedBox(
-                        height: 5,
-                      ),
-                      Text(
-                        petSelected,
-                        style: const TextStyle(
-                            fontSize: 18, fontWeight: FontWeight.w500),
-                      ),
-                      const SizedBox(
-                        height: 10,
-                      ),
-
-                      // Selected Service
-                      TitleText(text: "Selected Service:"),
-                      const SizedBox(
-                        height: 5,
-                      ),
-                      Text(
-                        serviceSelected,
-                        style: const TextStyle(
-                            fontSize: 18, fontWeight: FontWeight.w500),
-                      ),
-                      const SizedBox(
-                        height: 10,
-                      ),
-                      // Date
-                      TitleText(text: "Date Selected:"),
-                      const SizedBox(
-                        height: 5,
-                      ),
-                      Text(
-                        dateSelected,
-                        style: const TextStyle(
-                            fontSize: 18, fontWeight: FontWeight.w500),
-                      ),
-                      const SizedBox(
-                        height: 10,
-                      ),
-
-                      // Time
-                      roomSelected == ''
-                          ? Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                TitleText(text: "Time Selected:"),
-                                const SizedBox(
-                                  height: 5,
-                                ),
-                                Text(
-                                  timeSelected,
-                                  style: const TextStyle(
-                                      fontSize: 18,
-                                      fontWeight: FontWeight.w500),
-                                ),
-                              ],
-                            )
-                          : Container(),
-
-                      const SizedBox(
-                        height: 10,
-                      ),
-
-                      // Room Selected
-                      roomSelected != ''
-                          ? Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                const Text(
-                                  "Room Selected:",
-                                  style: TextStyle(
-                                      fontSize: 20, color: AppColors.mainColor),
-                                  textAlign: TextAlign.left,
-                                ),
-                                const SizedBox(
-                                  height: 5,
-                                ),
-                                Text(
-                                  roomSelected,
-                                  style: const TextStyle(
-                                      color: Colors.black,
-                                      fontSize: 18,
-                                      fontWeight: FontWeight.w500),
-                                ),
-                              ],
-                            )
-                          : Container(),
-
-                      const SizedBox(
-                        height: 10,
-                      ),
-
-                      // Pet Taxi
-                      TitleText(text: "Pet Taxi Required"),
-                      const SizedBox(
-                        height: 5,
-                      ),
-                      Text(
-                        taxiChecked ? "Yes" : "None",
-                        style: const TextStyle(
-                            fontSize: 18, fontWeight: FontWeight.w500),
-                      ),
-                      const SizedBox(
-                        height: 10,
-                      ),
-
-                      // Addresss
-                      taxiChecked
-                          ? Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                TitleText(text: "Address"),
-                                const SizedBox(
-                                  height: 5,
-                                ),
-                                Text(
-                                  addressInput,
-                                  style: const TextStyle(
-                                      fontSize: 16,
-                                      fontWeight: FontWeight.w500),
-                                ),
-                                const SizedBox(
-                                  height: 10,
-                                ),
-                              ],
-                            )
-                          : Container(),
-
-                      // Total Price
-                      TitleText(text: "Total Price"),
-                      const SizedBox(
-                        height: 5,
-                      ),
-                      Text(
-                        ("RM ${priceGet.toStringAsFixed(2)}"),
-                        style: const TextStyle(
-                            fontSize: 18, fontWeight: FontWeight.w500),
-                      ),
-                      const SizedBox(
-                        height: 20,
-                      ),
-
-                      Align(
-                        alignment: Alignment.center,
-                        child: InkWell(
-                          onTap: () {
-                            isFreeService();
-                            // makePayment();
-
-                            saveReservation();
-                          },
-                          child: Container(
-                            alignment: Alignment.center,
-                            decoration: BoxDecoration(
-                              borderRadius:
-                                  BorderRadius.circular(Dimensions.radius30),
-                              color: AppColors.mainColor,
-                            ),
-                            height: 40,
-                            width: 230,
-                            child: BigText(
-                              text: "Confirm & Payment",
-                              color: Colors.white,
-                            ),
-                          ),
-                        ),
-                      )
-                    ],
+    return FutureBuilder(
+        future: getPackageData(),
+        builder: (context, snapshot) {
+          return Scaffold(
+              backgroundColor: AppColors.themeColor,
+              body: Column(
+                children: [
+                  // Header
+                  const CustomHeader(
+                    pageTitle: "Make Reservation",
                   ),
-                ),
-              ),
-            ),
-          ],
-        ));
+
+                  Expanded(
+                    child: Container(
+                      decoration: const BoxDecoration(color: Colors.white),
+                      alignment: Alignment.centerLeft,
+                      height: double
+                          .maxFinite, //MediaQuery.of(context).size.height,
+                      width: double.maxFinite,
+                      margin: const EdgeInsets.symmetric(horizontal: 30),
+                      child: Container(
+                        padding: const EdgeInsets.symmetric(horizontal: 35),
+                        child: Column(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            // Pet Selection
+                            TitleText(text: "Pet Selected:"),
+                            const SizedBox(
+                              height: 5,
+                            ),
+                            Text(
+                              petSelected,
+                              style: const TextStyle(
+                                  fontSize: 18, fontWeight: FontWeight.w500),
+                            ),
+                            const SizedBox(
+                              height: 10,
+                            ),
+
+                            // Selected Service
+                            TitleText(text: "Selected Service:"),
+                            const SizedBox(
+                              height: 5,
+                            ),
+                            widget.packageID.isNotEmpty
+                                ? Column(
+                                    crossAxisAlignment:
+                                        CrossAxisAlignment.start,
+                                    children: packageService
+                                        .map((item) => Text(
+                                              item,
+                                              style: const TextStyle(
+                                                fontSize: 18,
+                                                fontWeight: FontWeight.w500,
+                                              ),
+                                            ))
+                                        .toList(),
+                                  )
+                                : Text(
+                                    serviceSelected,
+                                    style: const TextStyle(
+                                      fontSize: 18,
+                                      fontWeight: FontWeight.w500,
+                                    ),
+                                  ),
+
+                            const SizedBox(
+                              height: 10,
+                            ),
+                            // Date
+                            TitleText(text: "Date Selected:"),
+                            const SizedBox(
+                              height: 5,
+                            ),
+                            Text(
+                              dateSelected,
+                              style: const TextStyle(
+                                  fontSize: 18, fontWeight: FontWeight.w500),
+                            ),
+                            const SizedBox(
+                              height: 10,
+                            ),
+
+                            // Time
+                            roomSelected == ''
+                                ? Column(
+                                    crossAxisAlignment:
+                                        CrossAxisAlignment.start,
+                                    children: [
+                                      TitleText(text: "Time Selected:"),
+                                      const SizedBox(
+                                        height: 5,
+                                      ),
+                                      Text(
+                                        timeSelected,
+                                        style: const TextStyle(
+                                            fontSize: 18,
+                                            fontWeight: FontWeight.w500),
+                                      ),
+                                    ],
+                                  )
+                                : Container(),
+
+                            const SizedBox(
+                              height: 10,
+                            ),
+
+                            // Room Selected
+                            roomSelected != ''
+                                ? Column(
+                                    crossAxisAlignment:
+                                        CrossAxisAlignment.start,
+                                    children: [
+                                      const Text(
+                                        "Room Selected:",
+                                        style: TextStyle(
+                                            fontSize: 20,
+                                            color: AppColors.mainColor),
+                                        textAlign: TextAlign.left,
+                                      ),
+                                      const SizedBox(
+                                        height: 5,
+                                      ),
+                                      Text(
+                                        roomSelected,
+                                        style: const TextStyle(
+                                            color: Colors.black,
+                                            fontSize: 18,
+                                            fontWeight: FontWeight.w500),
+                                      ),
+                                    ],
+                                  )
+                                : Container(),
+
+                            const SizedBox(
+                              height: 10,
+                            ),
+
+                            // Pet Taxi
+                            TitleText(text: "Pet Taxi Required"),
+                            const SizedBox(
+                              height: 5,
+                            ),
+                            Text(
+                              taxiChecked ? "Yes" : "None",
+                              style: const TextStyle(
+                                  fontSize: 18, fontWeight: FontWeight.w500),
+                            ),
+                            const SizedBox(
+                              height: 10,
+                            ),
+
+                            // Addresss
+                            taxiChecked
+                                ? Column(
+                                    crossAxisAlignment:
+                                        CrossAxisAlignment.start,
+                                    children: [
+                                      TitleText(text: "Address"),
+                                      const SizedBox(
+                                        height: 5,
+                                      ),
+                                      Text(
+                                        addressInput,
+                                        style: const TextStyle(
+                                            fontSize: 16,
+                                            fontWeight: FontWeight.w500),
+                                      ),
+                                      const SizedBox(
+                                        height: 10,
+                                      ),
+                                    ],
+                                  )
+                                : Container(),
+
+                            // Total Price
+                            TitleText(text: "Total Price"),
+                            const SizedBox(
+                              height: 5,
+                            ),
+                            Text(
+                              ("RM ${priceGet.toStringAsFixed(2)}"),
+                              style: const TextStyle(
+                                  fontSize: 18, fontWeight: FontWeight.w500),
+                            ),
+                            const SizedBox(
+                              height: 20,
+                            ),
+
+                            Align(
+                              alignment: Alignment.center,
+                              child: InkWell(
+                                onTap: () {
+                                  isFreeService();
+                                  makePayment();
+                                },
+                                child: Container(
+                                  alignment: Alignment.center,
+                                  decoration: BoxDecoration(
+                                    borderRadius: BorderRadius.circular(
+                                        Dimensions.radius30),
+                                    color: AppColors.mainColor,
+                                  ),
+                                  height: 40,
+                                  width: 230,
+                                  child: BigText(
+                                    text: "Confirm & Payment",
+                                    color: Colors.white,
+                                  ),
+                                ),
+                              ),
+                            )
+                          ],
+                        ),
+                      ),
+                    ),
+                  ),
+                ],
+              ));
+        });
   }
 
   void showSuccessfulDialog(BuildContext context) {
@@ -411,7 +444,7 @@ class _OrderConfirmationPageState extends State<OrderConfirmationPage> {
         'package': packageSelected,
         'free_service': freeService,
         'price': priceGet,
-        'payment_id': '',
+        'payment_id': paymentID,
         'status': 'Incoming',
         'stage': 0,
       };
@@ -445,8 +478,8 @@ class _OrderConfirmationPageState extends State<OrderConfirmationPage> {
           }
 
           await profileLoyaltyRef.set(newPoint).then((value) {
-            showSuccessfulDialog(context);
             Navigator.popAndPushNamed(context, '/reservation');
+            showSuccessfulDialog(context);
           });
         }
       }).catchError((error) {
@@ -457,12 +490,13 @@ class _OrderConfirmationPageState extends State<OrderConfirmationPage> {
   }
 
   Future<void> makePayment() async {
+    int priceAmount = (priceGet.toInt() * 100);
     try {
       // Step 1 payment Intent
       // paymentIntent = await createPaymentIntent();
 
       Map<String, dynamic> body = {
-        'amount': '$priceGet',
+        'amount': '$priceAmount',
         'currency': "myr", // Use lowercase currency code
       };
       print("Entered 1");
@@ -478,25 +512,27 @@ class _OrderConfirmationPageState extends State<OrderConfirmationPage> {
       );
 
       paymentIntent = json.decode(response.body);
+      paymentID = paymentIntent!['id'];
+
+      log(jsonEncode(paymentIntent));
+
       print("Entered 2");
       // Step 2 initialize payment sheet
-
-      await Stripe.instance
-          .initPaymentSheet(
+      Stripe stripeInstance = Stripe.instance;
+      PaymentSheetPaymentOption? paymentSheetPaymentOption =
+          await stripeInstance.initPaymentSheet(
         paymentSheetParameters: SetupPaymentSheetParameters(
-          paymentIntentClientSecret: paymentIntent!['ClientSecret'],
+          paymentIntentClientSecret: paymentIntent!['client_secret'],
           style: ThemeMode.light,
           merchantDisplayName: "OhMyPet",
-          googlePay: PaymentSheetGooglePay(
+          googlePay: const PaymentSheetGooglePay(
             merchantCountryCode: "MY",
             currencyCode: "MYR",
           ),
         ),
-      )
-          .then((value) {
-        print("entered 3");
-        displayPaymentSheet();
-      });
+      );
+
+      displayPaymentSheet();
       // After initializing payment sheet, display it to the user
     } catch (e) {
       print(e);
@@ -508,40 +544,21 @@ class _OrderConfirmationPageState extends State<OrderConfirmationPage> {
       print("Display");
       PaymentSheetPaymentOption? result =
           await Stripe.instance.presentPaymentSheet();
-      print(result);
+      log(result.toString());
+
+      saveReservation();
     } catch (e) {
       print(e);
     }
   }
 
-  // createPaymentIntent() async {
-  //   try {
-  //     print("return");
-  //     return json.decode(response.body);
-  //   } catch (error) {
-  //     throw Exception(error);
-  //   }
-  // }
+  Future<void> getPackageData() async {
+    final snapshot = await dbPackageRef.get();
 
-  // Step 2 Initialize payment sheet
-
-  // await Stripe.instance
-  //     .initPaymentSheet(
-  //         paymentSheetParameters: SetupPaymentSheetParameters(
-  //       paymentIntentClientSecret: paymentIntent!['client_secret'],
-  //       style: ThemeMode.light, // white color background
-  //       merchantDisplayName: 'Oh My Pet',
-  //     ))
-  //     .then((value) => {});
-
-  // // Step 3 Display payment sheet
-
-  // try {
-  //   await Stripe.instance.presentPaymentSheet().then((value) => {
-  //         // Success state
-  //         print("Payment success"),
-  //       });
-  // } catch (error) {
-  //   throw Exception(error);
-  // }
+    if (snapshot.exists) {
+      Map packageData = snapshot.value as Map;
+      packageService.add(packageData['grooming']);
+      packageService.add(packageData['boarding']);
+    }
+  }
 }

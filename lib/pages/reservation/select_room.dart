@@ -11,7 +11,12 @@ class SelectRoomPage extends StatefulWidget {
   static const selectCatRoom = '/selectCatRoom';
   String petSize;
   bool dogBoard;
-  SelectRoomPage({super.key, required this.dogBoard, required this.petSize});
+  bool package;
+  SelectRoomPage(
+      {super.key,
+      required this.dogBoard,
+      required this.petSize,
+      required this.package});
 
   @override
   State<SelectRoomPage> createState() => _SelectRoomPageState();
@@ -23,6 +28,12 @@ class _SelectRoomPageState extends State<SelectRoomPage> {
 
   late bool isDog;
   late String petSize = '';
+
+  List<String> packageRoomPrice = [
+    'No Additional Price',
+    'Additional RM 10',
+    'Additional RM 20'
+  ];
 
   List<Map<String, dynamic>> boardingList = [
     {
@@ -184,17 +195,23 @@ class _SelectRoomPageState extends State<SelectRoomPage> {
               const SizedBox(
                 height: 5,
               ),
-              SmallText(
-                text: isDog
-                    ? ((petSize == "Small" || petSize == "Medium")
-                        ? boardingList[1]['small_medium'][index]
-                        : boardingList[1]['large_giant'][index])
-                    : ((petSize == "Small" || petSize == "Medium")
-                        ? boardingList[0]['small_medium'][index]
-                        : boardingList[0]['large_giant'][index]),
-                size: 17,
-                color: Colors.blue.shade600,
-              ),
+              widget.package
+                  ? SmallText(
+                      text: packageRoomPrice[index],
+                      size: 17,
+                      color: Colors.blue.shade600,
+                    )
+                  : SmallText(
+                      text: isDog
+                          ? ((petSize == "Small" || petSize == "Medium")
+                              ? boardingList[1]['small_medium'][index]
+                              : boardingList[1]['large_giant'][index])
+                          : ((petSize == "Small" || petSize == "Medium")
+                              ? boardingList[0]['small_medium'][index]
+                              : boardingList[0]['large_giant'][index]),
+                      size: 17,
+                      color: Colors.blue.shade600,
+                    ),
               const SizedBox(
                 height: 10,
               ),

@@ -15,19 +15,20 @@ import 'package:ohmypet/widgets/title_text.dart';
 
 import 'order_confirmation.dart';
 
-class BoardingReservation extends StatefulWidget {
+class PackageReservation extends StatefulWidget {
   static const dogBoardingReservation = '/dogBoardingReservation';
   static const catBoardingReservation = '/catBoardingReservation';
-  bool dogBoard;
-  BoardingReservation({super.key, required this.dogBoard});
+  String packageID;
+  PackageReservation({super.key, required this.packageID});
 
   @override
-  State<BoardingReservation> createState() => _BoardingReservationState();
+  State<PackageReservation> createState() => _PackageReservationState();
 }
 
-class _BoardingReservationState extends State<BoardingReservation> {
+class _PackageReservationState extends State<PackageReservation> {
   // Create a reference to Firebase database
   late DatabaseReference dbPetRef;
+  late DatabaseReference dbPackageRef;
 
   final TextEditingController _addressController = TextEditingController();
   final CameraPosition _cameraPosition = const CameraPosition(
@@ -38,39 +39,50 @@ class _BoardingReservationState extends State<BoardingReservation> {
 
   late bool isDog; // Define if it's dog or cat
 
+  // store package data
+  late Map packageData;
+  // List<Map> packageList = [];
+
   String roomtype = "";
   late double price = 0;
   double priceCalculated = 0;
+
   // Pet Selection
   List<String> petNames = [];
   List<Map> petList = [];
+
   // Date Picker
   TextEditingController dateInput = TextEditingController();
   final TextEditingController _serviceTypeController = TextEditingController();
+  final TextEditingController _packageNameController = TextEditingController();
+
   // Pet Taxi Checkbox
   bool isChecked = false;
+
   // Room Selection
   String roomSelected = "";
   String selectedName = '';
   String dropdownValue = '';
   String petSize = '';
+
   // Calender pick range date
   String startDate = '';
   String endDate = '';
+
   // Amount of date (used to calculate price)
   int numberOfDays = 1;
+  late int duration = 0; // limitation of duration (Day) for pet boarding
 
   bool _isDisposed = false;
 
   @override
   void initState() {
     dateInput.text = ""; //set the initial value of text field
-    isDog = widget.dogBoard;
-    if (isDog) {
-      _serviceTypeController.text = "Dog Boarding";
-    } else {
-      _serviceTypeController.text = "Cat Boarding";
-    }
+
+    dbPackageRef = FirebaseDatabase.instance
+        .ref()
+        .child('packages')
+        .child(widget.packageID);
 
     // 'Recognize the user' and 'Define the path'
     User? user = FirebaseAuth.instance.currentUser;
@@ -93,47 +105,35 @@ class _BoardingReservationState extends State<BoardingReservation> {
     super.dispose();
   }
 
-  void getAllPet() {
-    dbPetRef.onValue.listen((event) {
-      DataSnapshot snapshot = event.snapshot;
-      if (snapshot.value != null) {
-        // Check if the widget is still mounted and data is not null
-        Map<dynamic, dynamic> petData = snapshot.value as Map<dynamic, dynamic>;
-        // Iterate through the pet data to get pet names
-        petData.forEach((key, value) {
-          if (!_isDisposed) {
-            // Check if the widget is still mounted before updating the state
+  void getAllPet() async {
+    await getPackage();
 
-            petList.add(value);
-            if (isDog) {
-              if (value['type'] == 'Dog') {
-                setState(() {
-                  petNames.add(value['name']);
-                });
-              }
-            } else {
-              if (value['type'] == 'Cat') {
-                setState(() {
-                  petNames.add(value['name']);
-                });
-              }
-            }
+    final snapshot = await dbPetRef.get();
+
+    if (snapshot.exists) {
+      Map petData = snapshot.value as Map;
+
+      petData.forEach((key, value) {
+        if (isDog) {
+          if (value['type'] == 'Dog') {
+            setState(() {
+              petNames.add(value['name']);
+            });
           }
-        });
-        if (petNames.isEmpty) {
-          setState(() {
-            dropdownValue = "";
-          });
+        } else {
+          if (value['type'] == 'Cat') {
+            setState(() {
+              petNames.add(value['name']);
+            });
+          }
         }
-        // print('Pet Names: $petNames'); // Checking purpose
-      } else {
-        // No pets found for the user or widget is disposed
-        print('No pets found for the user or widget is disposed.');
-      }
-    }, onError: (error) {
-      // Error retrieving data from the database
-      print('Error fetching pet data: $error');
-    });
+      });
+    }
+    if (petNames.isEmpty) {
+      setState(() {
+        dropdownValue = "";
+      });
+    }
   }
 
   @override
@@ -197,7 +197,7 @@ class _BoardingReservationState extends State<BoardingReservation> {
                           dropdownValue = newValue!;
                           selectedName = newValue;
                         });
-                        calculatePrice(selectedName);
+                        calculatePrice();
                       },
                       items: petNames
                           .map<DropdownMenuItem<String>>((String value) {
@@ -215,8 +215,38 @@ class _BoardingReservationState extends State<BoardingReservation> {
                       height: 5,
                     ),
 
+                    // Selected Package Name
+                    TitleText(text: "Selected Package:"),
+                    const SizedBox(
+                      height: 5,
+                    ),
+                    Container(
+                      decoration: BoxDecoration(
+                        borderRadius:
+                            BorderRadius.circular(Dimensions.radius15),
+                        border:
+                            Border.all(color: AppColors.mainColor, width: 1.0),
+                      ),
+                      alignment: Alignment.centerLeft,
+                      // padding: EdgeInsets.only(bottom: ),
+                      height: 50,
+                      padding: const EdgeInsets.only(left: 10),
+                      child: TextField(
+                        enabled: false,
+                        textAlign: TextAlign.left,
+                        controller: _packageNameController,
+                        style: const TextStyle(color: AppColors.mainColor),
+                        decoration: const InputDecoration(
+                          border: InputBorder.none,
+                        ),
+                      ),
+                    ),
+                    const SizedBox(
+                      height: 5,
+                    ),
+
                     // Selected Service
-                    TitleText(text: "Selected Service:"),
+                    TitleText(text: "Services Included:"),
                     const SizedBox(
                       height: 5,
                     ),
@@ -246,7 +276,7 @@ class _BoardingReservationState extends State<BoardingReservation> {
                     ),
 
                     // Choose Date
-                    TitleText(text: "Choose Date:"),
+                    TitleText(text: "Choose Date ($duration days given): "),
                     const SizedBox(
                       height: 5,
                     ),
@@ -283,23 +313,32 @@ class _BoardingReservationState extends State<BoardingReservation> {
                                   context,
                                   dismissible: true,
                                   minimumDate: DateTime.now()
-                                      .add(const Duration(days: 1)),
+                                      .add(const Duration(days: 3)),
                                   maximumDate: DateTime.now()
                                       .add(const Duration(days: 30)),
-                                  // startDate: DateTime.now()
-                                  //     .add(const Duration(days: 1)),
                                   onApplyClick: (start, end) {
-                                    setState(() {
-                                      endDate = (end).toString().split(' ')[0];
-                                      startDate =
-                                          (start).toString().split(' ')[0];
-                                      dateInput.text = "$startDate to $endDate";
-                                      numberOfDays =
-                                          (end).difference(start).inDays;
-                                      print(
-                                          "Number of days between start and end: $numberOfDays");
-                                    });
-                                    calculatePrice(selectedName);
+                                    final selectedDuration =
+                                        end.difference(start).inDays;
+                                    if (selectedDuration == (duration)) {
+                                      setState(() {
+                                        endDate = end.toString().split(' ')[0];
+                                        startDate =
+                                            start.toString().split(' ')[0];
+                                        dateInput.text =
+                                            "$startDate to $endDate";
+                                        numberOfDays = selectedDuration;
+                                        print(
+                                            "Number of days between start and end: $numberOfDays");
+                                      });
+                                      calculatePrice();
+                                    } else {
+                                      print(selectedDuration);
+                                      // Show an error message or handle the case where the selected duration is not 3 days
+                                      showMessageDialog(
+                                          context,
+                                          "Invalid Selection",
+                                          "Please select a date range of exactly 3 days.");
+                                    }
                                   },
                                   onCancelClick: () {
                                     setState(() {
@@ -351,7 +390,7 @@ class _BoardingReservationState extends State<BoardingReservation> {
                               child: TextButton(
                                   onPressed: () async {
                                     if (petSize == '') {
-                                      calculatePrice(dropdownValue);
+                                      calculatePrice();
                                     }
                                     roomtype = await Navigator.push(
                                       context,
@@ -360,18 +399,19 @@ class _BoardingReservationState extends State<BoardingReservation> {
                                               ? SelectRoomPage(
                                                   dogBoard: true,
                                                   petSize: petSize,
-                                                  package: false)
+                                                  package: true,
+                                                )
                                               : SelectRoomPage(
                                                   dogBoard: false,
                                                   petSize: petSize,
-                                                  package:
-                                                      false)), // Replace NewPage with the name of new page class
+                                                  package: true,
+                                                )), // Replace NewPage with the name of new page class
                                     );
                                     print(roomtype);
                                     setState(() {
                                       roomSelected = roomtype;
                                     });
-                                    calculatePrice(selectedName);
+                                    calculatePrice();
                                   },
                                   child: TitleText(
                                     text: "View Room",
@@ -395,7 +435,7 @@ class _BoardingReservationState extends State<BoardingReservation> {
                               setState(() {
                                 isChecked = newValue ?? false;
                               });
-                              calculatePrice(selectedName);
+                              calculatePrice();
                             }),
                         Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
@@ -469,7 +509,7 @@ class _BoardingReservationState extends State<BoardingReservation> {
                         : Container(),
 
                     const SizedBox(
-                      height: 10,
+                      height: 20,
                     ),
 
                     // Next Button
@@ -478,7 +518,7 @@ class _BoardingReservationState extends State<BoardingReservation> {
                         // In case that user havent choose any pet, set default to avoid blank
                         if (selectedName == "") {
                           selectedName = dropdownValue;
-                          calculatePrice(dropdownValue);
+                          calculatePrice();
                         }
                         if (dateInput.text.isEmpty ||
                             selectedName == "" ||
@@ -498,7 +538,7 @@ class _BoardingReservationState extends State<BoardingReservation> {
                                         taxi: isChecked,
                                         price: priceCalculated,
                                         address: _addressController.text,
-                                        packageID: '',
+                                        packageID: widget.packageID,
                                         pointRedeem: false,
                                       )));
                         }
@@ -518,7 +558,10 @@ class _BoardingReservationState extends State<BoardingReservation> {
                           color: Colors.white,
                         ),
                       ),
-                    )
+                    ),
+                    const SizedBox(
+                      height: 20,
+                    ),
                   ],
                 ),
               ),
@@ -597,55 +640,44 @@ class _BoardingReservationState extends State<BoardingReservation> {
     }
   }
 
-  void calculatePrice(String newValue) {
-    double price = 0;
-    if (isChecked) {
-      price = 20;
-    } else {
-      price = 0;
+  void calculatePrice() {
+    price = double.parse(packageData['price'].toString());
+    if ((!packageData['free_taxi']) && isChecked) {
+      price = (20 + double.parse(packageData['price'].toString()));
     }
-    dbPetRef.onValue.listen((event) {
-      DataSnapshot snapshot = event.snapshot;
-      if (snapshot.value != null) {
-        // Check if the widget is still mounted and data is not null
-        Map<dynamic, dynamic> petData = snapshot.value as Map<dynamic, dynamic>;
-        // Iterate through the pet data to get pet names
-        petData.forEach((key, value) {
-          if (value['name'] == newValue) {
-            petSize = value['size'];
 
-            if (petSize == "Small" || petSize == "Medium") {
-              if (roomSelected == "D1" || roomSelected == "C1") {
-                price += (50 * numberOfDays);
-              } else if (roomSelected == "D2" || roomSelected == "C2") {
-                price += (60 * numberOfDays);
-              } else if (roomSelected == "D3" || roomSelected == "C3") {
-                price += (70 * numberOfDays);
-              } else {
-                print("Unknown error in price getting.");
-              }
-              print('Total price: $price'); // Checking purpose
-              setState(() {
-                priceCalculated = price;
-              });
-            } else if (petSize == "Large" || petSize == "Giant") {
-              if (roomSelected == "D1" || roomSelected == "C1") {
-                price += (60 * numberOfDays);
-              } else if (roomSelected == "D2" || roomSelected == "C2") {
-                price += (70 * numberOfDays);
-              } else if (roomSelected == "D3" || roomSelected == "C3") {
-                price += (80 * numberOfDays);
-              } else {
-                print("Unknown error in price getting.");
-              }
-              print('Total price: $price'); // Checking purpose
-              setState(() {
-                priceCalculated = price;
-              });
-            }
-          }
-        });
-      }
+    if (roomSelected == "D1" || roomSelected == "C1") {
+      price += 0;
+    } else if (roomSelected == "D2" || roomSelected == "C2") {
+      price += 10;
+    } else if (roomSelected == "D3" || roomSelected == "C3") {
+      price += 20;
+    } else {
+      print("Unknown error in price getting.");
+    }
+    print('Total price: $price'); // Checking purpose
+    setState(() {
+      priceCalculated = price;
     });
+  }
+
+  Future<void> getPackage() async {
+    DataSnapshot snapshot = await dbPackageRef.get();
+
+    if (snapshot.exists) {
+      packageData = snapshot.value as Map;
+      if (packageData.isNotEmpty) {
+        if (packageData['boarding'] == 'Dog Boarding') {
+          isDog = true;
+        } else {
+          isDog = false;
+        }
+        price = double.parse(packageData['price'].toString());
+        duration = int.parse(packageData['duration'].toString());
+        _serviceTypeController.text =
+            "${packageData['grooming']}, ${packageData['boarding']}";
+        _packageNameController.text = "${packageData['title']}";
+      }
+    }
   }
 }

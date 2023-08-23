@@ -137,6 +137,8 @@ class _SignUpScreenState extends State<SignUpScreen> {
 
                           print("Created New Account");
                         }).onError((error, stackTrace) {
+                          // Close the loading dialog
+                          Navigator.pop(context);
                           print("Error ${error.toString()}");
                         });
                       } else {

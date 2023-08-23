@@ -462,7 +462,7 @@ class _GroomReservationPageState extends State<GroomReservationPage> {
                                       taxi: isChecked,
                                       price: priceCalculated,
                                       address: _addressController.text,
-                                      package: '',
+                                      packageID: '',
                                       pointRedeem: isFree,
                                     )));
                       }
