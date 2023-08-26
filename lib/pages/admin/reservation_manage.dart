@@ -2,7 +2,8 @@ import 'dart:async';
 
 import 'package:firebase_database/firebase_database.dart';
 import 'package:flutter/material.dart';
-import 'package:ohmypet/pages/admin/reservation_action.dart';
+import 'package:ohmypet/pages/admin/reservation_action%20copy.dart';
+import 'package:ohmypet/pages/admin/task_accept.dart';
 import 'package:ohmypet/widgets/admin_header.dart';
 
 import '../../utils/colors.dart';
@@ -117,6 +118,7 @@ class _ReservationManagementState extends State<ReservationManagement> {
             setState(() {
               showCurrent = false;
               showAll = true;
+              filterReservations("");
             });
           }
         },
@@ -170,10 +172,11 @@ class _ReservationManagementState extends State<ReservationManagement> {
                 ),
                 showAll
                     ? Container(
-                        margin: EdgeInsets.symmetric(horizontal: 20),
+                        margin: const EdgeInsets.symmetric(horizontal: 20),
                         child: TextField(
                           controller: idController,
-                          decoration: InputDecoration(labelText: 'Enter ID'),
+                          decoration:
+                              const InputDecoration(labelText: 'Enter ID'),
                           onChanged: (value) {
                             filterReservations(value);
                           },
@@ -194,6 +197,8 @@ class _ReservationManagementState extends State<ReservationManagement> {
                               service: filteredReservations[index]["service"],
                               date: filteredReservations[index]["date"],
                               time: filteredReservations[index]["time"],
+                              taskAccepted: filteredReservations[index]
+                                  ["task_accepted"],
                             );
                           },
                         ),
@@ -214,6 +219,8 @@ class _ReservationManagementState extends State<ReservationManagement> {
                               service: ongoingReservations[index]["service"],
                               date: ongoingReservations[index]["date"],
                               time: ongoingReservations[index]["time"],
+                              taskAccepted: ongoingReservations[index]
+                                  ["task_accepted"],
                             );
                           },
                         ),
@@ -238,6 +245,7 @@ class OrderItemWidget extends StatelessWidget {
   final String service;
   final String date;
   final String time;
+  final bool taskAccepted;
 
   const OrderItemWidget({
     super.key,
@@ -246,6 +254,7 @@ class OrderItemWidget extends StatelessWidget {
     required this.service,
     required this.date,
     required this.time,
+    required this.taskAccepted,
   });
 
   String textColor() {
@@ -327,13 +336,23 @@ class OrderItemWidget extends StatelessWidget {
         ),
       ),
       onTap: () {
-        Navigator.push(
-            context,
-            MaterialPageRoute(
-                builder: (context) => ReservationActionPage(
-                      reservationID: id,
-                      role: role,
-                    )));
+        if (taskAccepted) {
+          Navigator.push(
+              context,
+              MaterialPageRoute(
+                  builder: (context) => TaskAccept(
+                        reservationID: id,
+                        role: role,
+                      )));
+        } else {
+          Navigator.push(
+              context,
+              MaterialPageRoute(
+                  builder: (context) => ReservationActionPage(
+                        reservationID: id,
+                        role: role,
+                      )));
+        }
       },
     );
   }

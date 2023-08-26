@@ -153,7 +153,7 @@ class _LoyaltyPointPageState extends State<LoyaltyPointPage> {
                       right: 20,
                       top: 30,
                     ),
-                    padding: EdgeInsets.only(top: 3),
+                    padding: const EdgeInsets.only(top: 3),
                     child: BigText(
                       text: "Redemption History >",
                       color: Colors.black54,

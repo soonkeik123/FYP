@@ -166,7 +166,7 @@ class _EditProfilePageState extends State<EditProfilePage> {
                       child: Column(
                         children: [
                           Container(
-                            margin: EdgeInsets.only(top: 20),
+                            margin: const EdgeInsets.only(top: 20),
                             width: 130,
                             height: 130,
                             decoration: BoxDecoration(
@@ -185,7 +185,7 @@ class _EditProfilePageState extends State<EditProfilePage> {
                                       ),
                                     ),
                                   )
-                                : Icon(Icons.person_add_alt_1_outlined,
+                                : const Icon(Icons.person_add_alt_1_outlined,
                                     size: 40, color: Colors.grey),
                           ),
                           const SizedBox(

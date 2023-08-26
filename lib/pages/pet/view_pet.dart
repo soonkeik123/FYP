@@ -213,11 +213,11 @@ class _ViewPetPageState extends State<ViewPetPage> {
                                     ),
                                   ),
                                 ),
-                                Container(
+                                SizedBox(
                                   width: 160,
                                   child: Text(
                                     petBreed,
-                                    style: TextStyle(
+                                    style: const TextStyle(
                                         fontFamily: 'Roboto',
                                         fontSize: 20,
                                         fontWeight: FontWeight.w300),

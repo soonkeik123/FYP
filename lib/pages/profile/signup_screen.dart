@@ -119,7 +119,7 @@ class _SignUpScreenState extends State<SignUpScreen> {
                             profileRef.set(profileData).then((_) {
                               print('Data saved successfully!');
                               // Simulate loading for 2 seconds
-                              Future.delayed(Duration(seconds: 2), () {
+                              Future.delayed(const Duration(seconds: 2), () {
                                 // Close the loading dialog
                                 Navigator.pop(context);
                                 Navigator.pushReplacement(

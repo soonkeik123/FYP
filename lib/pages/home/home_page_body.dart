@@ -487,7 +487,7 @@ class _HomePageBodyState extends State<HomePageBody> {
                 const SizedBox(height: 8),
                 Text(
                   "Services: ${packages[index]['grooming']}, ${packages[index]['boarding']}",
-                  style: TextStyle(fontSize: 16, fontWeight: FontWeight.w500),
+                  style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w500),
                 ),
                 const SizedBox(height: 8),
                 Text(
@@ -517,7 +517,7 @@ class _HomePageBodyState extends State<HomePageBody> {
                     Navigator.pop(context); // Close the dialog
                   },
                   style: ElevatedButton.styleFrom(
-                    primary: Colors
+                    backgroundColor: Colors
                         .grey.shade500, // Set the background color to grey
                   ),
                   child: const Text('Close'),

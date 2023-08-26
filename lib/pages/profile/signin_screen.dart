@@ -98,7 +98,7 @@ class _SignInScreenState extends State<SignInScreen> {
                       if (snapshot.exists || staffSnapshot.exists) {
                         if (snapshot.value.toString() == 'user') {
                           // Simulate loading for 2 seconds
-                          Future.delayed(Duration(seconds: 2), () {
+                          Future.delayed(const Duration(seconds: 2), () {
                             // Close the loading dialog
                             Navigator.pop(context);
                             Navigator.pushReplacementNamed(context, '/home');
@@ -106,13 +106,13 @@ class _SignInScreenState extends State<SignInScreen> {
                           });
                         }
                         if (staffSnapshot.value.toString() == 'staff') {
-                          Future.delayed(Duration(seconds: 2), () {
+                          Future.delayed(const Duration(seconds: 2), () {
                             // Close the loading dialog
                             Navigator.pop(context);
                             Navigator.pushReplacement(
                               context,
                               MaterialPageRoute(
-                                  builder: (context) => ReservationManagement(
+                                  builder: (context) => const ReservationManagement(
                                         role: 'staff',
                                       )),
                             );
@@ -120,13 +120,13 @@ class _SignInScreenState extends State<SignInScreen> {
                           });
                         }
                         if (staffSnapshot.value.toString() == 'admin') {
-                          Future.delayed(Duration(seconds: 2), () {
+                          Future.delayed(const Duration(seconds: 2), () {
                             // Close the loading dialog
                             Navigator.pop(context);
                             Navigator.pushReplacement(
                               context,
                               MaterialPageRoute(
-                                  builder: (context) => ReservationManagement(
+                                  builder: (context) => const ReservationManagement(
                                         role: 'admin',
                                       )),
                             );

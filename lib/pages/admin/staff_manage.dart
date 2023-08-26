@@ -36,6 +36,9 @@ class _StaffManagementState extends State<StaffManagement> {
   TextEditingController emailController = TextEditingController();
   final TextEditingController _passwordController = TextEditingController();
 
+  final emailRegex = RegExp(r'^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$');
+  final phoneRegex = RegExp(r'^60\d{9,10}$');
+
   @override
   void initState() {
     adminRef = FirebaseDatabase.instance.ref().child('staffs');
@@ -185,42 +188,60 @@ class _StaffManagementState extends State<StaffManagement> {
                         isAllFilled = false;
                       }
                       if (isAllFilled) {
-                        FirebaseAuth.instance
-                            .createUserWithEmailAndPassword(
-                                email: emailController.text,
-                                password: _passwordController.text)
-                            .then((value) async {
-                          User? user = FirebaseAuth.instance.currentUser;
-                          if (user != null) {
-                            String uid = user.uid;
-                            // Now you have the UID of the current user
+                        if (emailRegex.hasMatch(emailController.text)) {
+                          if (phoneRegex.hasMatch(phoneController.text)) {
+                            if (_passwordController.text.length >= 6) {
+                              FirebaseAuth.instance
+                                  .createUserWithEmailAndPassword(
+                                      email: emailController.text,
+                                      password: _passwordController.text)
+                                  .then((value) async {
+                                User? user = FirebaseAuth.instance.currentUser;
+                                if (user != null) {
+                                  String uid = user.uid;
+                                  // Now you have the UID of the current user
 
-                            DatabaseReference profileRef = FirebaseDatabase
-                                .instance
-                                .ref()
-                                .child('staffs')
-                                .child(uid)
-                                .child('Profile');
+                                  DatabaseReference profileRef =
+                                      FirebaseDatabase.instance
+                                          .ref()
+                                          .child('staffs')
+                                          .child(uid)
+                                          .child('Profile');
 
-                            Map<String, dynamic> profileData = {
-                              'full_name': nameController.text,
-                              'email': emailController.text,
-                              'phone': '6${phoneController.text}',
-                              'role': newRole,
-                            };
+                                  Map<String, dynamic> profileData = {
+                                    'full_name': nameController.text,
+                                    'email': emailController.text,
+                                    'phone': phoneController.text,
+                                    'role': newRole,
+                                  };
 
-                            profileRef.set(profileData).then((_) {
-                              // Clear data
-                              Clear();
-                              print('Data saved successfully!');
-                              showMessageDialog(context, "ADD SUCCESSFUL",
-                                  "You have added a new member successfully!");
-                            }).catchError((error) {
-                              print('Error saving data: $error');
-                            });
+                                  profileRef.set(profileData).then((_) {
+                                    // Clear data
+                                    Clear();
+                                    print('Data saved successfully!');
+                                    showMessageDialog(context, "ADD SUCCESSFUL",
+                                        "You have added a new member successfully!");
+                                  }).catchError((error) {
+                                    print('Error saving data: $error');
+                                  });
+                                }
+                                Navigator.pop(context); // Close the top sheet
+                              });
+                            } else {
+                              showMessageDialog(context, "Register Failed",
+                                  "The password must have at least 6 digits.");
+                            }
+                          } else {
+                            showMessageDialog(context, "Register Failed",
+                                "Please make sure that phone number is start of '60' and only contains 11 to 12 digits. Example: 60123456789");
                           }
-                          Navigator.pop(context); // Close the top sheet
-                        });
+                        } else {
+                          showMessageDialog(context, "Register Failed",
+                              "Please make sure that you're using the correct Email format.");
+                        }
+                      } else {
+                        showMessageDialog(context, "Add Failed",
+                            "Please make sure that you have filled up all the data field.");
                       }
                     },
                     child: const Text('Save'),
@@ -333,30 +354,43 @@ class _StaffManagementState extends State<StaffManagement> {
                         isAllFilled = false;
                       }
                       if (isAllFilled) {
-                        bool name = (staffName != editNameController.text);
-                        bool phone = (staffPhone != editPhoneController.text);
-                        bool email = (staffEmail != editEmailController.text);
+                        if (emailRegex.hasMatch(emailController.text)) {
+                          if (phoneRegex.hasMatch(phoneController.text)) {
+                            bool name = (staffName != editNameController.text);
+                            bool phone =
+                                (staffPhone != editPhoneController.text);
+                            bool email =
+                                (staffEmail != editEmailController.text);
 
-                        DatabaseReference profileRef = FirebaseDatabase.instance
-                            .ref('staffs/$uid')
-                            .child('Profile');
+                            DatabaseReference profileRef = FirebaseDatabase
+                                .instance
+                                .ref('staffs/$uid')
+                                .child('Profile');
 
-                        Map<String, dynamic> staffData = {
-                          if (name) 'full_name': editNameController.text,
-                          if (email) 'email': editEmailController.text,
-                          if (phone) 'phone': editPhoneController.text,
-                        };
+                            Map<String, dynamic> staffData = {
+                              if (name) 'full_name': editNameController.text,
+                              if (email) 'email': editEmailController.text,
+                              if (phone) 'phone': editPhoneController.text,
+                            };
 
-                        profileRef.update(staffData).then((_) {
-                          showMessageDialog(context, "EDIT SUCCESSFUL",
-                              "You have edited this staff's information");
-                          print('Data saved successfully!');
-                          Navigator.pop(context);
-                        }).catchError((error) {
-                          print('Error saving data: $error');
-                        });
+                            profileRef.update(staffData).then((_) {
+                              showMessageDialog(context, "EDIT SUCCESSFUL",
+                                  "You have edited this staff's information");
+                              print('Data saved successfully!');
+                              Navigator.pop(context);
+                            }).catchError((error) {
+                              print('Error saving data: $error');
+                            });
 
-                        Navigator.pop(context); // Close the top sheet
+                            Navigator.pop(context); // Close the top sheet
+                          } else {
+                            showMessageDialog(context, "Edit Failed",
+                                "Please make sure that phone number is start of '60' and only contains 11 to 12 digits. Example: 60123456789");
+                          }
+                        } else {
+                          showMessageDialog(context, "Edit Failed",
+                              "Please make sure that you're using the correct Email format.");
+                        }
                       } else {
                         showMessageDialog(
                             context,

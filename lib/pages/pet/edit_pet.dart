@@ -363,7 +363,7 @@ class _EditPetProfileState extends State<EditPetProfile> {
         String gender = petData['gender'];
         String breed = petData['breed'];
         String size = petData['size'];
-        String birthday = petData['birthday'];
+        String birthday = petData['birthday'] ?? "";
         String type = petData['type'];
         String image = petData['imageUrl'];
 
@@ -585,7 +585,7 @@ class _EditPetProfileState extends State<EditPetProfile> {
                                     ),
                                   ),
                                 )
-                              : Icon(Icons.add_photo_alternate,
+                              : const Icon(Icons.add_photo_alternate,
                                   size: 40, color: Colors.grey),
                         ),
                         const SizedBox(
@@ -1132,7 +1132,6 @@ class _EditPetProfileState extends State<EditPetProfile> {
 
                             bool name = _nameController.text != petName;
                             bool gender = selectedGender != petGender;
-                            bool type = dropdownValue != petType;
                             bool breed = petBreedController.text != petBreed;
                             bool size = selectedSize != petSize;
                             bool birthday = dateInput.text != petBirthday;
@@ -1141,7 +1140,6 @@ class _EditPetProfileState extends State<EditPetProfile> {
                             Map<String, String> updatedData = {
                               if (name) 'name': _nameController.text,
                               if (gender) 'gender': selectedGender,
-                              if (type) 'type': dropdownValue,
                               if (breed) 'breed': petBreedController.text,
                               if (size) 'size': selectedSize,
                               if (birthday) 'birthday': dateInput.text,
@@ -1236,7 +1234,7 @@ class _EditPetProfileState extends State<EditPetProfile> {
             fontSize: 20.0,
             fontWeight: FontWeight.bold,
           ),
-          content: SizedBox(
+          content: const SizedBox(
             height: 50,
             child: Text('Are you sure you want to remove your pet ?'),
           ),

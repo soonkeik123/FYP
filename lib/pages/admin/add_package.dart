@@ -36,6 +36,7 @@ class _AddPackagePageState extends State<AddPackagePage> {
 
   String service1 = '';
   String service2 = '';
+  int duration = 1;
 
   // Toggle button for Free transportation
   bool isFree = false;
@@ -266,21 +267,21 @@ class _AddPackagePageState extends State<AddPackagePage> {
                             }).toList(),
                             decoration: InputDecoration(
                               border: OutlineInputBorder(
-                                borderSide: BorderSide(
+                                borderSide: const BorderSide(
                                   color: AppColors.mainColor,
                                   width: 1.0,
                                 ),
                                 borderRadius: BorderRadius.circular(10.0),
                               ),
                               enabledBorder: OutlineInputBorder(
-                                borderSide: BorderSide(
+                                borderSide: const BorderSide(
                                   color: AppColors.mainColor,
                                   width: 1.0,
                                 ),
                                 borderRadius: BorderRadius.circular(10.0),
                               ),
                               focusedBorder: OutlineInputBorder(
-                                borderSide: BorderSide(
+                                borderSide: const BorderSide(
                                   color: Colors.green,
                                   width: 1.0,
                                 ),
@@ -308,21 +309,75 @@ class _AddPackagePageState extends State<AddPackagePage> {
                             }).toList(),
                             decoration: InputDecoration(
                               border: OutlineInputBorder(
-                                borderSide: BorderSide(
+                                borderSide: const BorderSide(
                                   color: AppColors.mainColor,
                                   width: 1.0,
                                 ),
                                 borderRadius: BorderRadius.circular(10.0),
                               ),
                               enabledBorder: OutlineInputBorder(
-                                borderSide: BorderSide(
+                                borderSide: const BorderSide(
                                   color: AppColors.mainColor,
                                   width: 1.0,
                                 ),
                                 borderRadius: BorderRadius.circular(10.0),
                               ),
                               focusedBorder: OutlineInputBorder(
-                                borderSide: BorderSide(
+                                borderSide: const BorderSide(
+                                  color: Colors.green,
+                                  width: 1.0,
+                                ),
+                                borderRadius: BorderRadius.circular(10.0),
+                              ),
+                            ),
+                          ),
+                          const SizedBox(
+                            height: 15,
+                          ),
+
+                          // Duration for boarding
+                          const Text(
+                            "Duration for Boarding",
+                            style: TextStyle(
+                                color: AppColors.mainColor,
+                                fontSize: 20,
+                                fontWeight: FontWeight.w300),
+                          ),
+                          const SizedBox(
+                            height: 10,
+                          ),
+                          // dropdown field for duration
+                          DropdownButtonFormField<int>(
+                            value: duration,
+                            onChanged: (newValue) {
+                              setState(() {
+                                duration = newValue!;
+                              });
+                            },
+                            items: List.generate(15, (index) => index + 1)
+                                .map((number) {
+                              return DropdownMenuItem<int>(
+                                value: number,
+                                child: Text(number.toString()),
+                              );
+                            }).toList(),
+                            decoration: InputDecoration(
+                              border: OutlineInputBorder(
+                                borderSide: const BorderSide(
+                                  color: AppColors.mainColor,
+                                  width: 1.0,
+                                ),
+                                borderRadius: BorderRadius.circular(10.0),
+                              ),
+                              enabledBorder: OutlineInputBorder(
+                                borderSide: const BorderSide(
+                                  color: AppColors.mainColor,
+                                  width: 1.0,
+                                ),
+                                borderRadius: BorderRadius.circular(10.0),
+                              ),
+                              focusedBorder: OutlineInputBorder(
+                                borderSide: const BorderSide(
                                   color: Colors.green,
                                   width: 1.0,
                                 ),
@@ -392,6 +447,7 @@ class _AddPackagePageState extends State<AddPackagePage> {
                                         'grooming': service1,
                                         'boarding': service2,
                                         'free_taxi': isFree,
+                                        'duration': duration,
                                       };
 
                                       // Use push() to generate a unique key for the new data
@@ -615,7 +671,7 @@ class _AddPackagePageState extends State<AddPackagePage> {
               child: Container(
                 width: 30.0,
                 height: 30.0,
-                decoration: BoxDecoration(
+                decoration: const BoxDecoration(
                   shape: BoxShape.circle,
                   color: Colors.white,
                 ),

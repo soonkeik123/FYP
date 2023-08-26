@@ -225,7 +225,7 @@ class _PackageManagementState extends State<PackageManagement> {
                 const SizedBox(height: 8),
                 Text(
                   "Services: ${gridData[index]['grooming']}, ${gridData[index]['boarding']}",
-                  style: TextStyle(fontSize: 16),
+                  style: const TextStyle(fontSize: 16),
                 ),
                 const SizedBox(height: 16),
                 Row(

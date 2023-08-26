@@ -476,7 +476,7 @@ class _AddPetProfileState extends State<AddPetProfile> {
                                     ),
                                   ),
                                 )
-                              : Icon(Icons.add_photo_alternate,
+                              : const Icon(Icons.add_photo_alternate,
                                   size: 40, color: Colors.grey),
                         ),
                         const SizedBox(
@@ -1005,8 +1005,7 @@ class _AddPetProfileState extends State<AddPetProfile> {
                           selectedGender.isEmpty ||
                           selectedPetType.isEmpty ||
                           petBreedController.text.isEmpty ||
-                          selectedSize.isEmpty ||
-                          dateInput.text.isEmpty) {
+                          selectedSize.isEmpty) {
                         isAllFilled = false;
                       }
 

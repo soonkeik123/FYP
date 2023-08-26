@@ -447,6 +447,7 @@ class _OrderConfirmationPageState extends State<OrderConfirmationPage> {
         'payment_id': paymentID,
         'status': 'Incoming',
         'stage': 0,
+        'task_accepted': false,
       };
 
       // Create a new unique key for reservation

@@ -58,7 +58,7 @@ class _TrackProgressPageState extends State<TrackProgressPage>
   bool changePic = true;
 
   CameraPosition? _cameraPosition;
-  Completer<GoogleMapController> _googleMapController = Completer();
+  final Completer<GoogleMapController> _googleMapController = Completer();
   LatLng? destinationLatLng;
 
   @override
@@ -88,7 +88,7 @@ class _TrackProgressPageState extends State<TrackProgressPage>
   }
 
   _init() {
-    _cameraPosition = CameraPosition(
+    _cameraPosition = const CameraPosition(
         target: LatLng(1.5338304733168895, 103.68183000980095), zoom: 15);
   }
 
@@ -362,8 +362,8 @@ class _TrackProgressPageState extends State<TrackProgressPage>
                                   markers: destinationLatLng != null
                                       ? {
                                           Marker(
-                                            markerId:
-                                                MarkerId('destinationMarker'),
+                                            markerId: const MarkerId(
+                                                'destinationMarker'),
                                             position: destinationLatLng!,
                                           ),
                                         }
@@ -461,19 +461,25 @@ class _TrackProgressPageState extends State<TrackProgressPage>
                                 const SizedBox(
                                   height: 30,
                                 ),
-                                Container(
-                                  height: 40,
-                                  width: 200,
-                                  alignment: Alignment.center,
-                                  decoration: BoxDecoration(
-                                    color: AppColors.mainColor.withOpacity(0.8),
-                                    borderRadius: BorderRadius.circular(30),
-                                  ),
-                                  child: const Text(
-                                    "Send Message To Us",
-                                    style: TextStyle(
-                                        fontWeight: FontWeight.w500,
-                                        color: Colors.white),
+                                InkWell(
+                                  onTap: () async {
+                                    SendMessage();
+                                  },
+                                  child: Container(
+                                    height: 40,
+                                    width: 200,
+                                    alignment: Alignment.center,
+                                    decoration: BoxDecoration(
+                                      color:
+                                          AppColors.mainColor.withOpacity(0.8),
+                                      borderRadius: BorderRadius.circular(30),
+                                    ),
+                                    child: const Text(
+                                      "Send Message To Us",
+                                      style: TextStyle(
+                                          fontWeight: FontWeight.w500,
+                                          color: Colors.white),
+                                    ),
                                   ),
                                 )
                               ],
@@ -536,20 +542,23 @@ class _TrackProgressPageState extends State<TrackProgressPage>
                         ],
                       ),
                     ),
-                    Container(
-                      height: 40,
-                      width: 170,
-                      alignment: Alignment.center,
-                      decoration: BoxDecoration(
-                        color: AppColors.mainColor.withOpacity(0.8),
-                        borderRadius: BorderRadius.circular(30),
-                      ),
-                      child: const Text(
-                        "Send Message",
-                        style: TextStyle(
-                            fontWeight: FontWeight.w500,
-                            color: Colors.white,
-                            fontSize: 15),
+                    InkWell(
+                      onTap: () => SendMessage(),
+                      child: Container(
+                        height: 40,
+                        width: 170,
+                        alignment: Alignment.center,
+                        decoration: BoxDecoration(
+                          color: AppColors.mainColor.withOpacity(0.8),
+                          borderRadius: BorderRadius.circular(30),
+                        ),
+                        child: const Text(
+                          "Send Message",
+                          style: TextStyle(
+                              fontWeight: FontWeight.w500,
+                              color: Colors.white,
+                              fontSize: 15),
+                        ),
                       ),
                     )
                   ],
@@ -619,20 +628,23 @@ class _TrackProgressPageState extends State<TrackProgressPage>
                         ],
                       ),
                     ),
-                    Container(
-                      height: 40,
-                      width: 170,
-                      alignment: Alignment.center,
-                      decoration: BoxDecoration(
-                        color: AppColors.mainColor.withOpacity(0.8),
-                        borderRadius: BorderRadius.circular(30),
-                      ),
-                      child: const Text(
-                        "Send Message",
-                        style: TextStyle(
-                            fontWeight: FontWeight.w500,
-                            color: Colors.white,
-                            fontSize: 15),
+                    InkWell(
+                      onTap: () => SendMessage(),
+                      child: Container(
+                        height: 40,
+                        width: 170,
+                        alignment: Alignment.center,
+                        decoration: BoxDecoration(
+                          color: AppColors.mainColor.withOpacity(0.8),
+                          borderRadius: BorderRadius.circular(30),
+                        ),
+                        child: const Text(
+                          "Send Message",
+                          style: TextStyle(
+                              fontWeight: FontWeight.w500,
+                              color: Colors.white,
+                              fontSize: 15),
+                        ),
                       ),
                     )
                   ],
@@ -690,20 +702,23 @@ class _TrackProgressPageState extends State<TrackProgressPage>
                         ],
                       ),
                     ),
-                    Container(
-                      height: 40,
-                      width: 170,
-                      alignment: Alignment.center,
-                      decoration: BoxDecoration(
-                        color: AppColors.mainColor.withOpacity(0.8),
-                        borderRadius: BorderRadius.circular(30),
-                      ),
-                      child: const Text(
-                        "Send Message",
-                        style: TextStyle(
-                            fontWeight: FontWeight.w500,
-                            color: Colors.white,
-                            fontSize: 15),
+                    InkWell(
+                      onTap: () => SendMessage,
+                      child: Container(
+                        height: 40,
+                        width: 170,
+                        alignment: Alignment.center,
+                        decoration: BoxDecoration(
+                          color: AppColors.mainColor.withOpacity(0.8),
+                          borderRadius: BorderRadius.circular(30),
+                        ),
+                        child: const Text(
+                          "Send Message",
+                          style: TextStyle(
+                              fontWeight: FontWeight.w500,
+                              color: Colors.white,
+                              fontSize: 15),
+                        ),
                       ),
                     )
                   ],
@@ -760,20 +775,23 @@ class _TrackProgressPageState extends State<TrackProgressPage>
                         ],
                       ),
                     ),
-                    Container(
-                      height: 40,
-                      width: 170,
-                      alignment: Alignment.center,
-                      decoration: BoxDecoration(
-                        color: AppColors.mainColor.withOpacity(0.8),
-                        borderRadius: BorderRadius.circular(30),
-                      ),
-                      child: const Text(
-                        "Send Message",
-                        style: TextStyle(
-                            fontWeight: FontWeight.w500,
-                            color: Colors.white,
-                            fontSize: 15),
+                    InkWell(
+                      onTap: () => SendMessage(),
+                      child: Container(
+                        height: 40,
+                        width: 170,
+                        alignment: Alignment.center,
+                        decoration: BoxDecoration(
+                          color: AppColors.mainColor.withOpacity(0.8),
+                          borderRadius: BorderRadius.circular(30),
+                        ),
+                        child: const Text(
+                          "Send Message",
+                          style: TextStyle(
+                              fontWeight: FontWeight.w500,
+                              color: Colors.white,
+                              fontSize: 15),
+                        ),
                       ),
                     )
                   ],
@@ -879,19 +897,23 @@ class _TrackProgressPageState extends State<TrackProgressPage>
                                 const SizedBox(
                                   height: 50,
                                 ),
-                                Container(
-                                  height: 40,
-                                  width: 200,
-                                  alignment: Alignment.center,
-                                  decoration: BoxDecoration(
-                                    color: AppColors.mainColor.withOpacity(0.8),
-                                    borderRadius: BorderRadius.circular(30),
-                                  ),
-                                  child: const Text(
-                                    "Send Message To Us",
-                                    style: TextStyle(
-                                        fontWeight: FontWeight.w500,
-                                        color: Colors.white),
+                                InkWell(
+                                  onTap: () => SendMessage(),
+                                  child: Container(
+                                    height: 40,
+                                    width: 200,
+                                    alignment: Alignment.center,
+                                    decoration: BoxDecoration(
+                                      color:
+                                          AppColors.mainColor.withOpacity(0.8),
+                                      borderRadius: BorderRadius.circular(30),
+                                    ),
+                                    child: const Text(
+                                      "Send Message To Us",
+                                      style: TextStyle(
+                                          fontWeight: FontWeight.w500,
+                                          color: Colors.white),
+                                    ),
                                   ),
                                 )
                               ],
@@ -1083,11 +1105,11 @@ class _TrackProgressPageState extends State<TrackProgressPage>
     return Container(
       width: 40,
       height: 40,
-      padding: EdgeInsets.all(2),
+      padding: const EdgeInsets.all(2),
       decoration: BoxDecoration(
           color: Colors.white,
           borderRadius: BorderRadius.circular(100),
-          boxShadow: [
+          boxShadow: const [
             BoxShadow(
                 color: Colors.grey,
                 offset: Offset(0, 3),
@@ -1096,6 +1118,22 @@ class _TrackProgressPageState extends State<TrackProgressPage>
           ]),
       child: ClipOval(child: Image.asset("assets/images/app-icon.png")),
     );
+  }
+
+  Future<void> SendMessage() async {
+    String phoneNumber = "+60102211208";
+
+    final Uri uri = Uri.https(
+      'api.whatsapp.com',
+      '/send',
+      {'phone': phoneNumber},
+    );
+    // Use the phone number with country code
+    if (await canLaunch(uri.toString())) {
+      await launch(uri.toString());
+    } else {
+      throw 'Could not launch $uri';
+    }
   }
 }
 
@@ -1268,7 +1306,7 @@ class _ReservationDetailState extends State<ReservationDetail> {
                             width: 5,
                           ),
                           TitleText(
-                            text: paymentId,
+                            text: paymentId.substring(paymentId.length - 10),
                             size: 16,
                           ),
                         ],
@@ -1375,9 +1413,16 @@ class _ReservationDetailState extends State<ReservationDetail> {
                           const SizedBox(
                             width: 5,
                           ),
-                          TitleText(
-                            text: services,
-                            size: 16,
+                          Container(
+                            width: 155,
+                            child: Text(
+                              services,
+                              maxLines: 2,
+                              style: const TextStyle(
+                                  fontSize: 16,
+                                  fontWeight: FontWeight.w400,
+                                  color: AppColors.mainColor),
+                            ),
                           ),
                         ],
                       ),
@@ -1650,10 +1695,16 @@ class _ReservationDetailState extends State<ReservationDetail> {
                         ),
                       ),
                     ),
-                    InfoText(
-                      text: selectedPet['breed'],
-                      normal: false,
-                      size: 18,
+                    SizedBox(
+                      width: 150,
+                      child: Text(
+                        selectedPet['breed'],
+                        maxLines: 1,
+                        style: const TextStyle(
+                            fontSize: 18,
+                            fontWeight: FontWeight.w300,
+                            overflow: TextOverflow.ellipsis),
+                      ),
                     ),
                   ],
                 ),

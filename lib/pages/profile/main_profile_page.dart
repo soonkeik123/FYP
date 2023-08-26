@@ -100,14 +100,14 @@ class _MainProfilePageState extends State<MainProfilePage> {
                         // Profile picture
                         if (imageUrl.isEmpty)
                           Container(
-                            margin: EdgeInsets.only(left: 7),
+                            margin: const EdgeInsets.only(left: 7),
                             height: 130,
                             width: 130,
                             decoration: BoxDecoration(
                               shape: BoxShape.circle,
                               color: Colors.grey[300],
                             ),
-                            child: Center(
+                            child: const Center(
                               child: Icon(Icons.person_add_alt_1_outlined,
                                   size: 40, color: Colors.grey),
                             ),
@@ -264,33 +264,7 @@ class _MainProfilePageState extends State<MainProfilePage> {
                       ),
                     ),
                   ),
-                  Container(
-                    margin: const EdgeInsets.symmetric(
-                      horizontal: 20,
-                    ),
-                    padding: const EdgeInsets.only(bottom: 10, top: 10),
-                    decoration: const BoxDecoration(
-                      border: Border(
-                          bottom: BorderSide(width: 1, color: Colors.black26)),
-                    ),
-                    child: const Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: [
-                        Text(
-                          "FAQ",
-                          style: TextStyle(
-                              color: AppColors.mainColor,
-                              fontSize: 17,
-                              fontWeight: FontWeight.w400),
-                        ),
-                        Icon(
-                          Icons.arrow_forward_ios,
-                          size: 20,
-                          color: AppColors.mainColor,
-                        ),
-                      ],
-                    ),
-                  ),
+
                   InkWell(
                     onTap: () async {
                       const pdfUrl =
