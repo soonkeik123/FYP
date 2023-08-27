@@ -1,16 +1,8 @@
 # ohmypet
 
-This repository contains the source code and documentation for my Final Year Project (FYP) in Bachelor of Software Engineering. The project aims to improve pet service management workflow, enabling reservation creation, viewing, and management, offering packages, and loyalty points redemption
+This repository contains the source code for my Final Year Project (FYP) in Bachelor of Software Engineering. The project aims to improve pet service management workflow, enabling reservation creation, viewing, and management, offering packages, and loyalty points rewards, it also included staff management. 
 
-## Getting Started
+# After FYP ended
+This system is a mobile application, the structure of this flutter project is not mature, because it was the first flutter project I made within a month. Due to the time constrain, I have left this project with many spaces of improvement. It is not my end, but my starting point. Feel free to view if you're looking for a reference.  
 
-This project is a starting point for a Flutter application.
 
-A few resources to get you started if this is your first Flutter project:
-
-- [Lab: Write your first Flutter app](https://docs.flutter.dev/get-started/codelab)
-- [Cookbook: Useful Flutter samples](https://docs.flutter.dev/cookbook)
-
-For help getting started with Flutter development, view the
-[online documentation](https://docs.flutter.dev/), which offers tutorials,
-samples, guidance on mobile development, and a full API reference.
