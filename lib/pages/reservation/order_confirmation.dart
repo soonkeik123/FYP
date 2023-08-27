@@ -505,8 +505,7 @@ class _OrderConfirmationPageState extends State<OrderConfirmationPage> {
       http.Response response = await http.post(
         Uri.parse('https://api.stripe.com/v1/payment_intents'),
         headers: {
-          'Authorization':
-              'Bearer sk_test_51KCROYBpG2vlvIA72kR4rxGdyvvs4oIweofdMBGfQPif4vEbk96zVMPpFMYiAW2bLhhLzO4ZfEzDWlY9lj0rImTF00TNtokPyu',
+          'Authorization': 'Bearer',
           'Content-type': 'application/x-www-form-urlencoded'
         },
         body: body,
